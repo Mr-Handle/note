@@ -1577,6 +1577,15 @@ $.ajax({
 
 ### jvm
 
+#### 启动jvm时设置classpath
+
+当没有设置系统环境变量，也没有传入-classpath参数时，jvm默认的classpath为.，即当前目录
+
+```cmd
+java -classpath .;C:\code\helloWorld; com.handle.HelloWorld
+java -cp .;C:\code\helloWorld; com.handle.HelloWorld
+```
+
 #### jvm参数
 
 - 指定新生代的大小
@@ -3881,7 +3890,9 @@ seata.transport.enable-client-batch-send-request=true
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
 
-## zookeeper
+## ZooKeeper
+
+- 官网 <https://zookeeper.apache.org/>
 
 ### 启动zookeeper
 
