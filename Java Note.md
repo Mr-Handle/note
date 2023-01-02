@@ -3919,6 +3919,47 @@ bin/zkServer.sh stop
 bin/zkServer.sh status
 ```
 
+### 安装docker版zookeeper
+
+```sh
+# 拉取zookeeper镜像
+docker pull zookeeper:3.7.1
+
+# 启动docker，这里直接用容器id
+docker run --name zookeeper01 --restart always -d 2665a3b2800b
+
+# 运行zookeeper客户端，这里直接用容器id
+docker run -it --rm --link zookeeper01:zookeeper01 2665a3b2800b zkCli.sh -server zookeeper01
+```
+
+### zookeeper常用命令
+
+```sh
+# 显示操作命令
+help
+
+# 查看当前节点的子节点，-s：附加次级信息；-w：监听子节点变化
+ls [-s] [-w] [-R] path
+
+# 查看节点状态
+stat [-w] path
+
+# 创建节点，-s：创建序列节点；-e：创建临时节点
+create [-s] [-e] [-c] [-t ttl] path [data] [acl] 
+
+# 获取节点，-w：监听节点内容变化；-s：附加次级信息
+get [-s] [-w] path
+
+# 设置节点
+set [-s] [-v version] path data
+
+# 删除节点
+delete [-v version] path
+
+# 递归删除节点
+deleteall path [-b batch size]
+```
+
 ## docker
 
 docker的基本组成：镜像、容器、仓库
@@ -3937,7 +3978,7 @@ sudo yum-config-manager \
 # 安装docker引擎
 sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-# 卸载docker引擎，但不会删除docker镜像、容器和配置文件，docker镜像、容器和配置文件需要手动删除
+# 卸载docker引擎，但不会删除docker镜像、容器和配置文件，需要手动将其删除
 sudo yum remove docker-ce docker-ce-cli containerd.io
 
 # 删除docker镜像
@@ -4009,10 +4050,10 @@ docker help
 
 ```sh
 # docker search 查询关键字：查询镜像，最好去docker hub查询指定版本的详细信息，如镜像标签
-docker search tomcat
+docker search mysql
 
 # 拉取镜像，镜像名:标签
-docker pull mysql:8.0.29
+docker pull mysql:8.0.30
 
 # 列出所有本地镜像
 docker images
@@ -6675,16 +6716,16 @@ yum install java-1.8.0-openjdk-devel.x86_64
 
 ### vi编辑器
 
-1. vi命令打开文件后，定位到要修改的行
+- vi命令打开文件后，定位到要修改的行
 
-    ```sh
-    vim 文件名
-    ```
+```sh
+vim 文件名
+```
 
-2. 键入i，然后修改内容
-3. 修改完成按esc退出编辑模式
-4. 按"shift" + ":"，输入wq，然后按回车保存退出
-5. 按"shift" + ":"，输入q!，然后按回车强制退出
+- 键入i，然后修改内容
+- 修改完成按esc退出编辑模式
+- 按"shift" + ":"，输入wq，然后按回车保存退出
+- 按"shift" + ":"，输入q!，然后按回车强制退出
 
 ## nginx
 
