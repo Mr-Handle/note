@@ -4415,21 +4415,30 @@ public class MainConfiguration {
 
 ### 请求处理常用的参数注解
 
-- 1. @PathVariable ：获取路径变量
-
-    ![getPathVariables](2021-04-10-19-44-11.png)
-    ![getPathVariables](2021-04-10-19-41-33.png)
-
-- 2. @RequestParam : 获取请求参数，把请求中指定名称的参数的值赋给控制器中的形参
+- @PathVariable ：获取路径变量
 
 ```java
- @GetMapping("/user/{id}/{name}/getRequestParams")
+ @GetMapping("/user/{id}/{name}/getPathVariables")
+ public Map<String, Object> getPathVariables(
+    @PathVariable("id") Integer id,
+    @PathVariable("name") String name,
+    @PathVariable Map<String, String> allPathVariables) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("name", name);
+        map.put("allPathVariables", allPathVariables);
+        return map;
+    }
+```
+
+- @RequestParam : 获取请求参数，把请求中指定名称的参数的值赋给控制器中的形参
+
+```java
+ @GetMapping("/user/getRequestParams")
  public Map<String, Object> getRequestParams(
     @RequestParam("age") Integer age,
     @RequestParam("interest") List<String> interests,
     @RequestParam Map<String, String> allRequestParams) {
-
-        // 将入参的值再封装到map然后返回
         Map<String, Object> map = new HashMap<>();
         map.put("age", age);
         map.put("interest", interests);
@@ -4438,35 +4447,48 @@ public class MainConfiguration {
     }
 ```
 
-请求url：`localhost:8080/application/user/233/dufu/getRequestParams?age=18&interest=basketball&interest=movie`
+请求url：`localhost:8080/application/getRequestParams?age=18&interest=basketball&interest=movie`
 
 方法返回：`{"interest": ["basketball","movie"],"allRequestParams": {"age": "18", "interest": "basketball"},"age": 18}`
 
-- 3. @RequestBody : 获取请求体
+- @RequestBody : 获取请求体
 
-    ![getRequestBody](2021-04-10-19-53-22.png)
-    ![getRequestBody](2021-04-10-22-52-40.png)
-    ![getRequestBody](2021-04-10-20-50-43.png)
-    ![getRequestBody](2021-04-10-20-49-34.png)
+```java
+@PostMapping("/user/getRequestBody")
+public Map<String, Object> getRequestBody(@RequestBody String content) {
+     Map<String, Object> map = new HashMap<>();
+     map.put("content", content);
+     return map;
+}
+```
 
-- 4. @RequestHeader : 获取请求头
+- @RequestHeader : 获取请求头
 
-    ![getHeaders](2021-04-10-22-58-26.png)
-    ![getHeaders](2021-04-10-22-59-56.png)
+```java
+@PostMapping("/user/getHeaders")
+public Map<String, Object> getHeaders(
+    @RequestHeader("Host") String host,
+    @RequestHeader Map<String, String> allHeaders) {
+     Map<String, Object> map = new HashMap<>();
+     map.put("host", host);
+     map.put("allHeaders", allHeaders);
+     return map;
+}
+```
 
-- 5. @CookieValue : 获取 cookie 值
+- @CookieValue : 获取 cookie 值
 
     ![getCookieValues](2021-04-10-23-34-53.png)
     ![getCookieValues](2021-04-10-23-36-05.png)
     ![getCookieValues](2021-04-10-23-37-43.png)
     ![getCookieValues](2021-04-10-23-36-57.png)
 
-- 6. @RequestAttribute : 获取 request 的属性的值
+- @RequestAttribute : 获取 request 的属性的值
     ![getRequestAttribute](2021-04-11-21-44-19.png)
     ![getRequestAttribute](2021-04-11-21-47-31.png)
     ![getRequestAttribute](2021-04-11-21-41-12.png)
 
-- 7. @MatrixVariable : 获取矩阵变量的值
+- @MatrixVariable : 获取矩阵变量的值
 
     ![getMatrixVariables](2021-04-11-15-30-06.png)
     ![getMatrixVariables](2021-04-11-20-42-34.png)
@@ -6700,6 +6722,13 @@ PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
+```
+
+## markdown
+
+```md
+# 图片语法
+![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
 ```
 
 ## 算法篇
