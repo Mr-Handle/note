@@ -4,13 +4,13 @@
 
 ### 安装jdk
 
-#### Windows安装jdk
+#### 1.windows安装jdk
 
-- 下载jdk压缩包xxx.zip，解压到指定目录（解压后bin文件夹所在目录为jdk根目录，假设为`D:\java\jdk\xxx`）
-- 新增环境变量`JAVA_HOME：D:\java\jdk\xxx`
-- `Path`中添加：`%JAVA_HOME%\bin`
+- 1.下载jdk压缩包xxx.zip，解压到指定目录（解压后bin文件夹所在目录为jdk根目录，假设为`D:\java\jdk\xxx`）
+- 2.新增环境变量`JAVA_HOME：D:\java\jdk\xxx`
+- 3.`Path`中添加：`%JAVA_HOME%\bin`
 
-#### Linux安装jdk
+#### 2.linux安装jdk
 
 - 1.下载jdk压缩包xxx.tar.gz，解压到指定目录
 
@@ -47,7 +47,7 @@ source /etc/profile
 java -version
 ```
 
-### 基础笔记
+### 代码笔记
 
 - 若将多个类的声明放在一个文档中，只能有一个类声明为公有类。
 
@@ -55,9 +55,11 @@ java -version
 public class A {}
 
 class B {}
+
+class C {}
 ```
 
-- Java源文档名必须与文档中公有类名一致
+- Java源文档名必须与文档中公有类名一致（区分大小写）。
 
 ```java
 // 文件名必须为 A.java
@@ -76,21 +78,7 @@ public void function(List<Integer> list) {}
 public void function(ArrayList<Integer> list) {}
 ```
 
-- 继承写法
-
-```java
-public interface human {}
-
-// 子接口 extends 父接口
-public interface man extends human {}
-
-// 子类 implements 父接口
-public class father implements man {}
-
-// 子类 extends 父类
-public class son extends father {}
-```
-
+- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
 - 用来存储对象的变量称为引用变量。
 - 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
 - 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
@@ -105,7 +93,7 @@ import lombok.Getter;
 
 @Getter
 public enum ColorEnum {
-    RED("255,0,0"), GREEN("0,255,0"), BLUE("0,0,255");
+    RED("red"), GREEN("green"), BLUE("blue");
 
     private String value;
 
@@ -122,7 +110,7 @@ public enum ColorEnum {
 
 - 类型比较运算符
   
-  1) point instanceof Point;// 如果point是Point类的一个实例，结果为true
+  1) point instanceof Point; // 如果point是Point类的一个实例，结果为true
   
   2) `基本数据类型`，== 比较的是`值`
   
@@ -1577,15 +1565,6 @@ $.ajax({
 
 ### jvm
 
-#### 启动jvm时设置classpath
-
-当没有设置系统环境变量，也没有传入-classpath参数时，jvm默认的classpath为.，即当前目录
-
-```cmd
-java -classpath .;C:\code\helloWorld; com.handle.HelloWorld
-java -cp .;C:\code\helloWorld; com.handle.HelloWorld
-```
-
 #### jvm参数
 
 - 指定新生代的大小
@@ -2163,18 +2142,6 @@ UserDO user = userDAO.queryUser(userId);
 List<UserDO> users = userDAO.queryUsers(userAge);
 ```
 
-#### 数据格式转换
-
-- 数据库日期类型自动转为java8日期类
-
-```xml
-<dependency>
-    <groupId>org.mybatis</groupId>
-    <artifactId>mybatis-typehandlers-jsr310</artifactId>
-    <version>1.0.2</version>
-</dependency>
-```
-
 ## Spring
 
 ### IOC
@@ -2607,39 +2574,6 @@ public static void main(String[] args) {
     app.setBannerMode(Banner.Mode.OFF);
     app.run(args);
 }
-```
-
-### 时间格式序列化/反序列化
-
-- 默认Jackson的情况
-
-```java
-@Bean
-public Jackson2ObjectMapperBuilderCustomizer customizeLocalDateTimeFormat() {
-    return jacksonObjectMapperBuilder -> {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTimeDeserializer deserializer = new LocalDateTimeDeserializer(formatter);
-        LocalDateTimeSerializer serializer = new LocalDateTimeSerializer(formatter);
-        jacksonObjectMapperBuilder.serializerByType(LocalDateTime.class, serializer);
-        jacksonObjectMapperBuilder.deserializerByType(LocalDateTime.class, deserializer);
-    };
-}
-```
-
-- 格式化注解支持依赖
-
-```xml
-<dependency>
-    <groupId>com.fasterxml.jackson.datatype</groupId>
-    <artifactId>jackson-datatype-jsr310</artifactId>
-    <version>2.9.8</version>
-</dependency>
-```
-
-- 在对应字段添加注解
-
-```java
- @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
 ```
 
 ### 常用注解
@@ -3890,9 +3824,7 @@ seata.transport.enable-client-batch-send-request=true
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
 
-## ZooKeeper
-
-- 官网 <https://zookeeper.apache.org/>
+## zookeeper
 
 ### 启动zookeeper
 
@@ -3919,47 +3851,6 @@ bin/zkServer.sh stop
 bin/zkServer.sh status
 ```
 
-### 安装docker版zookeeper
-
-```sh
-# 拉取zookeeper镜像
-docker pull zookeeper:3.7.1
-
-# 启动docker，这里直接用容器id
-docker run --name zookeeper01 --restart always -d 2665a3b2800b
-
-# 运行zookeeper客户端，这里直接用容器id
-docker run -it --rm --link zookeeper01:zookeeper01 2665a3b2800b zkCli.sh -server zookeeper01
-```
-
-### zookeeper常用命令
-
-```sh
-# 显示操作命令
-help
-
-# 查看当前节点的子节点，-s：附加次级信息；-w：监听子节点变化
-ls [-s] [-w] [-R] path
-
-# 查看节点状态
-stat [-w] path
-
-# 创建节点，-s：创建序列节点；-e：创建临时节点
-create [-s] [-e] [-c] [-t ttl] path [data] [acl] 
-
-# 获取节点，-w：监听节点内容变化；-s：附加次级信息
-get [-s] [-w] path
-
-# 设置节点
-set [-s] [-v version] path data
-
-# 删除节点
-delete [-v version] path
-
-# 递归删除节点
-deleteall path [-b batch size]
-```
-
 ## docker
 
 docker的基本组成：镜像、容器、仓库
@@ -3978,7 +3869,7 @@ sudo yum-config-manager \
 # 安装docker引擎
 sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-# 卸载docker引擎，但不会删除docker镜像、容器和配置文件，需要手动将其删除
+# 卸载docker引擎，但不会删除docker镜像、容器和配置文件，docker镜像、容器和配置文件需要手动删除
 sudo yum remove docker-ce docker-ce-cli containerd.io
 
 # 删除docker镜像
@@ -4050,10 +3941,10 @@ docker help
 
 ```sh
 # docker search 查询关键字：查询镜像，最好去docker hub查询指定版本的详细信息，如镜像标签
-docker search mysql
+docker search tomcat
 
 # 拉取镜像，镜像名:标签
-docker pull mysql:8.0.30
+docker pull mysql:8.0.29
 
 # 列出所有本地镜像
 docker images
@@ -4921,11 +4812,15 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 
 ### 安装
 
-安装完成后，还需要最后一步设置，因为Git是分布式版本控制系统，所以，每个机器都必须自报家门：你的名字和Email地址。
-
 ```sh
-# 
-# global参数，表示你这台机器上所有的Git仓库都会使用这个配置，当然也可以对某个仓库指定不同的用户名和Email地址。
+# 查看git配置
+git config --global --list
+
+# 生成ssh key
+ ssh-keygen -t rsa -C "这里填你的邮箱"
+
+# 安装完成后，还需要最后一步设置，因为Git是分布式版本控制系统，所以，每个机器都必须自报家门：你的名字和Email地址
+# global参数，表示你这台机器上所有的Git仓库都会使用这个配置，当然也可以对某个仓库指定不同的用户名和Email地址
 git config --global user.name "Your Name"
 git config --global user.email "email@example.com"
 ```
@@ -5055,60 +4950,47 @@ git push origin
 
 以下安装步骤均在管理员身份的dos窗口中执行。
 
-- 1.初始化数据库生成空的登录密码：
+1. 初始化数据库生成空的登录密码：
 
    ```cmd
    mysqld --initialize -insecure –user=mysql
    ```
 
-- 2.安装 mysql（服务）：
+2. 安装 mysql（服务）：
 
    ```cmd
        mysqld --install mysql
    ```
 
-- 3.免密码登录
-
-```cmd
-mysqld --console --skip-grant-tables --shared-memory
-```
-
-- 4.密码设置为空
-
-```cmd
-# 将密码置为空
-update user set authentication_string='' where user='root';
-```
-
-- 4.启动 mysql 服务：
+3. 启动 mysql 服务：
 
    ```cmd
    net start mysql
    ```
 
-- 5.登录 mysql 服务器，初始化没有生成密码，提示输入密码直接按回车登录：
+4. 登录 mysql 服务器，初始化没有生成密码，提示输入密码直接按回车登录：
 
    ```cmd
    mysql -u root -P 端口 -p
    ```
 
-- 6.修改 root 账户密码：
+5. 修改 root 账户密码：
 
-```cmd
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mysql123';
-```
+   ```cmd
+   ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mysql123';
+   ```
 
-- 7.关闭服务：
+6. 关闭服务：
 
-```cmd
-net stop mysql
-```
+   ```cmd
+   net stop mysql
+   ```
 
-- 8.移除 mysql（服务）：
+7. 移除 mysql（服务）：
 
-```cmd
-mysqld --remove mysql
-```
+   ```cmd
+   mysqld --remove mysql
+   ```
 
 #### linux安装
 
@@ -6716,16 +6598,16 @@ yum install java-1.8.0-openjdk-devel.x86_64
 
 ### vi编辑器
 
-- vi命令打开文件后，定位到要修改的行
+1. vi命令打开文件后，定位到要修改的行
 
-```sh
-vim 文件名
-```
+    ```sh
+    vim 文件名
+    ```
 
-- 键入i，然后修改内容
-- 修改完成按esc退出编辑模式
-- 按"shift" + ":"，输入wq，然后按回车保存退出
-- 按"shift" + ":"，输入q!，然后按回车强制退出
+2. 键入i，然后修改内容
+3. 修改完成按esc退出编辑模式
+4. 按"shift" + ":"，输入wq，然后按回车保存退出
+5. 按"shift" + ":"，输入q!，然后按回车强制退出
 
 ## nginx
 
@@ -6818,234 +6700,6 @@ PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
-```
-
-## Vue
-
-### el的两种写法
-
-- 第一种写法
-
-```html
-<body>
-    <div id="root"></div>
-    <script type="text/javascript">
-        new Vue({
-            el: "#root"
-        })
-    </script>
-</body>
-```
-
-- 第二种写法
-
-```html
-<body>
-    <div id="root"></div>
-    <script type="text/javascript">
-        const vm = new Vue({
-        })
-        vm.$mount("#root")
-    </script>
-</body>
-```
-
-### data的两种写法
-
-- 对象式写法
-
-```html
-<body>
-    <div id="root">
-    </div>
-    <script type="text/javascript">
-        new Vue({
-            el: "#root",
-            data: {
-                name: "呆鹅大人"
-            }
-        })
-    </script>
-</body>
-```
-
-- 函数式写法data: function() {} 或简写data() {}
-
-```html
-<body>
-    <div id="root">
-    </div>
-    <script type="text/javascript">
-        new Vue({
-            el: "#root",
-            data: function() {
-                return {
-                    name: "呆鹅大人"
-                }
-            }
-        })
-    </script>
-</body>
-```
-
-### 插值语法
-
-{{表达式}}
-
-### 指令语法
-
-`v-bind:标签属性="表达式"`或`:标签属性="表达式"`
-
-### 数据绑定
-
-单向绑定v-bind，双向绑定v-model，双向绑定只能用在表单类元素（输入类元素，这些元素都有value）上
-
-```html
-<body>
-    <div id="root">
-        <!-- 普写 -->
-        <p>单向数据绑定：<input type="text" v-bind:value="name"></p>
-        <p>双向数据绑定：<input type="text" v-model:value="name"></p>
-
-        <!-- 简写 -->
-        <p>单向数据绑定：<input type="text" :value="name"></p>
-        <p>双向数据绑定：<input type="text" v-model="name"></p>
-    </div>
-    <script type="text/javascript">
-        new Vue({
-            el: "#root",
-            data: {
-                name: "呆鹅大人"
-            }
-        })
-    </script>
-</body>
-```
-
-### 数据代理
-
-```html
-<body>
-    <script type="text/javascript">
-        let number = 12
-        let person = {
-            name: "呆鹅大人",
-            sex: "女"
-        }
-        // person再定义一个age属性
-        Object.defineProperty(person, "age", {
-            // // 设置age的值为18
-            // value: 18,
-            // // 控制属性是否可枚举，默认false
-            // enumerable: true,
-            // // 控制属性是否可修改，默认false
-            // writable: true,
-            // // 控制属性是否可以被删除，默认false
-            // configurable: true,
-
-            // 当程序读取person的age属性时，get函数（getter）就会被调用，且返回值就是age的值
-            // 可简写为get() {}
-            get: function () {
-                return number
-            },
-            // 当程序修改person的age属性时，set函数（setter）就会被调用
-            // 可简写为set() {}
-            set: function (value) {
-                number = value
-            }
-        })
-        console.log(person)
-    </script>
-</body>
-```
-
-### 事件处理
-
-- @click="showInfo" 和 @click="showInfo2($event)，但后者可以传参
-
-```html
-<body>
-    <div id="root">
-        <!-- 普写 -->
-        <button v-on:click="showInfo">点我提示信息1</button>
-        <!-- 简写 -->
-        <button @click="showInfo">点我提示信息2</button>
-        <button @click="showInfo2($event, 666)">点我提示信息3</button>
-    </div>
-    <script type="text/javascript">
-        Vue.config.productionTip = false
-
-        new Vue({
-            el: "#root",
-            methods: {
-                // 也可以用代参数的写法showInfo(event) {}
-                showInfo() {
-                    alert("hello world")
-                },
-                showInfo2(event, number) {
-                    alert("hello world" + number)
-                }
-            },
-        })
-    </script>
-</body>
-```
-
-- 事件修饰符
-
-```html
-<body>
-    <div id="root">
-        <!-- 阻止默认事件(这里默认事件是跳转) -->
-        <a href="https://www.baidu.com" @click.prevent="showInfo">点我提示信息</a>
-
-        <!-- 阻止事件冒泡（这里冒泡是指按钮弹窗后div再弹一次） -->
-        <div class="demo1" @click="showInfo">
-            <button @click.stop="showInfo">点我提示信息</button>
-        </div>
-
-        <!-- 事件只触发一次 -->
-        <button @click.once="showInfo">事件只触发一次</button>
-
-        <!-- 使用事件的捕获模式，默认是先2后1 -->
-        <div class="box1" @click.capture="showMessage(1)">
-            div1
-            <div class="box2" @click="showMessage(2)">
-                div2
-            </div>
-        </div>
-
-        <!-- 只有event.target是当前操作的元素时才触发事件，一定程度上有点像阻止冒泡 -->
-        <div class="demo1" @click.self="showInfo">
-            <button @click="showInfo">点我提示信息</button>
-        </div>
-
-        <!-- 事件的默认行为立即执行，无需等待事件回调执行完毕(先滚动，无需等待showInfo执行完毕才滚动) -->
-        <ul @wheel.passive="showInfo">
-            <li>1</li>
-            <li>2</li>
-            <li>3</li>
-            <li>4</li>
-        </ul>
-
-    </div>
-    <script type="text/javascript">
-        Vue.config.productionTip = false
-
-        new Vue({
-            el: "#root",
-            methods: {
-                // 也可以用代参数的写法showInfo(event) {}
-                showInfo() {
-                    alert("hello world")
-                },
-                showMessage(number) {
-                    alert(number)
-                }
-            },
-        })
-    </script>
-</body>
 ```
 
 ## 算法篇
