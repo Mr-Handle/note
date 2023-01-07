@@ -4252,31 +4252,13 @@ public class AmqpApplicationTests {
 1. 定义宠物类
 
 ```java
+@Getter
+@Setter
+@ToString
 public class Pet {
     private String name;
 
     private int age;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    @Override
-    public String toString() {
-        return "Pet [age=" + age + ", name=" + name + "]";
-    }
 }
 ```
 
@@ -4332,33 +4314,15 @@ pet.age = 3
 2.定义宠物类
 
 ```java
+@Getter
+@Setter
+@ToString
 @Component
 @ConfigurationProperties(prefix = "pet")
 public class Pet {
     private String name;
 
     private int age;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    @Override
-    public String toString() {
-        return "Pet [age=" + age + ", name=" + name + "]";
-    }
 }
 ```
 
@@ -4374,32 +4338,14 @@ pet.age = 3
 2.定义宠物类
 
 ```java
+@Getter
+@Setter
+@ToString
 @ConfigurationProperties(prefix = "pet")
 public class Pet {
     private String name;
 
     private int age;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    @Override
-    public String toString() {
-        return "Pet [age=" + age + ", name=" + name + "]";
-    }
 }
 ```
 
