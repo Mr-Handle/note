@@ -1666,6 +1666,13 @@ public class Account {
 }
 ```
 
+## EasyExcel
+
+```java
+// 同步读，headRowNumber(0)：标题行和数据行都读到列表中
+List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRowNumber(0).doReadSync();
+```
+
 ## Mybatis
 
 ### `if`元素
@@ -1739,6 +1746,20 @@ public class Account {
     </set>
     where id=#{id}
 </update>
+```
+
+### choose元素
+
+```xml
+<choose>  
+    <when test="username != null and username != ''">  
+        user_name=#{username} 
+    </when >  
+    <otherwise>
+        user_name is null
+    </otherwise>  
+</choose>  
+
 ```
 
 ### `resultMap`
@@ -4909,6 +4930,22 @@ git branch -d dev
 # 将分支推送到远端仓库
 git push origin
 ```
+
+### git常见问题
+
+- Please commit your changes or stash them before you merge.
+
+解决方法：通过git stash将工作区恢复到上次提交的内容，同时备份本地所做的修改，之后就可以正常git pull了，git pull完成后，执行git stash pop将之前本地做的修改应用到当前工作区。
+
+```cmd
+git stash
+git pull
+git stash pop
+```
+
+git stash: 备份当前的工作区的内容，从最近的一次提交中读取相关内容，让工作区保证和上次提交的内容一致。同时，将当前的工作区内容保存到Git栈中。
+
+git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区的相关内容。由于可能存在多个Stash的内容，所以用栈来管理，pop会从最近的一个stash中读取内容并恢复。
 
 ## 数据库篇
 
