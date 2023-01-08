@@ -4477,7 +4477,7 @@ public Map<String, Object> getHeaders(
 
 ### 安装Maven
 
-- `MAVEN_HOME\conf\settings.xml` 配置文档设置
+- `MAVEN_HOME\conf\settings.xml` 配置文件
   
 ```xml
 <!-- 设置本地仓库路径 -->
@@ -4539,7 +4539,7 @@ public Map<String, Object> getHeaders(
 
 - 设置jar包保存路径
   
-    ![image-20210819231258433](image-20210819231258433.png)
+    ![Blob Stores](/images/BlobStores.png "Blob Stores")
 
 - 设置`maven`配置文档`..\apache-maven-3.6.3\conf\settings.xml` server的id和repository的id要一致
 
@@ -4779,15 +4779,31 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 </project>
 ```
 
+### maven坐标
+
+```xml
+<dependency>
+    <groupId>com.handle</groupId>
+    <artifactId>commons</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+一个Maven工程由groupId，artifactId和version作为唯一标识
+
+- groupId类似于Java的包名，通常是公司或组织名称
+- artifactId类似于Java的类名，通常是项目名称
+- version，jar包版本，如1.0.0
+
 ### maven 常见问题及解决方案
 
 #### 1. maven 控制台日志乱码
 
-- 查看 maven 默认编码：`mvn -version`
+- 查看 maven 默认编码：`mvn -v`
 
-- 设置默认编码：`-Dfile.encoding=GBK`
+- 设置maven默认编码：`-Dfile.encoding=GBK`
   
-    ![maven-vmoption](maven-vmoption-1633327479090.png)
+    ![设置maven默认编码](/images/设置maven默认编码.png "设置maven默认编码")
 
 ## gradle
 
