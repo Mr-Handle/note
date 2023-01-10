@@ -1704,6 +1704,13 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 </if>
 ```
 
+- 布尔值判断
+
+```xml
+<if test="true == deleteFlag">
+</if>
+```
+
 ### `foreach`元素
 
 ```xml
