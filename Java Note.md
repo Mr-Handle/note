@@ -4445,10 +4445,32 @@ public Map<String, Object> getHeaders(
 
 - @CookieValue : 获取 cookie 值
 
-    ![getCookieValues](2021-04-10-23-34-53.png)
-    ![getCookieValues](2021-04-10-23-36-05.png)
-    ![getCookieValues](2021-04-10-23-37-43.png)
-    ![getCookieValues](2021-04-10-23-36-57.png)
+```java
+/**
+ * 获取cookie
+ */
+@PostMapping("/user/getCookies")
+public Map<String, Object> getCookies(
+    @CookieValue("id") id,
+    @CookieValue Cookie cookies) {
+    Cookie cookie = new Cookie("userName", "呆鹅大人");
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", id);
+    map.put("cookies", cookies);
+    return map;
+}
+
+
+/**
+ * 设置cookie
+ */
+@PostMapping("/user/setCookies")
+public String setCookies(HttpServletResponse response) {
+    Cookie cookie = new Cookie("userName", "呆鹅大人");
+     response.addCookie(cookie);
+     return "set cookie success";
+}
+```
 
 - @RequestAttribute : 获取 request 的属性的值
     ![getRequestAttribute](2021-04-11-21-44-19.png)
