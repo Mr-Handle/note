@@ -285,8 +285,8 @@ int row=resultSet.getInt(1);
 
 ```java
 if (null == object) {}
-if (Objects.isNull(object)) {}
 if (null != object) {}
+if (Objects.isNull(object)) {}
 if (Objects.nonNull(object)) {}
 ```
 
@@ -5725,6 +5725,22 @@ ldf 文档太大处理方法（先备份数据库）：
 
 #### 函数
 
+- upper('value')
+
+将参数值转成大写后返回
+
+- lower('VALUE')
+
+将参数值转成小写后返回
+
+- to_char(create_time,'yyyy-MM-dd HH24:mi:ss')
+
+将字段值转为指定格式字符串
+
+- to_date('2022-02-02 13:14:20','yyyy-MM-dd HH24:mi:ss')
+
+将参数值转为指定格式的日期
+
 - nvl(表达式1，表达式2)
 
 把一个空值（null）转换成一个实际的值。如果表达式1为空值，返回表达式2的值，否则返回表达式1的值。表达式1和表达式2的数据类型必须为同一个类型。
@@ -5732,6 +5748,10 @@ ldf 文档太大处理方法（先备份数据库）：
 - nvl2(表达式1，表达式2，表达式3)
 
 如果表达式1为空，返回值为表达式3的值。如果表达式1不为空，返回值为表达式2的值
+
+- round(number, 小数位数)
+
+四舍五入
 
 #### 分页查询
 
@@ -5746,9 +5766,6 @@ select * from (
 #### sql
 
 ```sql
--- 创建表
-create table temp_tb as select id from person where JOB_SITUATION='在职'
-
 --查询当前用户下是否有某个表，表名要大写
 select table_name from user_tables where table_name=upper('temp_tb')
 
