@@ -1675,6 +1675,19 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ## Mybatis
 
+### 需要转义的符号
+
+| 符号 | 原符号| 替换符号 |
+| ---  | ---- | ------- |
+| 小于 | < | `&lt;` |
+| 小于等于 | <= | `&lt;=` |
+| 大于 | > | `&gt;` |
+| 大于等于 | >= | `&gt;=` |
+| 不等于 | <> | `&lt;&gt;` |
+| 与 | & | `&amp;` |
+| 单引号 | ' | `&apos;` |
+| 双引号 | " | `&quot;` |
+
 ### `if`元素
 
 - 字符串判空
@@ -5710,6 +5723,28 @@ ldf 文档太大处理方法（先备份数据库）：
 
 ### 3. Oracle
 
+#### 函数
+
+- nvl(表达式1，表达式2)
+
+把一个空值（null）转换成一个实际的值。如果表达式1为空值，返回表达式2的值，否则返回表达式1的值。表达式1和表达式2的数据类型必须为同一个类型。
+
+- nvl2(表达式1，表达式2，表达式3)
+
+如果表达式1为空，返回值为表达式3的值。如果表达式1不为空，返回值为表达式2的值
+
+#### 分页查询
+
+```sql
+select * from (
+    select rownum rowNumber, all.* from (
+        select ... order by ...
+    ) all where rownum < pageNumber * pageSize
+) where rowNumber > (pageNumber - 1) * pageSize
+```
+
+#### sql
+
 ```sql
 -- 创建表
 create table temp_tb as select id from person where JOB_SITUATION='在职'
@@ -5763,14 +5798,6 @@ select max(length(CONTROL_TYPE_NAME)) from  EMP_INFO
 
 --创建会话级临时表,当用户退出会话结束时（connection打开后关闭算会话结束），Oracle自动清除临时表中数据，但保留表结构
 create global temporary table temp_tb on commit preserve rows as select * from person
-
--- 分页查询
--- currentPageMaxRowNumber = pageSize + offset
-select * from (
-    select rownum rowNumber, all.* from (
-        select ...
-    ) all where rownum < currentPageMaxRowNumber
-) where rowNumber > offset
 
 -- 声明方法
 declare
