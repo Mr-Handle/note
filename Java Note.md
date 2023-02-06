@@ -6547,6 +6547,18 @@ rm -rf 安装目标路径
 
 ### Linux常用命令
 
+#### 重启和关机
+
+- 立即重启，`shutdown -r now` 或 `reboot` 或 `systemctl reboot`
+
+- 立即关机，`shutdown -h now` 或 `halt` 或 `systemctl poweroff`
+
+- 一分钟后关机，`shutdown` 或 `shutdown -h 1`
+
+- 把内存数据同步到磁盘，`sync`
+
+注意：虽然shutdown/reboot/halt等命令已经在关机前进行了`sync`，我们在重启或关机前最好还是执行一次`sync`
+
 #### 运行级别
 
 ```sh
@@ -6584,12 +6596,6 @@ service network restart
 #### 系统命令
 
 ```sh
-# 重启系统
-systemctl reboot
-
-# 关闭系统
-systemctl poweroff
-
 # 显示操作系统的发行版号
 uname -r
 
