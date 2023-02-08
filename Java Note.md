@@ -254,9 +254,12 @@ try {
 }
 try {
     // 6.关闭资源
-    if (statement!=null) {
+    if (statement!=null) { 
         statement.close();
-    if(connection!=null)connection.close();
+    }
+    if(connection!=null) {
+        connection.close();
+    }
 } catch(SQLException e) {
     log.error("", e);
 }
@@ -264,19 +267,18 @@ try {
 
 #### ResultSet获取行列数
 
-1) 获取列数：resultSet.getMetaData().getColumnCount();
-2) 获取行数：
+- 获取列数
 
 ```java
-// 方法一：测试结果很慢，可能是数据量太大了（10w）
-Statement statement=connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
-ResultSet resultSet=statement.executeQuery("select * from person");
-resultSet.last();
-resultSet.getRow();
-
-// 方法二：比方法一快很多很多，建议这种方法
 ResultSet resultSet=statement.executeQuery("select count(*) from person");
-int row=resultSet.getInt(1);
+int columnNumbers = resultSet.getMetaData().getColumnCount();
+```
+
+- 获取行数
+
+```java
+ResultSet resultSet=statement.executeQuery("select count(*) from person");
+int rowNumbers = resultSet.getInt(1);
 ```
 
 ### 判null和判空语句
@@ -421,18 +423,18 @@ String s = new String(input, StandardCharsets.UTF_8);
 ### 默认域初始化
 
 - 如果在构造器中没有显式地给域赋予初值，那么就会被自动地赋为默认值： 数值为0、布尔值为false、对象引用为null。
+
 - 如果在编写一个类时没有编写构造器，那么系统就会提供一个无参数构造器。这个构造器将所有的实例域设置为默认值。
+
 - 仅当类没有提供任何构造器的时候，系统才会提供一个默认的构造器。如果类中提供了至少一个构造器，但是没有提供无参数的构造器，则在构造对象时如果没有提供参数就会被视为不合法。
 
 - 如果希望所有域被赋予默认值，可以采用下列格式
 
 ```java
-public ClassName () {
-
-}
+public ClassName () {}
 ```
 
-- 在执行构造器之前，先执行赋值操作。当一个类的所有构造器都希望把相同的值赋予某个特定的实例域时，这种方式特别有用。可以在类定义中， 直接将一个值赋给任何域。例如：
+- 在执行构造器之前，先执行赋值操作。当一个类的所有构造器都希望把相同的值赋予某个特定的实例域时，这种方式特别有用。可以在类定义中， 直接将一个值赋给任何域。
 
 ```java
 class Person {
@@ -548,22 +550,22 @@ public class ClassName {
 
 ### 1. 通配符类型(wildcard type)
 
-在Java 库中， 使用变量E 表示集合的元素类型， K 和V 分别表示表的关键字与值的类型。T ( 需要时还可以用临近的
-字母U 和S) 表示“ 任意类型”。
+在Java库中， 使用变量E表示集合的元素类型，K和V分别表示表的关键字与值的类型。T(需要时还可以用临近的
+字母U和S)表示“任意类型”。
 
 ### 2. 类型变量的限定（子类型限定）
 
-`<T extends BoundingType>`，表示==T 应该是绑定类型的子类型==（subtype)。T 和绑定类型可以是类， 也可以是接口。
+`<T extends BoundingType>`，表示T应该是绑定类型的子类型（subtype)。T和绑定类型可以是类，也可以是接口。
 
 一个类型变量或通配符可以有多个限定， 例如：
 `T extends Comparable & Serializable`
-限定类型用==“ &”== 分隔，而逗号用来分隔类型变量。在Java 的继承中， 可以根据需要拥有多个接口超类型， 但限定中至多有一个类。如果用一个类作为限定，它必须是限定列表中的第一个。为了提高效率， 应该将标签（ tagging) 接口（即没有方法的接口）放在边界列表的末尾。
+限定类型用`&`分隔，而逗号用来分隔类型变量。在Java的继承中，可以根据需要拥有多个接口超类型，但限定中至多有一个类。如果用一个类作为限定，它必须是限定列表中的第一个。为了提高效率，应该将标签（tagging）接口（即没有方法的接口）放在边界列表的末尾。
 
 ### 3. 通配符的超类型限定
 
-`<? super BoundingType>`，表示这个==通配符限制为绑定类型的所有超类型==。
+`<? super BoundingType>`，表示这个通配符限制为绑定类型的所有超类型。
 
-直观地讲，带有超类型限定的通配符可以向泛型对象写人，带有子类型限定的通配符可以从泛型对象读取。
+直观地讲，带有超类型限定的通配符可以向泛型对象写入，带有子类型限定的通配符可以从泛型对象读取。
 
 ### 4. 无限定通配符<?>
 
