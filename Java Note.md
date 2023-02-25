@@ -584,46 +584,56 @@ Thread t = new Thread(new Runnable() {
 
 ### Lambda表达式
 
-### 1. `Lambda`的基本语法
-
-1. (parameters) -> expression
-2. (parameters) -> { statements; }
-
-### 2. Java 8中有效的Lambda表达式
+- `Lambda`的基本语法
 
 ```java
-// 1.返回一个int。Lambda没有return语句，因为已经隐含了return
-() -> 42
+// 单表达式（单语句）
+(parameters) -> expression
 
-// 2.返回一个boolean（苹果的重量是否超过150克）
-(String s) -> s.length() > 150
-
-// 3.返回一个int：比较两个Apple的重量
-(Apple a1, Apple a2) -> a1.getWeight().compareTo(a2.getWeight())
-
-// 4.没有返回值（void返回）。注意Lambda表达式可以包含多行语句，这里是两行    
-(int x, int y) -> {
-    System.out.println("Result:");
-    System.out.println(x+y);
+// 多语句
+(parameters) -> { 
+    statement1; 
+    statement2; 
+    statementn; 
 }
+```
 
-// 5.返回String（利用显式返回语句）
-() -> {return "Mario";}
+- 无参，单表达式（单语句）
+
+```java
+// 隐式返回
+() -> "Handle"
+
+// 显式返回
+() -> {return "Handle";}
+```
+
+- 有参，单表达式（单语句）
+
+```java
+// 声明参数类型
+(String s) -> s.length()
+
+// 不声明参数类型
+(s) -> s.length()
+
+// 不声明参数类型，仅单个参数可以这么写
+s -> s.length()
 ```
 
 Java 8中的常用函数式接口
 
-| 函数式接口               | 函数描述符          | 原始类型特化                                                                                                                                                                                          |
-|:------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Predicate<T>`      | T->boolean     | IntPredicate,LongPredicate,DoublePredicate                                                                                                                                                      |
-| `Consumer<T>`       | T->void        | IntConsumer,LongConsumer,DoubleConsumer                                                                                                                                                         |
-| `Function<T,R>`     | T->R           | `IntFunction<R>`,`LongFunction<R>`,`DoubleFunction<R>`,`ToIntFunction<T>`,`ToLongFunction<T>``ToDoubleFunction<T>`,IntToLongFunction,IntToDoubleFunction,LongToIntFunction,LongToDoubleFunction |
-| `Supplier<T>`       | ()->T          | BooleanSupplier,IntSupplier,LongSupplier,DoubleSupplier                                                                                                                                         |
-| `UnaryOperator<T>`  | T->T           | IntUnaryOperator,LongUnaryOperator,DoubleUnaryOperator                                                                                                                                          |
-| `BinaryOperator<T>` | (T,T)->T       | IntBinaryOperator,LongBinaryOperator,DoubleBinaryOperator                                                                                                                                       |
-| `BiPredicate<L,R>`  | (L,R)->boolean |                                                                                                                                                                                                 |
-| `BiConsumer<T,U>`   | (T,U)->void    | `ObjIntConsumer<T>``ObjLongConsumer<T>`,`ObjDoubleConsumer<T>`                                                                                                                                  |
-| `BiFunction<T,U,R>` | (T,U)->R       | `ToIntBiFunction<T,U>`,`ToLongBiFunction<T,U>`,`ToDoubleBiFunction<T,U>`                                                                                                                        |
+| 函数式接口 | 函数描述符 | 原始类型特化 |
+|:--------- | --------- | ----------- |
+| `Predicate<T>` | T -> boolean | IntPredicate, LongPredicate, DoublePredicate |
+| `Consumer<T>`       | T -> void        | IntConsumer, LongConsumer, DoubleConsumer |
+| `Function<T,R>`     | T -> R           | `IntFunction<R>`, `LongFunction<R>`, `DoubleFunction<R>`,`ToIntFunction<T>`, `ToLongFunction<T>` `ToDoubleFunction<T>`, IntToLongFunction, IntToDoubleFunction, LongToIntFunction, LongToDoubleFunction |
+| `Supplier<T>`       | () -> T          | BooleanSupplier, IntSupplier, LongSupplier, DoubleSupplier |
+| `UnaryOperator<T>`  | T -> T           | IntUnaryOperator, LongUnaryOperator, DoubleUnaryOperator|
+| `BinaryOperator<T>` | (T,T) -> T       | IntBinaryOperator, LongBinaryOperator, DoubleBinaryOperator |
+| `BiPredicate<L,R>`  | (L,R) -> boolean ||
+| `BiConsumer<T,U>`   | (T,U) -> void    | `ObjIntConsumer<T>`, `ObjLongConsumer<T>`, `ObjDoubleConsumer<T>` |
+| `BiFunction<T,U,R>` | (T, U) -> R      | `ToIntBiFunction<T, U>`, `ToLongBiFunction<T, U>`, `ToDoubleBiFunction<T, U>` |
 
 ### 异常
 
