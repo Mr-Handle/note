@@ -635,90 +635,6 @@ Java 8中的常用函数式接口
 | `BiConsumer<T,U>`   | (T,U) -> void    | `ObjIntConsumer<T>`, `ObjLongConsumer<T>`, `ObjDoubleConsumer<T>` |
 | `BiFunction<T,U,R>` | (T, U) -> R      | `ToIntBiFunction<T, U>`, `ToLongBiFunction<T, U>`, `ToDoubleBiFunction<T, U>` |
 
-### 异常
-
-#### 捕获异常
-
-```java
-try {
-    // do something
-} catch (UnsupportedEncodingException e) {
-    // do something else
-} catch (IOException | NumberFormatException e) {
-    // do something other
-} finally {
-    // do something must be done
-}
-```
-
-- 多个catch语句只有一个能被执行
-
-- 存在多个catch的时候，子类异常的catch必须写在前面
-
-- 如果某些异常的处理逻辑相同，但是异常本身不存在继承关系，可以用`|`合并到一起
-
-- 当某个方法抛出了异常时，如果当前方法没有捕获异常，异常就会被抛到上层调用方法，直到遇到某个try ... catch被捕获为止
-
-### 抛出异常
-
-- 为了能追踪到完整的异常栈，在构造异常的时候，把原始的Exception实例传进去，新的Exception就可以持有原始Exception信息
-  
-  ```java
-  try {
-  // do something
-  } catch (NullPointerException e) {
-      throw new IllegalArgumentException(e);
-  }
-  ```
-
-- 如果在try或者catch语句块中抛出异常，JVM会先执行finally，然后抛出异常
-
-- 如果在执行finally语句时抛出异常，在catch中准备抛出的异常就被屏蔽不会再被抛出了，这时候可以先用origin变量保存原始异常，然后调用Throwable.addSuppressed()，把原始异常添加进来，最后在finally抛出。绝大多数情况下，在finally中不要抛出异常
-
-```java
-Exception origin = null;
-try {
-    // do something
-} catch (Exception e) {
-    origin = e;
-    throw e;
-} finally {
-    Exception e = new IllegalArgumentException();
-    if (origin != null) {
-        e.addSuppressed(origin);
-    }
-    throw e;
-}
-```
-
-### 自定义异常
-
-在一个大型项目中，可以自定义新的异常类型，但是，保持一个合理的异常继承体系是非常重要的。
-
-一个常见的做法是自定义一个BaseException作为“根异常”，然后，派生出各种业务类型的异常。
-
-BaseException需要从一个适合的Exception派生，通常建议从RuntimeException派生
-
-```java
-public class BaseException extends RuntimeException {
-    public BaseException() {
-        super();
-    }
-
-    public BaseException(String message) {
-        super(message);
-    }
-
-    public BaseException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public BaseException(Throwable cause) {
-        super(cause);
-    }
-}
-```
-
 ### Stream
 
 #### 分组 Collectors.groupingBy
@@ -852,6 +768,94 @@ Map<Boolean, Dish> mostCaloricPartitionedByVegetarian = menu.stream().collect(
 ### 类路径
 
 ![image-20211024164152086](image-20211024164152086.png)
+
+### 异常
+
+- 当某个方法抛出了异常时，如果当前方法没有捕获异常，异常就会被抛到上层调用方法，直到遇到某个try {...} catch {...} finally {}被捕获为止
+
+#### 捕获异常
+
+- 捕获异常使用try {...} catch {...} finally {} 语句，把可能发生异常的代码放到try中，然后使用catch捕获对应的Exception及其子类
+
+- 多个catch语句只有一个能被执行
+
+- 存在多个catch的时候，子类异常的catch必须写在前面
+
+- 如果某些异常的处理逻辑相同，但是异常本身不存在继承关系，可以用`|`合并到一起
+
+```java
+try {
+    // do something
+} catch (UnsupportedEncodingException e) {
+    // do something else
+} catch (IOException | NumberFormatException e) {
+    // do something other
+} finally {
+    // do something must be done
+}
+```
+
+### 抛出异常
+
+- 用 `throw new 异常名` 抛出异常
+
+- 为了能追踪到完整的异常栈，在构造异常的时候，把原始的Exception实例传进去，新的Exception就可以持有原始Exception信息
+  
+  ```java
+  try {
+  // do something
+  } catch (NullPointerException e) {
+      throw new IllegalArgumentException(e);
+  }
+  ```
+
+- 如果在try或者catch语句块中抛出异常，JVM会先执行finally，然后抛出异常
+
+- 如果在执行finally语句时抛出异常，在catch中准备抛出的异常就被屏蔽不会再被抛出了，这时候可以先用origin变量保存原始异常，然后调用Throwable.addSuppressed()，把原始异常添加进来，最后在finally抛出。绝大多数情况下，在finally中不要抛出异常
+
+```java
+Exception origin = null;
+try {
+    // do something
+} catch (Exception e) {
+    origin = e;
+    throw e;
+} finally {
+    Exception e = new IllegalArgumentException();
+    if (origin != null) {
+        e.addSuppressed(origin);
+    }
+    throw e;
+}
+```
+
+### 自定义异常
+
+在一个大型项目中，可以自定义新的异常类型，但是，保持一个合理的异常继承体系是非常重要的。
+
+一个常见的做法是自定义一个BaseException作为“根异常”，然后，派生出各种业务类型的异常。
+
+BaseException需要从一个适合的Exception派生，通常建议从RuntimeException派生
+
+```java
+public class BaseException extends RuntimeException {
+    public BaseException() {
+        super();
+    }
+
+    public BaseException(String message) {
+        super(message);
+    }
+
+    public BaseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public BaseException(Throwable cause) {
+        super(cause);
+    }
+}
+```
 
 ### 日志
 
