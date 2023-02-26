@@ -621,7 +621,66 @@ Thread t = new Thread(new Runnable() {
 s -> s.length()
 ```
 
-Java 8中的常用函数式接口
+- 如果一个Lambda的主体是一个语句表达式，它就和一个参数列表类型、顺序一样，且返回void的函数描述符兼容
+
+```java
+// 尽管list.add(s)返回boolean，但是这个写法也是合法的
+Consumer<String> c = s -> list.add(s);
+```
+
+- Lambda中使用局部变量
+
+```java
+// port必须隐式为final或显式声明为final
+int port = 8888;
+Runnable r = () -> System.out.println(port);
+```
+
+- Lambda方法引用
+
+```java
+List<Integer> list = IntStream.rangeClosed(1, 3).boxed().collect(Collectors.toList());
+list.forEach(System.out::println);
+```
+
+- 构造函数引用
+
+```java
+Supplier<String> integer = String::new;
+```
+
+- 复合Lambda
+
+```java
+// 比较器复合
+students.sort(Comparator.comparing(Student::getClassName)
+    .reversed()
+    .thenComparing(Student::getAge));
+
+// 谓词复合
+predicate = predicate.negate().and(...).or(...)
+
+// 函数复合
+Function<Integer, Integer> f = x -> x + 1;
+Function<Integer, Integer> g = x -> x * 2;
+
+// g(f(x))
+Function<Integer, Integer> h = f.andThen(g);
+// f(g(x))
+Function<Integer, Integer> h2 = f.compose(g);
+```
+
+#### 函数式接口
+
+- 函数式接口就是只定义一个抽象方法的接口
+
+- 函数式接口可以有默认方法
+
+- 函数式接口不允许抛出受检异常
+
+- `@FunctionalInterface` 注解表明此接口是函数式接口
+
+- Java 8中的常用函数式接口
 
 | 函数式接口 | 函数描述符 | 原始类型特化 |
 |:--------- | --------- | ----------- |
