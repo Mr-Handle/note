@@ -6421,19 +6421,39 @@ Java代码注释 / 取消注释：Ctrl+/
 
 #### IDEA快捷键
 
-- 向右缩进：Tab
-- 全局搜索：Ctrl + Shift + F
-- 搜索类：按两下Shift
-- 注释或取消注释：Ctrl+/
-- 字母大小写转换：Ctrl + Shift + U
+- 向右缩进：`Tab`
+
+- 向左缩进：`Shift + Tab`
+
+- 注释/取消注释：`Ctrl + /`
+
+- 类搜索：`按两下Shift`
+
+- 全局搜索：`Ctrl + Shift + F`
+
+- 全局替换：`Ctrl + Shift + R`
+
+- 大小写转换：`Ctrl + Shift + U`
+
+- 优化导入语句：`Ctrl + Shift + O`
+
+- 代码格式化：`Ctrl + Shift + L`
+
+- 提取代码为作为方法：`Ctrl + Alt + M`
+
+- 修改变量作用域：`Ctrl + Alt + C`
 
 ### 常见问题及处理方法
 
-#### 控制台输出中文乱码
-
-![区域设置](2022-04-01-00-00-10.png)
-
 ## Linux篇
+
+### VirtualBox
+
+#### 网络
+
+需要根据电脑当前实际使用的网络进行选择，当前是用网线的就选网线网络对应的网卡；当前是用WIFI的就选WIFI网络对应的网卡
+
+![网卡选择](/images/网卡选择.png)
 
 ### Linux目录结构
 
@@ -6631,21 +6651,108 @@ id 用户名
 whoami/who am i
 ```
 
-#### 运行级别
+#### 用户组
+
+用户组类似于角色，系统通过用户组对有共性（权限）的用户进行统一管理
+
+- 新增用户组
 
 ```sh
-# 获取当前机器默认模式
-systemctl set-default multi-user.target
-
-# 获取当前机器默认模式：图形界面模式或文本模式
-systemctl isolate get-default
-
-# 将当前操作环境切换为图形界面模式
-systemctl isolate graphical.target
-
-# 将当前操作环境切换为纯文本模式
-systemctl isolate multi-user.target
+groupadd 用户组名称
 ```
+
+- 删除用户组
+
+```sh
+groupdel 用户组名称
+```
+
+- 添加用户时指定用户组，如果不指定则系统默认创建一个和用户同名的组，并将用户添加到组中
+
+```sh
+useradd -g 用户组名称 用户名
+```
+
+- 修改用户所属的用户组
+
+```sh
+usermod -g 用户组名称 用户名
+```
+
+#### 用户和组相关文件
+
+- /etc/passwd文件 用户的配置文件，记录用户的各种信息
+
+每行的含义：用户名:口令(x):用户标识号(uid):组标识号(gid):注释性描述:主目录(家目录):登录Shell(一般是Bash shell)
+
+- /etc/shadow文件 口令的配置文件
+
+每行的含义：登录名:加密口令:最后一次修改时间:最小时间间隔:最大时间间隔:警告时间:不活动时间:失效时间:标志
+
+- /etc/group文件 用户组的配置文件，记录Linux包含的组的信息
+
+每行的含义：组名:口令(x):组标识号(uid):组内用户列表
+
+#### 运行级别
+
+运行级别说明：
+
+- 0：关机
+
+- 1：单用户【找回丢失密码】
+
+- 2：多用户状态无网络服务
+
+- 3：多用户状态有网络服务
+
+- 4：系统未使用，保留给用户的运行级别
+
+- 5：图形界面
+
+- 6：系统重启
+
+- 常用运行级别是3和5，可以指定默认运行级别
+
+- 切换运行级别
+
+```sh
+init 运行级别
+```
+
+- CentOS 7 在/etc/inittab文件中进行了简化
+
+multi-user.target:analogou to runlevel 3
+graphical.target.target:analogou to runlevel 5
+
+```sh
+# 获取当前机器默认运行级别
+systemctl get-default
+
+# 设置当前机器默认运行级别
+systemctl set-default multi-user.target
+```
+
+#### 找回root密码
+
+- 重启系统，在开机界面按“e”进入编辑界面
+
+![开机界面](/images/开机界面.png)
+
+- 在编辑界面光标往下移动，定位到“linux16”开头最在行的末尾，输入`init=/bin/sh`，完成后按“Ctrl + X”进入单用户模式
+
+![编辑界面](/images/编辑界面.png)
+
+- 在光标闪烁的位置输入`mount -o remount,rw /`，完成后按`回车`
+
+- 在新的一行输入`passwd`，完成后按`回车`
+
+- 然后输入新密码，完成后按`回车`；然后再次输入新密码，完成后按`回车`；显示passwd...的样式，说明密码修改成功
+
+- 在光标闪烁的位置输入`touch /.autorelabel`，完成后按`回车`
+
+- 在光标闪烁的位置输入`exec /sbin/init`，完成后按`回车`，等待系统自动修改密码，过程可能有点长，完成后系统会自动重启，就可以输入密码登录了
+
+![单用户模式界面](/images/单用户模式界面.png)
 
 #### 网络命令
 
