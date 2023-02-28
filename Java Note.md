@@ -696,6 +696,63 @@ Function<Integer, Integer> h2 = f.compose(g);
 
 ### Stream
 
+- 中间操作：中间操作会返回另一个流
+
+- 终端操作：终端操作会从流的流水线生成结果。其结果是任何不是流的值。
+
+#### 构建流
+
+```java
+// 空流
+Stream<String> emptyStream = Stream.empty();
+
+// 由值创建流
+Stream<String> stream = Stream.of("a", "b", "c");
+
+// 由数组创建流
+int[] numbers = {1, 2, 3};
+IntStream stream = Arrays.stream(numbers);
+
+// 由文件生成流
+Stream<String> lines = Files.lines(Paths.get("data.txt"), Charset.defaultCharset());
+
+// 由函数生成流
+List<Integer> list = Stream.iterate(1, n -> n + 1).limit(3).collect(Collectors.toList());
+List<Double> list = Stream.generate(Math::random).limit(3).collect(Collectors.toList());
+```
+
+#### 规约
+
+```java
+// 统计流中元素个数
+long count = numbers.stream().count();
+
+// 对流中所有的元素求和，初始值为0
+int sum = numbers.stream().reduce(0, (a, b) -> a + b);
+
+// 使用方法引用
+int sum = numbers.stream().reduce(0, Integer::sum);
+
+// 考虑流中没有任何元素的情况。reduce操作无法返回其和，因为它没有初始值
+Optional<Integer> sum = numbers.stream().reduce((a, b) -> (a + b)); 
+
+// IntStream、DoubleStream和LongStream，分别将流中的元素特化为int、long和double，从而避免了暗含的装箱成本。
+// 每个接口都包含常用数值归约的新方法，比如对数值流求和的sum，max、min、average等
+int sum = IntStream.rangeClosed(1, 3).sum();
+
+OptionalInt max = IntStream.rangeClosed(1, 3).max();
+
+OptionalInt min = IntStream.rangeClosed(1, 3).min();
+
+OptionalDouble average = IntStream.rangeClosed(1, 3).average();
+
+// 最大值
+Optional<Integer> max = numbers.stream().reduce(Integer::max);
+
+// 最小值
+Optional<Integer> min = numbers.stream().reduce(Integer::min);
+```
+
 #### 分组 Collectors.groupingBy
 
 ```java
