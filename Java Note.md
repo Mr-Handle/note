@@ -5103,6 +5103,9 @@ git checkout --filename
 # 丢弃本地的所有改动与提交，获取服务器上最新的版本历史，并将本地主分支指向它
 git fetch origin
 
+# 回退到上一个版本
+git reset --hard HEAD^
+
 # 回退到指定分支
 git reset --hard origin/dev
 
