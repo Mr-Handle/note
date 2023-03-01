@@ -727,11 +727,16 @@ List<Double> list = Stream.generate(Math::random).limit(3).collect(Collectors.to
 // 统计流中元素个数
 long count = numbers.stream().count();
 
+// 使用收集器统计流中元素个数
+long count = numbers.stream().collect(Collectors.counting());
+
 // 对流中所有的元素求和，初始值为0
 int sum = numbers.stream().reduce(0, (a, b) -> a + b);
 
 // 使用方法引用
 int sum = numbers.stream().reduce(0, Integer::sum);
+
+int totalCalories = menu.stream().collect(Collectors.reducing(0, Dish::getCalories, (i, j) -> i + j));
 
 // 考虑流中没有任何元素的情况。reduce操作无法返回其和，因为它没有初始值
 Optional<Integer> sum = numbers.stream().reduce((a, b) -> (a + b)); 
@@ -740,17 +745,33 @@ Optional<Integer> sum = numbers.stream().reduce((a, b) -> (a + b));
 // 每个接口都包含常用数值归约的新方法，比如对数值流求和的sum，max、min、average等
 int sum = IntStream.rangeClosed(1, 3).sum();
 
+// 使用收集器汇总
+int totalCalories = menu.stream().collect(Collectors.summingInt(Dish::getCalories));
+
 OptionalInt max = IntStream.rangeClosed(1, 3).max();
 
 OptionalInt min = IntStream.rangeClosed(1, 3).min();
 
 OptionalDouble average = IntStream.rangeClosed(1, 3).average();
 
+// 使用收集器计算平均值
+double avgCalories = menu.stream().collect(Collectors.averagingInt(Dish::getCalories));
+
 // 最大值
 Optional<Integer> max = numbers.stream().reduce(Integer::max);
 
 // 最小值
 Optional<Integer> min = numbers.stream().reduce(Integer::min);
+
+// 使用收集器计算最大值
+Comparator<Dish> dishCaloriesComparator = Comparator.comparingInt(Dish::getCalories); 
+Optional<Dish> mostCalorieDish = menu.stream().collect(Collectors.maxBy(dishCaloriesComparator));
+
+// 使用收集器一次获取个数、和、最大最小、平均值
+IntSummaryStatistics menuStatistics = menu.stream().collect(Collectors.summarizingInt(Dish::getCalories));
+
+// 使用收集器连接字符串
+String shortMenu = menu.stream().map(Dish::getName).collect(Collectors.joining());
 ```
 
 #### 分组 Collectors.groupingBy
