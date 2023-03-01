@@ -5078,8 +5078,14 @@ git clone url directoryname
 # 查看提交历史
 git log
 
+# 按行展示log
+git log --pretty=oneline
+
 # 查看某个人的提交记录
 git log --author=somebody
+
+# 查看git历史执行过的命令
+git reflog
 ```
 
 - 撤销操作
@@ -5096,7 +5102,12 @@ git checkout --filename
 
 # 丢弃本地的所有改动与提交，获取服务器上最新的版本历史，并将本地主分支指向它
 git fetch origin
-git reset --hard origin/master
+
+# 回退到指定分支
+git reset --hard origin/dev
+
+# 回退到指定提交id
+git reset --hard commitId
 ```
 
 ### 分支操作
