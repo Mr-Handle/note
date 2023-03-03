@@ -1868,6 +1868,12 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
         #{item}
     </foreach>
 </if>
+<if test="ids != null and !ids.isEmpty()">
+    and id in
+    <foreach collection="ids" item="item" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+</if>
 ```
 
 - 布尔值判断
