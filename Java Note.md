@@ -1830,6 +1830,8 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ### 需要转义的符号
 
+也可以用`<![CDATA[特殊符号]]>`，无需进行转义
+
 | 符号 | 原符号| 替换符号 |
 | ---  | ---- | ------- |
 | 小于 | < | `&lt;` |
