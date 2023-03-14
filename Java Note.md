@@ -649,6 +649,13 @@ list.forEach(System.out::println);
 Supplier<String> integer = String::new;
 ```
 
+- 比较器
+
+```java
+Comparator.nullsFirst(Integer::compareTo);
+Comparator.comparing(String::valueOf, Comparator.nullsFirst(Integer::compareTo));
+```
+
 - 复合Lambda
 
 ```java
