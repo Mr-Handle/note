@@ -7299,6 +7299,10 @@ public class ExceptionTest {
 
 - hosts语法格式 1个IP对应1个主机名或域名，构成一组对应关系。一组对应关系占一行。IP在前，主机名或网址在后；IP与主机名间至少有1个空格。加注释就在前面加上#，如果这一行开头有个#，则这一行全为注释内容。
 
+```hosts
+127.0.0.1 www.baidu.com
+```
+
 - 当我们在文件中写入“127.0.0.1+空格+你想屏蔽的网址”，或者是“0.0.0.0+空格+你想屏蔽的网址”就可以实现该网站的屏蔽
   
-- cmd 输入 ipconfig /flushdns 让host文件生效
+- cmd 输入 `ipconfig /flushdns` 让host文件生效
