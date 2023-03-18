@@ -1950,6 +1950,29 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ```
 
+### in 条件大于1000
+
+- 待验证
+
+```xml
+(
+    id in
+    <foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+        <if test="index % 999 == 998">) or id in (</if>
+        #{item}
+    </foreach>
+)
+```
+
+- 更直观
+
+```xml
+(1, id) in
+<foreach collection="ids" item="item" index="index" open="(" separator=',' close=")">
+    (1, #{item})
+</foreach>
+```
+
 ### `resultMap`
 
 #### 一对一
