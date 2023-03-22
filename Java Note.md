@@ -166,6 +166,121 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 - `JRE` 是 Java 运行时环境。它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。但是，它不能用于创建新程序。
 - `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。它拥有 JRE 所拥有的一切，还有编译器（javac）和工具（如 javadoc 和 jdb）。它能够创建和编译程序。
 
+### 二进制
+
+- 原码：一个正数，按照绝对值大小转换成的二进制数；一个负数，先按照绝对值大小转换成的二进制数，然后最高位置1
+
+- 反码：正数的反码与原码相同，负数的反码为其原码`除符号位`外`按位取反`
+
+- 补码：正数的补码与原码相同，负数的补码为其反码加1
+
+- 正数的二进制数为其原码，负数的二进制数为其补码
+
+```java
+// 原码 10000000 00000000 00000000 00000010
+// 反码 11111111 11111111 11111111 11111101
+// 反码 11111111 11111111 11111111 11111110
+String b = Integer.toBinaryString(-2); // 11111111 11111111 11111111 11111110
+```
+
+### 进制转换
+
+- 8位二进制为一个字节，范围值从0B00000000～0B11111111，程序中用十六进制表示的时候就是从0X00到0XFF
+
+- 二进制4位一组，遵循8,4,2,1的规律比如 1111，那么从最高位开始算，数字大小是8*1+4*1+2*1+1*1 = 15，那么十进制就是15，十六进制就是0XF。
+
+- 二进制转十六进制的时候，十六进制一位刚好是和二进制4位相互对应的。8位二进制为一个字节，对应十六进制2位。
+
+- Java中，byte、short、int、long分别占1、2、4、8个字节，char占2个字节
+
+#### 十进制转其它进制
+
+```java
+int a = 10;
+System.out.println(Integer.toBinaryString(a)); // 二进制   1010
+System.out.println(Integer.toOctalString(a));  // 八进制   12
+System.out.println(Integer.toHexString(a));    // 十六进制 a
+```
+
+#### byte[] 和十六进制字符串互转
+
+- 用Java自带方法转换
+
+```java
+byte[] data = {1, 2};
+String hexString = new BigInteger(1, data).toString(16);
+```
+
+- 引入第三方库转换
+
+```xml
+<dependency>
+    <groupId>commons-codec</groupId>
+    <artifactId>commons-codec</artifactId>
+    <version>1.14</version>
+</dependency>
+```
+
+```java
+// byte[] 转 16进制字符串
+String hexString = Hex.encodeHexString(datas);
+
+// 16进制字符串 转 byte[]
+byte[] datas = Hex.decodeHex(hexString);
+```
+
+- Hex.encodeHexString 底层代码剖析
+
+```java
+public String encodeHexString(final byte[] data) {
+    char[] DIGITS_UPPER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    final int outlength = data.length;
+    // 一个字节用两位16进制表示，out长度为data长度乘以2
+    final char[] out = new char[outlength << 1];
+    for (int i = 0, j = 0; i < outlength; i++) {
+    // 取高4位，无符号右移四位，得到16进制高位
+    // 0100 0001
+    // 1111 0000
+    // 0100 0000
+    // 0000 0100 = 4
+    // 相当于 out[j++] = DIGITS_UPPER[data[i] / 16];
+    out[j++] = DIGITS_UPPER[(0xF0 & data[i]) >>> 4];
+    // 取低4位，，得到16进制地位
+    // 0100 0001
+    // 0000 1111
+    // 0000 0001 = 1
+    // 相当于 out[j++] = DIGITS_UPPER[data[i] % 16];
+    out[j++] = DIGITS_UPPER[0x0F & data[i]];
+    }
+    return new String(out);
+}
+```
+
+### 移位运算
+
+对byte和short类型进行移位时，会首先转换为int再进行位移
+
+- 左移`<<`，最低位补0，十进制数m左移n位相当于m乘以2的n次方
+
+```java
+int m = 1;       // 00000000 00000000 00000000 00000001 = 1
+int r = m << 1;  // 00000000 00000000 00000000 00000010 = 2
+```
+
+- 右移`>>`，最高位补0，十进制数m右移n位相当于m除以2的n次方
+
+```java
+int m = 2;       // 00000000 00000000 00000000 00000010 = 2
+int r = m >> 1;  // 00000000 00000000 00000000 00000001 = 1
+```
+
+- 无符号右移`>>>`，高位总是补0，注意，`没有无符号左移`！
+
+```java
+int m = -2;        // 11111111 11111111 11111111 11111110 = -2
+int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
+```
+
 ### java 数据类型
 
 #### BigDecimal
@@ -939,7 +1054,7 @@ try {
 }
 ```
 
-### 抛出异常
+#### 抛出异常
 
 - 用 `throw new 异常名` 抛出异常
 
@@ -973,7 +1088,7 @@ try {
 }
 ```
 
-### 自定义异常
+#### 自定义异常
 
 在一个大型项目中，可以自定义新的异常类型，但是，保持一个合理的异常继承体系是非常重要的。
 
@@ -999,6 +1114,146 @@ public class BaseException extends RuntimeException {
         super(cause);
     }
 }
+```
+
+### 加密
+
+```java
+package com.lsh.demo.common;
+
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+/**
+ * HmacUtils
+ *
+ * @author lsh
+ * @date 2023-03-22 16:00:37
+ * @since jdk-1.8
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class HmacUtils {
+    public static final String HMAC_MD5 = HmacAlgorithms.HMAC_MD5.getName();
+
+    /**
+     * 生成随机盐
+     * 
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static byte[] getRandomSalt() throws NoSuchAlgorithmException {
+        return getRandomSalt(HMAC_MD5);
+    }
+
+    /**
+     * 生成随机盐
+     * 
+     * @param algorithm
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static byte[] getRandomSalt(String algorithm) throws NoSuchAlgorithmException {
+        // 1.获取HmacMD5的KeyGenerator实例
+        KeyGenerator keyGenerator = KeyGenerator.getInstance(algorithm);
+
+        // 2.通过KeyGenerator创建SecretKey实例
+        SecretKey secretKey = keyGenerator.generateKey();
+
+        // 3.生成随机的key字节数组，得到salt
+        return secretKey.getEncoded();
+    }
+
+    /**
+     * 获取HmacMD5加盐哈希值
+     * 
+     * @param salt
+     * @param input
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws DecoderException
+     */
+    public static String getHmac(String salt, String input) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+        return getHmac(salt, input, HMAC_MD5);
+    }
+
+    /**
+     * 获取加盐哈希值
+     * 
+     * @param salt
+     * @param input
+     * @param algorithm
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws DecoderException
+     */
+    public static String getHmac(String salt, String input, String algorithm) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+        // 16进制salt字符串 转 byte[]
+        byte[] salts = Hex.decodeHex(salt);
+        return getHmac(salts, input, algorithm);
+    }
+
+    /**
+     * 获取HmacMD5加盐哈希值
+     * 
+     * @param salts
+     * @param input
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws DecoderException
+     */
+    public static String getHmac(byte[] salts, String input) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+        return getHmac(salts, input, HMAC_MD5);
+    }
+
+    /**
+     * 获取加盐哈希值
+     * 
+     * @param salts
+     * @param input
+     * @param algorithm
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws DecoderException
+     */
+    public static String getHmac(byte[] salts, String input, String algorithm)
+            throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
+        // 恢复成SecretKey
+        SecretKey secretKey = new SecretKeySpec(salts, algorithm);
+
+        // 通过HmacMD5 获取Mac 实例
+        Mac mac = Mac.getInstance(algorithm);
+
+        // 用SecretKey 实例初始化Mac 实例
+        mac.init(secretKey);
+
+        // 对Mac实例反复调用update(byte[])输入数据
+        mac.update(input.getBytes(StandardCharsets.UTF_8));
+
+        // 调用Mac实例的doFinal()获取最终的哈希值
+        byte[] password = mac.doFinal();
+
+        // byte[] 转为16进制字符串
+        return Hex.encodeHexString(password);
+    }
+}
+
 ```
 
 ### 日志
