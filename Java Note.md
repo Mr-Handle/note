@@ -6219,10 +6219,12 @@ ldf 文档太大处理方法（先备份数据库）：
 
 ```sql
 select * from (
-    select rownum rowNumber, all.* from (
+    select rownum rowNumber, total.* from (
         select ... order by ...
-    ) all where rownum < pageNumber * pageSize
-) where rowNumber > (pageNumber - 1) * pageSize
+    ) total
+    where rownum < pageNumber * pageSize
+)
+where rowNumber > (pageNumber - 1) * pageSize
 ```
 
 #### sql
