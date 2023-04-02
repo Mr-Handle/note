@@ -5467,7 +5467,95 @@ git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区�
 
 ## 数据库篇
 
-### 1. MySQL
+### PostgreSQL
+
+#### 安装docker版本PostgreSQL
+
+```sh
+docker pull postgres：14.7
+```
+
+#### pg控制台命令
+
+|快捷键|功能|
+|:-|:-|
+|\password|设置密码|
+|\h [sql命令]|查看sql命令的解释|
+|\?|查看pgsql命令列表|
+|\l|列出所有数据库|
+|\c [database_name]|连接其它数据库|
+|\d|列出当前数据库的所有表格|
+|\d [tablename]|列出指定表的结构|
+|\du|列出所有用户|
+|q|退出|
+
+#### 备份
+
+可以选择的备份格式：*.bak、*.sql、*.tar
+
+- 单个数据库
+
+```sh
+# 备份数据库到bak文件
+pg_dump dbname > dbname.bak
+
+# 从bak文件恢复数据到指定数据库，数据库不存在时需要先创建数据库
+psql dbname < dbname.bak
+```
+
+- 全部数据库
+
+```sh
+# 备份所有数据库到bak文件
+pg_dumpall > pg.bak
+
+# 从bak文件恢复所有数据库数据
+psql -f pg.bak [-U] postgres
+```
+
+#### 用户操作
+
+```sql
+# 创建用户并设置密码
+create user 'username' with password 'password';
+
+# 修改用户密码
+alter user 'username' with password 'password';
+
+# 指定数据库的所有权限赋予指定用户
+grant all privileges on database 'dbname' to 'username';
+
+# 赋予数据库的所有权限后，还要指定表的所有权限赋予指定用户，才可以读写表
+grant all privileges on all tables in schema 'schema' to 'username';
+
+# 移除指定用户对于指定数据库的所有权限
+revoke all privileges on database 'dbname' from 'username';
+
+# 删除用户
+drop user 'username;
+```
+
+#### 角色管理
+
+pg没有区分用户和角色的概念，唯一区别就是创建用户和创建角色
+
+```sql
+# 默认不具有登录属性
+create role 'rolename';
+
+alter role 'rolename' with login;
+
+# 默认具有登录属性
+create user 'username';
+
+# 查询角色信息
+select * from pg_roles;
+
+# 查询用户信息
+select * from pg_user;
+```
+
+### MySQL
 
 #### windows安装（压缩包版）
 
@@ -6030,7 +6118,7 @@ alter table `table_name` add index index_name ( `column1`, `column2`, `column3` 
 alter table `table_name` add fulltext (`column`)
 ```
 
-### 2. SQL Server
+### SQL Server
 
 ```sql
 -- 指定数据库
@@ -6181,7 +6269,7 @@ ldf 文档太大处理方法（先备份数据库）：
 
 数据库导数据OLEDB.12.0未注册解决方法：安装AccessDatabaseEngine2007
 
-### 3. Oracle
+### Oracle
 
 #### 函数
 
@@ -6309,7 +6397,7 @@ begin
 end;
 ```
 
-### 4.Redis
+### Redis
 
 ACID：（Atomicity）原子性、（Consistency）一致性、（Isolation）独立性、（Durability）持久性
 CAP：（Consistency）强一致性、（Availability）可用性、（Partition tolerance）分区容错性
@@ -6854,42 +6942,28 @@ lock.unlock();
 
 ### Eclipse
 
-#### Eclipse快捷键
-
-多行缩进，先选中要缩进的代码：
-
-- 向右缩进：Tab
-- 向左缩进：Shift+Tab
-
-Java代码注释 / 取消注释：Ctrl+/
-
-全局注释 / 取消注释：Ctrl+Shift+C
+|快捷键|功能|
+|:-|:-|
+|Tab|向右缩进|
+|Shift + Tab|向左缩进|
+|Ctrl + /|注释/取消注释|
+|Ctrl + Shift + C|全局注释/取消注释|
 
 ### IDEA
 
-#### IDEA快捷键
-
-- 向右缩进：`Tab`
-
-- 向左缩进：`Shift + Tab`
-
-- 注释/取消注释：`Ctrl + /`
-
-- 类搜索：`按两下Shift`
-
-- 全局搜索：`Ctrl + Shift + F`
-
-- 全局替换：`Ctrl + Shift + R`
-
-- 大小写转换：`Ctrl + Shift + U`
-
-- 优化导入语句：`Ctrl + Shift + O`
-
-- 代码格式化：`Ctrl + Shift + L`
-
-- 提取代码为作为方法：`Ctrl + Alt + M`
-
-- 修改变量作用域：`Ctrl + Alt + C`
+|快捷键|功能|
+|:-|:-|
+|Tab|向右缩进|
+|Shift + Tab|向左缩进|
+|Ctrl + /|注释/取消注释|
+|按两下Shift|类搜索|
+|Ctrl + Shift + F|全局搜索|
+|Ctrl + Shift + R|全局替换|
+|Ctrl + Shift + U|大小写转换|
+|Ctrl + Shift + O|优化导入语句|
+|Ctrl + Shift + L|代码格式化|
+|Ctrl + Alt + M|提取代码为作为方法|
+|Ctrl + Alt + C|修改变量作用域|
 
 ### 常见问题及处理方法
 
