@@ -4345,19 +4345,33 @@ docker的基本组成：镜像、容器、仓库
 ### 安装docker
 
 ```sh
+# 如果安装过docker，先卸载旧版本的docker
+sudo yum remove docker \
+    docker-client \
+    docker-client-latest \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-engine
+
+
 # 安装yum-utils，其提供了yum-config-manager
 sudo yum install -y yum-utils
 
-# 配置yum-config-manager
+# 配置yum-config-manager，添加仓库地址，这里需要配置成国内仓库，比如阿里云，不要用官网默认的
 sudo yum-config-manager \
     --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
+    http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 
-# 安装docker引擎
-sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+# 更新yum软件包索引（可选操作）
+sudo yum makecache fast 
+
+# 安装docker引擎，如果提示接受GPG密钥，请验证指纹是否匹配060A 61C5 1B55 8A7F 742B 77AA C52F EB6B 621E 9F35，如果是，则接受它
+sudo yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # 卸载docker引擎，但不会删除docker镜像、容器和配置文件，docker镜像、容器和配置文件需要手动删除
-sudo yum remove docker-ce docker-ce-cli containerd.io
+sudo yum remove docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
 
 # 删除docker镜像
 sudo rm -rf /var/lib/docker
