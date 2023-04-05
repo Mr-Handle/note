@@ -4340,7 +4340,9 @@ bin/zkServer.sh status
 
 ## docker
 
-docker的基本组成：镜像、容器、仓库
+- docker的基本组成：镜像、容器、仓库
+
+- 虚悬镜像：仓库名、标签都是`<none>`的镜像
 
 ### 安装docker
 
@@ -4380,7 +4382,7 @@ sudo rm -rf /var/lib/docker
 sudo rm -rf /var/lib/containerd
 ```
 
-### 配置国内镜像源
+#### 配置国内镜像源
 
 - 1.配置文件`/etc/docker/daemon.json`中加入
 
@@ -4407,7 +4409,7 @@ Registry Mirrors:
     <https://docker.mirrors.ustc.edu.cn/>
 ```
 
-### 启动docker
+#### 启动docker
 
 ```sh
 # 启动docker
@@ -4431,31 +4433,66 @@ sudo systemctl enable docker
 #### 帮助命令
 
 ```sh
+# docker版本
 docker version
 
+# docker概要信息
 docker info
 
+# docker总体帮助文档
 docker help
+
+# docker命令帮助文档
+docker 具体命令 --help
 ```
 
 #### 镜像命令
 
+- 列出本地主机所有镜像
+
 ```sh
-# docker search 查询关键字：查询镜像，最好去docker hub查询指定版本的详细信息，如镜像标签
-docker search tomcat
+# -a 列出本地所有镜像（含历史映像层），-q 只显示镜像id
+docker images [-aq]
+```
 
-# 拉取镜像，镜像名:标签
+- 查询镜像
+
+```sh
+# 最好是去docker hub查询指定版本的详细信息，如镜像标签，只列出25个镜像（默认）
+docker search [--limit 25] 镜像关键字 
+
+docker search --limit 25 tomcat
+```
+
+- 拉取镜像
+
+```sh
+# 不指定标签会拉取最新镜像，相当于docker pull 镜像名:latest
+docker pull 镜像名[:标签]
+
 docker pull mysql:8.0.29
+```
 
-# 列出所有本地镜像
-docker images
+- 查看镜像/容器/数据卷所占的空间
 
-# docker rmi 镜像id或镜像名:删除镜像，-f强行删除
+```sh
+docker system df
+```
+
+- 删除镜像
+
+```sh
+# -f 强行删除
+docker rmi [-f] 镜像id或镜像名:标签
+
+# 删除单个镜像
 docker rmi -f mysql:8.0.29
-docker rmi -f 镜像名1:tag 镜像名2:tag
+
+# 删除多个镜像
+docker rmi -f 镜像名1:标签 镜像名2:标签
 
 # 删除全部镜像
-docker rmi -f $(docker images -qa)
+docker rmi -f $(docker images -aq)
 ```
 
 #### 容器命令
