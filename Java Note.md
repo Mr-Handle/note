@@ -4497,35 +4497,68 @@ docker rmi -f $(docker images -aq)
 
 #### 容器命令
 
+- 新建容器并运行
+
 ```sh
-# 根据镜像新建容器，指定容器名称并运行，-d：后台运行
-docker run --name 自定义容器名 -d 镜像名
+# --name 自定义容器名
+# -d 后台运行容器并返回容器id，也即启动守护式容器
+# -i 以交互模式运行容器，通常与-t同时使用
+# -t 为容器重新分配一个伪输入终端，通常与-i同时使用，-it即启动交互式容器（前台有伪终端，等待交互）
+# -p 主机端口:容器端口
+# -P 随机分配主机端口，很少用
+docker run [选项] 镜像名:标签 [命令] [ARG...]
 
-# 启动交互式容器，i 交互，t 终端
-# -p 主机端口:docker容器端口
-# -P 随机分配主机端口
-docker run -it -p 8888:8080 tomcat
+# 使用镜像centos:latest以交互模式新建一个容器并运行，在容器内执行/bin/bash命令
+# 放在镜像名后的是命令，这里我们希望有个交互式shell，这里用的是/bin/bash
+# 要退出终端，输入exit
+docker run -it centos /bin/bash
+```
 
-# 启动容器
-docker start 容器id
+- 展示容器列表（默认正在运行的容器）
+
+```sh
+# -a 列出所有的容器
+# -l 显示最近创建的容器
+# -n 任意正整数 显示任意个最近创建的容器
+# -q 静默模式，只显示容器编号
+docker ps [选项]
+```
+
+- 退出容器
+
+```sh
+# 在交互式伪终端，用exit退出，容器停止
+exit
+
+# 在交互式伪终端，按ctrl + p + q，容器不停止
+ctrl + p + q
+```
+
+- 删除容器
+
+```sh
+# 单个删除已停止的容器，如果容器正在运行要加-f强制删除
+docker rm [-f] 容器id
+
+# 删除全部容器
+docker rm -f $(docker ps -a -q)
+
+# 删除全部容器
+docker ps -a -q | xargs docker rm
+```
+
+```sh
+# 启动已停止运行的容器
+docker start 容器id/容器名
 
 # 重启容器
-docker restart 容器id
+docker restart 容器id/容器名
 
 # 停止正在运行的容器
 docker stop 容器id或容器名
 
-# 强行停止容器
+# 强制停止容器
 docker kill 容器id或容器名
-
-# 删除已停止的容器，如果容器正在运行要加-f强行删除，rmi为删除镜像
-docker rm 容器id
-
-# 删除全部容器
-docker rm -f $(docker ps -qa)
-
-# 删除全部容器
-docker ps -qa|xargs docker rm
 
 # 查看容器日志，-t显示时间，-f 跟随最新的日志显示，--tail限制显示的日志行数
 docker logs -t -f --tail 5 容器id
@@ -4535,9 +4568,6 @@ docker top 容器id
 
 # 查看容器内部细节
 docker inspect 容器id
-
-# 列出当前正在运行的容器
-docker ps
 
 # 重新进入容器，不会启动新进程
 docker attach 容器id
