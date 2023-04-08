@@ -4514,6 +4514,30 @@ docker run [选项] 镜像名:标签 [命令] [ARG...]
 docker run -it centos /bin/bash
 ```
 
+- 启动容器(已停止运行的容器)
+
+```sh
+docker start 容器id/容器名
+```
+
+- 重启容器
+
+```sh
+docker restart 容器id/容器名
+```
+
+- 停止容器(正在运行的容器)
+
+```sh
+docker stop 容器id或容器名
+```
+
+- 强制停止容器
+
+```sh
+docker kill 容器id或容器名
+```
+
 - 展示容器列表（默认正在运行的容器）
 
 ```sh
@@ -4547,34 +4571,45 @@ docker rm -f $(docker ps -a -q)
 docker ps -a -q | xargs docker rm
 ```
 
+- 查看容器日志
+
 ```sh
-# 启动已停止运行的容器
-docker start 容器id/容器名
-
-# 重启容器
-docker restart 容器id/容器名
-
-# 停止正在运行的容器
-docker stop 容器id或容器名
-
-# 强制停止容器
-docker kill 容器id或容器名
-
-# 查看容器日志，-t显示时间，-f 跟随最新的日志显示，--tail限制显示的日志行数
+# -t显示时间
+# -f 跟随最新的日志显示
+# --tail 限制显示的日志行数
 docker logs -t -f --tail 5 容器id
+```
 
-# 查看容器内运行的进程
+- 查看容器内运行的进程
+
+```sh
 docker top 容器id
+```
 
-# 查看容器内部细节
+- 查看容器内部细节
+
+```sh
 docker inspect 容器id
+```
 
-# 重新进入容器，不会启动新进程
+- 在容器内执行命令
+
+```sh
+# 在容器内执行命令 ls -l
+docker exec -t 容器id [ls -l]
+```
+
+- 重新进入容器
+
+```sh
+# 推荐，在容器中打开新的命令终端，并且可以启动新的进程，用exit退出，不会导致容器停止，
+docker exec -it 容器id /bin/bash
+
+# 直接进入容器并启动命令终端，不会启动新的进程，用exit退出，会导致容器停止
 docker attach 容器id
+```
 
-# 在docker容器内执行命令 ls -l， 会在容器中打开新的终端，并且可以启动新的进程
-docker exec -t 容器id ls -l
-
+```sh
 # 复制容器内的文件到linux主机
 docker cp 容器id:容器内路径 主机路径
 
@@ -6566,7 +6601,8 @@ touch /data/redis/conf/redis.conf
 # 冒号左边：/data/redis/data 和 /data/redis/conf/redis.conf 为linux主机目录
 # 冒号右边：/data 和 /usr/local/etc/redis/redis.conf 为docker容器目录
 # 使用指定的redis.conf文件启动docker
-docker run -p 6379:6379 --name redis01 \
+docker run -p 6379:6379 \
+--name redis01 \
 -v /data/redis/data:/data \
 -v /data/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
 -d redis:6.2.7 redis-server /usr/local/etc/redis/redis.conf
@@ -6575,6 +6611,9 @@ docker run -p 6379:6379 --name redis01 \
 - 4.连接redis客户端
 
 ```sh
+# 方法1
+docker exec -it redis01 /bin/bash
+# 方式2
 docker exec -it redis01 redis-cli
 ```
 
