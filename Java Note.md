@@ -4514,6 +4514,12 @@ docker run [选项] 镜像名:标签 [命令] [ARG...]
 docker run -it centos /bin/bash
 ```
 
+- 设置容器开机启动
+
+```sh
+docker update 容器id --restart always
+```
+
 - 启动容器(已停止运行的容器)
 
 ```sh
@@ -4558,6 +4564,16 @@ exit
 ctrl + p + q
 ```
 
+- 重新进入容器
+
+```sh
+# 推荐，在容器中打开新的命令终端，并且可以启动新的进程，用exit退出，不会导致容器停止，
+docker exec -it 容器id /bin/bash
+
+# 直接进入容器并启动命令终端，不会启动新的进程，用exit退出，会导致容器停止
+docker attach 容器id
+```
+
 - 删除容器
 
 ```sh
@@ -4599,32 +4615,101 @@ docker inspect 容器id
 docker exec -t 容器id [ls -l]
 ```
 
-- 重新进入容器
+- 复制容器内的文件到linux主机
 
 ```sh
-# 推荐，在容器中打开新的命令终端，并且可以启动新的进程，用exit退出，不会导致容器停止，
-docker exec -it 容器id /bin/bash
-
-# 直接进入容器并启动命令终端，不会启动新的进程，用exit退出，会导致容器停止
-docker attach 容器id
-```
-
-```sh
-# 复制容器内的文件到linux主机
 docker cp 容器id:容器内路径 主机路径
-
-# 复制linux主机的文件到容器内
-docker cp 主机路径 容器id:容器内路径
-
-# 设置容器开机启动
-docker update 容器id --restart always
 ```
 
-#### docker提交命令
+- 复制linux主机的文件到容器内
 
 ```sh
-# 提交容器副本使之成为一个新的镜像
+docker cp 主机路径 容器id:容器内路径
+```
+
+- 容器备份为一个tar归档文件
+
+```sh
+docker export 容器id > 文件名.tar
+```
+
+- 从容器备份文件创建一个新的文件系统再导入为镜像
+
+```sh
+cat 文件名.tar | docker import - 镜像用户/镜像名:标签
+```
+
+- 提交容器副本使之成为一个新的镜像
+
+```sh
 docker commit -m="描述信息" -a="作者" 容器id 要创建的目标镜像名:标签
+```
+
+#### 搭建私服
+
+- 拉取仓库镜像
+
+```sh
+docker pull registry:标签
+```
+
+- 运行仓库
+
+```sh
+# -v 主机目录:容器目录，默认仓库在容器/var/lib/registry目录下
+docker run -d --name registry01 -p 5000:5000 -v /data/docker/registry:/tmp/registry --privileged=true registry:标签
+```
+
+- 查看私服上的镜像
+
+```sh
+curl -XGET http://私服地址:端口/v2/_catalog
+```
+
+- 将镜像修改为符合私服规范的名称
+
+```sh
+docker tag 本地要推送的镜像名:标签 私服地址:端口/推送到私服后的镜像名:标签
+```
+
+- docker默认不允许通过http方式推送镜像，修改docker配置文件使之支持http，在文件原来的内容后面添加`,"insecure-registries": ["私服地址:端口"]`
+
+```sh
+vi /etc/docker/daemon.json
+```
+
+```json
+{
+    // daemon.json原来的内容后面加上这里表示为...，insecure-registries里面配置非https的hub的地址
+    ...,
+    "insecure-registries": ["私服地址:端口"]
+}
+```
+
+- 然后重新启动docker
+
+```sh
+sudo systemctl daemon-reload
+
+sudo systemctl restart docker
+```
+
+- 将镜像推送到私服
+
+```sh
+docker push 私服规范镜像名（私服地址:端口/镜像名:标签）
+```
+
+- 再次查看私服上的镜像
+
+```sh
+curl -XGET http://私服地址:端口/v2/_catalog
+```
+
+- 从私服上拉取镜像到本地
+
+```sh
+docker pull 私服规范镜像名（私服地址:端口/镜像名:标签）
 ```
 
 ## 消息队列
