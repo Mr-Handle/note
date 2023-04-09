@@ -5178,9 +5178,34 @@ public String setCookies(HttpServletResponse response) {
 ```
 
 - @RequestAttribute : 获取 request 的属性的值
-    ![getRequestAttribute](2021-04-11-21-44-19.png)
-    ![getRequestAttribute](2021-04-11-21-47-31.png)
-    ![getRequestAttribute](2021-04-11-21-41-12.png)
+
+```java
+@Controller
+@RequestMapping("/application")
+public class ApplicationController {
+    @GetMapping("/gotoDestination")
+    public String gotoDestination(HttpServletRequest request) {
+        // 设置request属性值
+        request.setAttribute("code", "200");
+        request.setAttribute("message", "success");
+
+        // 转发到/destination
+        return "forward:/application/destination";
+    }
+
+    @ResponseBody
+    @GetMapping("/destination")
+    public Map<String, Object> getDestination(
+        @RequestAttribute("message") String message, HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", request.getAttribute("code"));
+        map.put("message", message);
+
+        // {"code":"200", "message":"success"}
+        return map;
+    }
+}
+```
 
 - @MatrixVariable : 获取矩阵变量的值
 
