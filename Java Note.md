@@ -4657,7 +4657,7 @@ docker pull registry:标签
 
 ```sh
 # -v 主机目录:容器目录，默认仓库在容器/var/lib/registry目录下
-docker run -d --name registry01 -p 5000:5000 -v /data/docker/registry:/tmp/registry --privileged=true registry:标签
+docker run -d --name registry01 -p 5000:5000 --privileged=true -v /data/docker/registry:/tmp/registry  registry:标签
 ```
 
 - 查看私服上的镜像
@@ -4710,6 +4710,44 @@ curl -XGET http://私服地址:端口/v2/_catalog
 
 ```sh
 docker pull 私服规范镜像名（私服地址:端口/镜像名:标签）
+```
+
+### 容器数据卷
+
+卷就是目录或文件，其设计目的就是数据的持久化，它独立于容器的生存周期，不会在容器删除时删除其挂载的数据卷。
+
+docker挂载主机目录后加 `--privileged=true`，可以解决挂载目录没有权限的问题。该参数使得容器内的root拥有真正的root权限，否则，容器内的root只有普通用户权限
+
+- 运行带有容器卷存储功能的容器实例
+
+```sh
+# ro read only，默认容器权限为读写，只限制容器的权限，宿主机不限制
+docker run -it --privileged=true -v 主机目录:容器内目录[:rw/ro] --name 自定义容器名 镜像名:标签
+```
+
+- 查看数据卷是否挂载成功，查看返回的Mounts信息可以知道是否挂载成功
+
+```sh
+docker inspect 容器id
+```
+
+```json
+{
+    "Mounts": [
+        {
+            // ...
+            "Source": "/data/docker/registry",
+            "Destination": "/tmp/registry",
+            // ...
+        }
+    ],
+}
+```
+
+- 继承其它容器的卷规则
+
+```sh
+docker run -it --privileged=true --volumes-from 要继承的容器的id --name 自定义容器名 镜像名:标签
 ```
 
 ## 消息队列
