@@ -108,15 +108,47 @@ public enum ColorEnum {
 - DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
 - PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
 
-- 类型比较运算符
-  
-  1) point instanceof Point; // 如果point是Point类的一个实例，结果为true
-  
-  2) `基本数据类型`，== 比较的是`值`
-  
-  3) `复合数据类型`，== 比较的是`地址`
-  
-  4) 复合数据类型，`equals在没有复写`的情况下，比较的也是`地址`
+#### `==`比较运算符
+
+- `基本数据类型`，== 比较的是`值`
+
+```java
+Assertions.assertTrue(3 == 3);
+```
+
+- `复合数据类型`，== 比较的是`地址`
+
+```java
+String a = new String("handle");
+String b = new String("handle");
+Assertions.assertFalse(a == b);
+```
+
+- `复合数据类型`，`equals在没有复写`的情况下，比较的也是`地址`
+
+```java
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+public class User {
+  private String name;
+}
+
+User a = new User("handle");
+User b = new User("handle");
+Assertions.assertFalse(a == b);
+```
+
+#### 继承关系判断
+
+```java
+// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
+Assertions.assertTrue("handle" instanceof Object);
+
+  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
+Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
+```
 
 - 定义常量
 
@@ -180,14 +212,14 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 // 原码 10000000 00000000 00000000 00000010
 // 反码 11111111 11111111 11111111 11111101
 // 反码 11111111 11111111 11111111 11111110
-String b = Integer.toBinaryString(-2); // 11111111 11111111 11111111 11111110
+String b = Integer.toBinaryString(-2); 
 ```
 
 ### 进制转换
 
 - 8位二进制为一个字节，范围值从0B00000000～0B11111111，程序中用十六进制表示的时候就是从0X00到0XFF
 
-- 二进制4位一组，遵循8,4,2,1的规律比如 1111，那么从最高位开始算，数字大小是8*1+4*1+2*1+1*1 = 15，那么十进制就是15，十六进制就是0XF。
+- 二进制4位一组，遵循8,4,2,1的规律比如 1111，那么从最高位开始算，数字大小是`8 * 1 + 4 * 1 + 2 * 1 + 1 * 1` = 15，那么十进制就是15，十六进制就是0XF。
 
 - 二进制转十六进制的时候，十六进制一位刚好是和二进制4位相互对应的。8位二进制为一个字节，对应十六进制2位。
 
@@ -197,18 +229,24 @@ String b = Integer.toBinaryString(-2); // 11111111 11111111 11111111 11111110
 
 ```java
 int a = 10;
-System.out.println(Integer.toBinaryString(a)); // 二进制   1010
-System.out.println(Integer.toOctalString(a));  // 八进制   12
-System.out.println(Integer.toHexString(a));    // 十六进制 a
+// 二进制   1010
+System.out.println(Integer.toBinaryString(a)); 
+// 八进制   12
+System.out.println(Integer.toOctalString(a));  
+// 十六进制 a
+System.out.println(Integer.toHexString(a));    
 ```
 
 #### byte[] 和十六进制字符串互转
 
+String用char数组存储，每个char元素2字节，转换的实质为一个1字节的byte元素，转换为一个2字节的char元素
+
 - 用Java自带方法转换
 
 ```java
-byte[] data = {1, 2};
-String hexString = new BigInteger(1, data).toString(16);
+byte[] datas = {15, 15};
+// 00001111 00001111，（0x0f0f) 结果为f0f（byte数组首个元素高4位为0，被去掉了) 
+String hexString = new BigInteger(1, datas).toString(16);
 ```
 
 - 引入第三方库转换
@@ -222,7 +260,9 @@ String hexString = new BigInteger(1, data).toString(16);
 ```
 
 ```java
+byte[] datas = {15, 15};
 // byte[] 转 16进制字符串
+// 0f0f，当byte数组首个元素高4位为0时也会保留
 String hexString = Hex.encodeHexString(datas);
 
 // 16进制字符串 转 byte[]
@@ -239,16 +279,16 @@ public String encodeHexString(final byte[] data) {
     final char[] out = new char[outlength << 1];
     for (int i = 0, j = 0; i < outlength; i++) {
     // 取高4位，无符号右移四位，得到16进制高位
-    // 0100 0001
-    // 1111 0000
-    // 0100 0000
-    // 0000 0100 = 4
+    // 0x41 = 0100 0001
+    // 0xF0 = 1111 0000
+    // 0x40 = 0100 0000
+    // 0x04 = 0000 0100
     // 相当于 out[j++] = DIGITS_UPPER[data[i] / 16];
     out[j++] = DIGITS_UPPER[(0xF0 & data[i]) >>> 4];
-    // 取低4位，，得到16进制地位
-    // 0100 0001
-    // 0000 1111
-    // 0000 0001 = 1
+    // 直接取低4位，得到16进制地位
+    // 0x41 = 0100 0001
+    // 0x0F = 0000 1111
+    // 0x01 = 0000 0001 = 1
     // 相当于 out[j++] = DIGITS_UPPER[data[i] % 16];
     out[j++] = DIGITS_UPPER[0x0F & data[i]];
     }
@@ -358,7 +398,7 @@ try {
     // 3.创建Statement对象用来操作数据库
     statement=connection.createStatement();
     // 4.执行sql语句
-    ResultSet resultSet=statement.executeQuery("select * from person");
+    ResultSet resultSet=statement.executeQuery("select * from user");
     // 5.处理执行结果
     while(resultSet.next()) { 
 
@@ -385,14 +425,14 @@ try {
 - 获取列数
 
 ```java
-ResultSet resultSet=statement.executeQuery("select count(*) from person");
+ResultSet resultSet=statement.executeQuery("select count(*) from user");
 int columnNumbers = resultSet.getMetaData().getColumnCount();
 ```
 
 - 获取行数
 
 ```java
-ResultSet resultSet=statement.executeQuery("select count(*) from person");
+ResultSet resultSet=statement.executeQuery("select count(*) from user");
 int rowNumbers = resultSet.getInt(1);
 ```
 
@@ -509,7 +549,7 @@ Collections.addAll(list3, array);
 - String 转 byte[]
 
 ```java
-byte[] input ="老六".getBytes(StandardCharsets.UTF_8);
+byte[] input ="handle".getBytes(StandardCharsets.UTF_8);
 ```
 
 - byte[] 转 String
@@ -521,14 +561,21 @@ String s = new String(input, StandardCharsets.UTF_8);
 
 ### 部署
 
-- 生成jre
-1、打开cmd（权限不够时用管理员身份打开cmd）
-2、进入某个目录，生成的jre会在这个目录下
-3、执行 jlink.exe --module-path jmods --add-modules java.base --output jre
+#### 手动生成jre
 
-- 发布
-1.复制jre、可执行jar文档、run.bat（springboot项目看需求创建config文档夹，里面放application.properties配置文档），到同一目录下即可
-2.运行run.bat快速启动可执行jar文档
+```sh
+# 1.打开cmd（权限不够时用管理员身份打开cmd）
+# 2.进入某个目录，生成的jre会在这个目录下
+cd 指定目录
+
+# 3.生成jre
+jlink.exe --module-path jmods --add-modules java.base --output jre
+```
+
+#### 发布
+
+- 1.复制jre、可执行jar文档、run.bat（springboot项目看需求创建config文档夹，里面放application.properties配置文档），到同一目录下即可
+- 2.运行run.bat快速启动可执行jar文档
 
 ### foreach遍历顺序
 
