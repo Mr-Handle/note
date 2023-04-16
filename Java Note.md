@@ -4797,6 +4797,92 @@ docker inspect 容器id
 docker run -it --privileged=true --volumes-from 要继承的容器的id --name 自定义容器名 镜像名:标签
 ```
 
+### Dockerfile
+
+Dockerfile时用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
+
+#### Dockerfile执行流程
+
+- docker从基础u镜像运行一个容器
+
+- 执行一条指令并对容器作出修改
+
+- 执行类似`docker commit`的操作提交一个新的镜像层
+
+- docker再基于刚提交的镜像运行一个新容器
+
+- 执行Dockerfile中的下一条指令直到所有指令都执行完成
+
+#### Dockerfile基础
+
+- `#`表示注释
+
+- 每条保留字指令都必须为大写字母且后面要跟随至少一个参数
+
+- 指令按从上到下的顺序执行
+
+- 每条指令都会创建一个新的镜像层饼对镜像进行提交
+
+#### 保留字指令
+
+- FROM
+
+```Dockerfile
+# 当前镜像是基于哪个镜像的，指定一个一级存在的镜像作为模板，第一条必须是FROM
+FROM 基础镜像（镜像名:标签）
+```
+
+- MAINTAINER
+
+镜像维护者的姓名和邮箱地址
+
+- RUN
+
+容器构建(docker build)时需要运行的命令
+
+```Dockerfile
+# shell格式，<命令行命令>等同于在终端操作的shell命令
+RUN 命令行命令
+
+# exec格式
+RUN ["可执行文件", "参数1", "参数2"]
+
+# 等价于 RUN ./test.php dev offline
+RUN ["./test.php", "dev", "offline"]
+```
+
+- EXPOSE
+
+当前容器对外暴露出的端口
+
+```Dockerfile
+EXPOSE 端口号
+```
+
+- WORKDIR
+
+指定在创建容器后，终端默认登录进来的工作目录
+
+```Dockerfile
+WORKDIR /
+```
+
+- USER
+
+指定该镜像以什么样的用户取执行，如果不指定，默认是root
+
+- ENV
+
+用来在构建镜像过程中设置环境变量，这个环境变量可以在后续的任何RUN指令中使用，这就如同在命令前面指定了环境变量前缀一样；也可以在其它指令中直接使用这些环境变量
+
+```Dockerfile
+# 定义环境变量
+ENV APP_HOME /usr/local/bin
+
+# 使用环境变量
+WORKDIR $APP_HOME
+```
+
 ## 消息队列
 
 ### rabbitmq
