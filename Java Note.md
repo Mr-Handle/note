@@ -8206,8 +8206,11 @@ WantedBy=multi-user.target
 ## markdown
 
 ```md
-# 图片语法
+# 图片
 ![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
+
+# 链接
+[超链接显示名](超链接地址 "超链接title，当鼠标悬停在链接上时会出现的文字")
 ```
 
 ## 算法篇
@@ -8264,3 +8267,13 @@ public class ExceptionTest {
 - 当我们在文件中写入“127.0.0.1+空格+你想屏蔽的网址”，或者是“0.0.0.0+空格+你想屏蔽的网址”就可以实现该网站的屏蔽
   
 - cmd 输入 `ipconfig /flushdns` 让host文件生效
+
+## 参考文献
+
+- java 8实战
+
+- [寥雪峰老师的java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
+
+- [JavaGuide（Java学习&&面试指南）](https://javaguide.cn/home.html)
+
+- [尚硅谷Docker实战教程](https://www.bilibili.com/video/BV1gr4y1U7CY?p=1&vd_source=30f7a9f2f8c5b510e9723e6777dec113)
