@@ -4883,6 +4883,63 @@ ENV APP_HOME /usr/local/bin
 WORKDIR $APP_HOME
 ```
 
+- VOLUME
+
+容器数据卷，用于数据保存和持久化工作
+
+- ADD
+
+将宿主机目录下的文件拷贝进镜像且会自动处理URL和解压tar压缩包，功能上相当于`COPY+解压`
+
+- COPY
+
+拷贝文件和目录到镜像中，将从构建上下文目录中<源路径>的文件/目录复制到新的一层的镜像内的<目标路径>位置
+
+```Dockerfile
+# src为源文件或目录，dest为容器内的指定路径，该路径不用事先建好，不存在会自动创建
+COPY src dest
+COPY ["src", "dest"]
+```
+
+- CMD
+
+指定容器启动（docker run）后要干的事情，Dockerfile中可以有多个CMD指令，但只有最后一个生效，CMD会被docker run之后的参数替换
+
+```Dockerfile
+# shell格式
+CMD <命令>
+
+# exec格式
+CMD ["可执行文件", "参数1", "参数2"...]
+
+# 参数列表格式，在指定了ENTRYPOINT指令后，用CMD指定具体的参数
+CMD ["参数1", "参数2"...]
+```
+
+- ENTRYPOINT
+
+也是用来指定容器启动（docker run）时要运行的命令，类似于CMD，但是不会被docker run后面的命令覆盖，而且这些命令行参数会被当做参数送给ENTRYPOINT指令指定的程序
+
+```Dockerfile
+ENTRYPOINT ["命令", "参数1", "参数2"...]
+```
+
+ENTRYPOINT可以和CMD一起使用，一般时变参才会使用CMD，这里的CMD等于是在给ENTRYPOINT传参。当指定了ENTRYPOINT后，CMD的含义旧发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOING指令，二者组合变成`<ENTRYPOINT> "<CMD>"`
+
+假设Dockerfile：
+
+```Dockerfile
+ENTRYPOINT ["nginx", "-c"]
+CMD ["/etc/nginx/nginx.conf"]
+```
+
+则docker命令和Dockerfile结合的实际命令如下表：
+
+|docker命令|实际命令|
+|:-|:-|
+|docker run nginx:latest|nginx -c /etc/nginx/nginx.conf|
+|docker run nginx:latest -c /etc/nginx/new.conf|nginx -c /etc/nginx/new.conf（docker run 后面带了参数变不会再根据Dockerfile改变）|
+
 ## 消息队列
 
 ### rabbitmq
