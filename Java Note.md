@@ -4387,9 +4387,7 @@ bin/zkServer.sh status
 
 ## docker
 
-- docker的基本组成：镜像、容器、仓库
-
-- 虚悬镜像：仓库名、标签都是`<none>`的镜像
+docker的基本组成：镜像、容器、仓库
 
 ### 安装docker
 
@@ -4940,6 +4938,67 @@ CMD ["/etc/nginx/nginx.conf"]
 |docker run nginx:latest|nginx -c /etc/nginx/nginx.conf|
 |docker run nginx:latest -c /etc/nginx/new.conf|nginx -c /etc/nginx/new.conf（docker run 后面带了参数变不会再根据Dockerfile改变）|
 
+#### 构建镜像
+
+```sh
+# 标签后有个空格，有个点
+docker build -t 新镜像名:标签 .
+```
+
+### 虚悬镜像
+
+仓库名、标签都是`<none>`的镜像，虚悬镜像一级失去存在价值，可以删除
+
+```sh
+# 查看所有的虚悬镜像
+docker image ls -f dangling=true
+
+# 删除虚悬镜像
+docker image prune
+```
+
+### Dockerfile发布微服务部署到docker容器
+
+Dockerfile和jar包要在同一目录下
+
+- 创建Dockerfile
+
+```Dockerfile
+# 基础镜像使用java
+FROM java:8
+
+# 作者
+MAINTAINER handle
+
+# VOLUME 指定临时文件目录为/tmp，在主机/var/lib/docker目录下创建了一个临时文件并链接到容器的/tmp
+VOLUME /tmp
+
+# 将jar包添加到容器中并更名为application.jar
+ADD source.jar application.jar
+
+# 运行jar包
+RUN bash -c 'touch /application.jar'
+
+ENTRYPOINT ["java", "- jar", "/application.jar"]
+
+# 暴露端口8080作为微服务
+EXPOSE 8080
+```
+
+- 构建镜像
+
+```sh
+# 标签后有个空格，有个点
+docker build -t application:1.0 .
+```
+
+- 运行容器
+
+```sh
+# 后台运行
+docker run -d -p 8080:8080 application:1.0
+```
+
 ## 消息队列
 
 ### rabbitmq
@@ -5399,9 +5458,53 @@ public class ApplicationController {
 
 - @MatrixVariable : 获取矩阵变量的值
 
-    ![getMatrixVariables](2021-04-11-15-30-06.png)
-    ![getMatrixVariables](2021-04-11-20-42-34.png)
-    ![getMatrixVariables](2021-04-11-20-41-50.png)
+```java
+/**
+ * 路径变量配置
+ */
+@Configuration(proxyBeanMethods = false)
+public class ApplicationConfiguration {
+    @Bean
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configurePathMath(PathMatchConfigurer configurer) {
+                UrlPathHelper urlPathHelper = new UrlPathHelper();
+                // 不移除路径变量中分号后面的内容（矩阵变量）
+                urlPathHelper.setRemoveSemicolonContent(false);
+
+                configurer.setUrlPathHelper(urlPathHelper);
+            }
+        };
+    }
+}
+```
+
+```java
+/**
+ *  获取矩阵变量的值
+ */
+@GetMapping("/user/{bossAge}/{empAge}/getMatrixVariables")
+public Map<String, Object> getMatrixVariables(
+    @MatrixVariable(value = "age", pathVar = "bossAge") Integer bossAge,
+    @MatrixVariable(value = "age", pathVar = "empAge") List<Integer> empAge
+) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("bossAge", bossAge);
+    map.put("empAge", empAge);
+    return map;
+}
+```
+
+请求：localhost:8080/application/user/boss;age=23/emp;age=18;age=19,20,21/getMatrixVariables
+响应：
+
+```json
+{
+    "bossAge":23,
+    "empAge":[18,19,20,21]
+}
+```
 
 ## Thymeleaf
 
