@@ -5020,6 +5020,21 @@ docker network create 网络名
 docker network rm 网络名
 ```
 
+- 网络模式
+
+|网络模式|简介|命令|
+|:-|:-|:-|
+|bridge|虚拟网桥，默认模式，为每一个容器分配、设置ip等，并将容器连接到一个docker0|`--network bridge`，默认使用docker0|
+|host|容器将不会虚拟出自己的网卡，配置自己的ip等，而是使用宿主机的ip和端口|`-–network host`|
+|none|容器有独立的network namespace，但并没有对其进行任何网络设置，如分配veth pair和网桥连接，ip等|`–-network none`|
+|container|新创建的容器不会创建自己的网卡和配置自己的ip，而是和一个指定的容器共享ip、端口范围等|`-–network container:name或容器id`|
+
+- 查看docker容器内网络信息
+
+```sh
+docker inspect 容器id/容器名称 | tail -n 20
+```
+
 ## 消息队列
 
 ### rabbitmq
