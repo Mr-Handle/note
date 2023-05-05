@@ -7568,9 +7568,57 @@ lock.unlock();
 
 ### 网络
 
+#### 桥接
+
 需要根据电脑当前实际使用的网络进行选择，当前是用网线的就选网线网络对应的网卡；当前是用WIFI的就选WIFI网络对应的网卡
 
 ![网卡选择](/images/网卡选择.png)
+
+#### nat network
+
+- 新建nat network，用宿主机的2222端口映射虚拟机操作系统的22端口
+
+![新建nat network](/images/%E6%96%B0%E5%BB%BAnat%20network.png)
+
+- 配置虚拟机操作系统的网络，`Promiscuous mode选Allow all`
+
+![配置虚拟机操作系统的网络](/images/%E9%85%8D%E7%BD%AE%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%BD%91%E7%BB%9C.png)
+
+- 配置虚拟机操作系统静态ip
+
+```sh
+vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
+
+# 配置完成重启网络
+service network restart
+```
+
+```txt
+TYPE="Ethernet"
+PROXY_·ETHOD="none"
+BROWSER_ONLY="no"
+BOOTPROTO="static"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="enp0s3"
+UUID="829eb1b0-1a34-45af-9fd5-36a3d3b12e76"
+DEVICE="enp0s3"
+ONBOOT="yes"
+# 自定义虚拟机静态ip
+IPADDR=10.0.2.3
+# 宿主机子网掩码
+NETMASK=255.255.255.0
+# 宿主机网关
+GATEWAY=192.168.1.1
+DNS1=114.114.114.114
+```
+
+- 用127.0.0.1:2222连接虚拟机操作系统
 
 ## Linux篇
 
