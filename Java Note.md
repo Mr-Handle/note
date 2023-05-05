@@ -6065,7 +6065,23 @@ git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区�
 #### 安装docker版本PostgreSQL
 
 ```sh
-docker pull postgres：14.7
+docker pull postgres：15.2
+```
+
+#### 启动PostgreSQL
+
+```sh
+# 启动数据库
+docker run --name postgres01 -e POSTGRES_PASSWORD=mypostgres123 -d postgres:15.2
+
+# 进入数据库终端
+docker exec -it postgres01 /bin/bash
+
+# 切换用户为postgres
+su - postgres
+
+# 进入数据库
+psql [postgres]
 ```
 
 #### pg控制台命令
