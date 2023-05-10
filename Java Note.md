@@ -6164,6 +6164,24 @@ select * from pg_roles;
 select * from pg_user;
 ```
 
+#### pgadmin4
+
+- 获取镜像
+
+```sh
+docker pull dpage/pgadmin4:<tag name>
+```
+
+- 启动容器
+
+```sh
+docker run -p 5050:80 \
+-e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
+-e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
+--name pgadmin401 \
+-d dpage/pgadmin4:<tag name>
+```
+
 ### MySQL
 
 #### windows安装（压缩包版）
