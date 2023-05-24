@@ -6070,10 +6070,20 @@ docker pull postgres：15.2
 
 #### 启动PostgreSQL
 
+- docker版本的pgsql启动成功后无需配置监听地址、端口（postgresql.conf）和ip（pg_hba.conf）
+
+- 默认已经是监听所有地址，端口5432，ip：host all all all scram-sha-256
+
+- 默认已经创建数据库postgres，用户postgres，密码登录时已经指定
+
 ```sh
 # 启动数据库
-docker run --name postgres01 -e POSTGRES_PASSWORD=mypostgres123 -d postgres:15.2
+docker run -p 5432:5432 --name postgres01 -e POSTGRES_PASSWORD=postgres123 -v /data/postgresql:/var/lib/postgresql/data -d postgres:15.2
+```
 
+- 1.控制台登录Postgresql
+
+```sh
 # 进入数据库终端
 docker exec -it postgres01 /bin/bash
 
@@ -6083,6 +6093,14 @@ su - postgres
 # 进入数据库
 psql [postgres]
 ```
+
+- 2.vscode安卓数据库插件后连接数据库
+
+nat网络，需要配置virtualbox端口映射，如5432:5432，则直接用127.0.0.1:5432连接
+
+- 3.pgadmin4连接数据库
+
+假设pgadmin4也是docker版本的并且和数据库在同一个虚拟系统上，则连接连接时直接用虚拟系统的ip+数据库端口连接
 
 #### pg控制台命令
 
