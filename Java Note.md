@@ -2676,6 +2676,39 @@ UserDO user = userDAO.queryUser(userId);
 List<UserDO> users = userDAO.queryUsers(userAge);
 ```
 
+## PageHelper
+
+官网<https://github.com/pagehelper/Mybatis-PageHelper>
+
+### pom
+
+```xml
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper-spring-boot-starter</artifactId>
+    <version>1.4.7</version>
+</dependency>
+```
+
+### 配置
+
+```properties
+pagehelper.propertyName=propertyValue
+pagehelper.reasonable=false
+pagehelper.defaultCount=true
+```
+
+### 使用
+
+```java
+PageHelper.startPage(pageNumber, pageSize);
+// PageHelper.startPage后面必须紧接查询语句
+List<UserDO> users = userDAO.queryUsers(userAge);
+
+// 获取总数
+long total = new PageInfo<>(users).getTotal();
+```
+
 ## Spring
 
 ### IOC
