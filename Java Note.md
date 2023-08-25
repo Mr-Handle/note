@@ -577,6 +577,15 @@ jlink.exe --module-path jmods --add-modules java.base --output jre
 - 1.复制jre、可执行jar文档、run.bat（springboot项目看需求创建config文档夹，里面放application.properties配置文档），到同一目录下即可
 - 2.运行run.bat快速启动可执行jar文档
 
+#### 生成可执行文件graalvm
+
+```sh
+mvn -Pnative native:compile
+
+# 如果报Execution of ..\jdk-xxx\bin\native-image.cmd @target\tmp\native-image-xxxxxxxxxx.args returned non-zero result
+native-image @target\tmp\native-image-xxxxxxx.args
+```
+
 ### foreach遍历顺序
 
 1. 对于数组，foreach按顺序从数组的第一个元素遍历到最后一个元素；
