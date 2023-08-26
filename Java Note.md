@@ -579,6 +579,8 @@ jlink.exe --module-path jmods --add-modules java.base --output jre
 
 #### 生成可执行文件graalvm
 
+`关闭360`
+
 ```sh
 mvn -Pnative native:compile
 
