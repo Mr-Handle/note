@@ -5934,9 +5934,24 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 
 - 新建gradle项目
   
-  ```bat
-  gradle init
-  ```
+```sh
+gradle init
+```
+
+- 项目文件仓库地址配置
+
+```kotlin
+repositories {
+    // 使用本地仓
+    mavenLocal()
+    // 阿里云仓库
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public")
+    }
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+```
 
 ## git
 
