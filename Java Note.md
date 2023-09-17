@@ -5938,9 +5938,16 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 gradle init
 ```
 
-- 项目文件仓库地址配置
+- build.gradle.kts
+
+Build script of app project.
 
 ```kotlin
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    application
+}
+
 repositories {
     // 使用本地仓
     mavenLocal()
@@ -5951,6 +5958,62 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
+
+dependencies {
+    // compileOnly — for dependencies that are necessary to compile your production code but shouldn’t be part of the runtime classpath
+    // implementation (supersedes compile) — used for compilation and runtime
+    // runtimeOnly (supersedes runtime) — only used at runtime, not for compilation
+    // testCompileOnly — same as compileOnly except it’s for the tests
+    // testImplementation — test equivalent of implementation
+    // testRuntimeOnly — test equivalent of runtimeOnly
+    // Be aware that the Java Library Plugin offers two additional configurations — api and compileOnlyApi — for dependencies that are required for compiling both the module and any modules that depend on it.
+
+    // Use JUnit Jupiter for testing.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // This dependency is used by the application.
+    implementation("com.google.guava:guava:32.1.1-jre")
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+application {
+    // Define the main class for the application.
+    mainClass.set("com.handle.App")
+}
+
+tasks.named<Test>("test") {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+// 指定本项目版本
+version = "1.0.0"
+```
+
+- settings.gradle.kts
+
+Settings file to define build name and subprojects
+
+```kotlin
+plugins {
+    // Apply the foojay-resolver plugin to allow automatic download of JDKs
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+}
+
+// assigns a name to the build, which overrides the default behavior of naming the build after the directory it’s in. It’s recommended to set a fixed name as the folder might change if the project is shared - e.g. as root of a Git repository.
+rootProject.name = "HelloWorld"
+
+// defines that the build consists of one subproject called app that contains the actual code and build logic. More subprojects can be added by additional include(…​) statements.
+include("app")
+
 ```
 
 ## git
