@@ -1497,6 +1497,99 @@ JSON作为数据传输的格式，有几个显着的优点：
 - 布尔值：`true`或`false`
 - 空值：`null`
 
+#### Jackson
+
+- gradle依赖
+
+```kotlin
+implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+
+// 要把JSON的某些值解析为特定的Java对象，例如LocalDate，需要引入标准的JSR 310关于JavaTime的数据格式定义
+implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+```
+
+- 使用
+
+```java
+@Getter
+@Setter
+@ToString
+public class User {
+    private Long id;
+
+    private String name;
+
+    // 也可以不用@JsonSerialize和@JsonDeserialize注解，在创建ObjectMapper时，注册一个新的JavaTimeModule，
+    // ObjectMapper mapper = new ObjectMapper().registerModule(new
+    // JavaTimeModule());
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    // @JsonSerialize(using = LocalDateSerializer.class)
+    // @JsonDeserialize(using = LocalDateDeserializer.class)
+    private LocalDate birthday;
+}
+
+/**
+ * 每个测试方法执行前执行一次
+ */
+@BeforeEach
+public void init() {
+    user = new User();
+    user.setId(1L);
+    user.setName("张三");
+}
+
+@Test
+public void testJavaObjectToJson() throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    // 反序列化时忽略不存在的JavaBean属性:
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    // javabean转json
+    String jsoString = objectMapper.writeValueAsString(user);
+    System.out.println("user:" + jsoString);
+
+    // json转javabean
+    User user2 = objectMapper.readValue(jsoString, User.class);
+    System.out.println("user2:" + user2.toString());
+
+    List<User> list = new ArrayList<>();
+    list.add(user);
+    // java集合转json
+    String jsonListString = objectMapper.writeValueAsString(list);
+    System.out.println("list:" + jsonListString);
+
+    // json转java集合
+    List<User> list2 = objectMapper.readValue(jsonListString, new TypeReference<List<User>>() {});
+    System.out.println("list2:" + list2.toString());
+}
+```
+
+- 自定义JsonSerializer和JsonDeserializer来定制序列化和反序列化
+
+```java
+@Getter
+@Setter
+@ToString
+public class User {
+    // ...
+
+    // 指定使用自定义的反序列化类
+    @JsonDeserialize(using = UuidDeserializer.class)
+    private String uuid;
+}
+
+public class UuidDeserializer extends JsonDeserializer<String> {
+    @Override
+    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+        String property = p.getValueAsString();
+        if (Objects.isNull(property)) {
+            return null;
+        }
+        return property.replace("-", "");
+    }
+}
+```
+
 ### Servlet
 
 #### 1. Servlet 组件
