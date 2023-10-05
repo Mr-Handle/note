@@ -198,6 +198,12 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 - `JRE` 是 Java 运行时环境。它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。但是，它不能用于创建新程序。
 - `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。它拥有 JRE 所拥有的一切，还有编译器（javac）和工具（如 javadoc 和 jdb）。它能够创建和编译程序。
 
+### java 数据类型
+
+#### BigDecimal
+
+- 防止精度丢失，推荐使用它的`BigDecimal(String val)`构造方法或者`BigDecimal.valueOf(double val)`静态方法来创建对象。
+
 ### 二进制
 
 - 原码：一个正数，按照绝对值大小转换成的二进制数；一个负数，先按照绝对值大小转换成的二进制数，然后最高位置1
@@ -321,11 +327,22 @@ int m = -2;        // 11111111 11111111 11111111 11111110 = -2
 int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
 ```
 
-### java 数据类型
+### 位运算
 
-#### BigDecimal
+位运算是按位进行与（&）、或（|）、非（!）和异或（~，异或运算的规则是，如果两个数不同，结果为1，否则为0）的运算
 
-- 防止精度丢失，推荐使用它的`BigDecimal(String val)`构造方法或者`BigDecimal.valueOf(double val)`静态方法来创建对象。
+### 运算优先级
+
+在Java的计算表达式中，运算优先级从高到低依次是：
+
+`()`
+`! ~ ++ --`
+`* / %`
+`+ -`
+`<< >> >>>`
+`&`
+`|`
+`+= -= *= /=`
 
 ### 集合
 
@@ -1084,7 +1101,7 @@ Map<Boolean, Dish> mostCaloricPartitionedByVegetarian = menu.stream().collect(
 
 ### 类路径
 
-![image-20211024164152086](image-20211024164152086.png)
+![类路径](/images/类路径.png)
 
 ### 异常
 
@@ -5219,6 +5236,12 @@ sh bin/mqadmin updatetopic -n localhost:9876 -t TestTopic -c DefaultCluster
 ### 消息类型
 
 Normal/FIFO/Delay/Transaction
+
+系统默认的消息最大限制如下：
+
+普通和顺序消息：4 MB
+
+事务和定时或延时消息：64 KB
 
 ### rabbitmq
 
