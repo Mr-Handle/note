@@ -542,7 +542,11 @@ public void  els2pdf(String els,String pdf) throws Throwable{
 ```java
 List<Integer> list = List.of(1, 2, 3);
 
+// 如果传入的数组不够大，那么List内部会创建一个新的刚好够大的数组，填充后返回；如果传入的数组比List元素还要多，那么填充完元素后，剩下的数组元素一律填充null
 Integer[] array = list.toArray(new Integer[list.size()]);
+
+// 更简洁的写法
+Integer[] array = list.toArray(Integer[]::new);
 ```
 
 - 数组转List
