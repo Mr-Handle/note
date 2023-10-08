@@ -346,7 +346,9 @@ int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
 
 ### 集合
 
-#### 生成List
+#### List
+
+- 生成List
 
 ```java
 // List.of生成
@@ -362,6 +364,29 @@ List<Integer> list = IntStream.rangeClosed(1, 3).boxed().toList();
 List<Integer> list = Stream.iterate(0, n -> n + 1)
     .limit(3)
     .collect(Collectors.toList());
+```
+
+#### 队列
+
+- 队列的方法
+
+|操作|throw Exception|返回false或null|
+|:-|:-|:-|
+|添加元素到队尾| add(E e)| boolean offer(E e)|
+|取队首元素并删除| E remove()| E poll()|
+|取队首元素但不删除| E element()| E peek()|
+
+注意：不要把null添加到队列中，否则poll()方法返回null时，很难确定是取到了null元素还是队列为空
+
+- LinkedList
+
+LinkedList即实现了List接口，又实现了Queue接口，但是，在使用的时候，如果我们把它当作List，就获取List的引用，如果我们把它当作Queue，就获取Queue的引用
+
+```java
+// 这是一个List:
+List<String> list = new LinkedList<>();
+// 这是一个Queue:
+Queue<String> queue = new LinkedList<>();
 ```
 
 #### Concurrent 集合
