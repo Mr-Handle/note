@@ -389,6 +389,37 @@ List<String> list = new LinkedList<>();
 Queue<String> queue = new LinkedList<>();
 ```
 
+#### 双端队列
+
+|操作|Queue|Deque|
+|:-|:-|:-|
+|添加元素到队尾| add(E e) / offer(E e) |addLast(E e) / offerLast(E e)|
+|取队首元素并删除| E remove() / E poll() |E removeFirst() / E pollFirst()|
+|取队首元素但不删除| E element() / E peek() |E getFirst() / E peekFirst()|
+|添加元素到队首| 无 |addFirst(E e) / offerFirst(E e)|
+|取队尾元素并删除| 无 |E removeLast() / E pollLast()|
+|取队尾元素但不删除| 无 |E getLast() / E peekLast()|
+
+注意：Deque接口实际上扩展自Queue，因此，Queue提供的add()/offer()方法在Deque中也可以使用，但是，使用Deque，推荐总是明确调用offerLast()/offerFirst()或者pollFirst()/pollLast()方法，这样更加顾名思义。
+
+Deque是一个接口，它的实现类有ArrayDeque和LinkedList。
+
+```java
+// 推荐用ArrayDeque
+Deque<Integer> deque = new ArrayDeque<>();
+Deque<String> deque = new LinkedList<>();
+```
+
+#### 栈
+
+用Deque可以实现栈的功能，注意只调用push()/pop()/peek()方法，避免调用Deque的其他方法
+
+|操作|Deque|
+|:-|:-|
+|入栈|push(E)/addFirst(E)|
+|出栈|pop()/removeFirst()|
+|取栈顶元素但不弹出|peek()/peekFirst()|
+
 #### Concurrent 集合
 
 | interface | non-thread-safe         | thread-safe                              |
