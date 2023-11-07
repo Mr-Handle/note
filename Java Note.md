@@ -420,6 +420,38 @@ Deque<String> deque = new LinkedList<>();
 |出栈|pop()/removeFirst()|
 |取栈顶元素但不弹出|peek()/peekFirst()|
 
+#### Map
+
+Stream的Collectors.toMap当value为null时会抛异常，解决办法：使用collect，直接调用map中的put()方法
+
+```java
+@Test
+public void test5() {
+    List<String> list = Arrays.asList("张三", "李四", "王五", null);
+    Map<String, String> hashMap = list.stream().collect(HashMap::new, (map, item) -> map.put(item, item), HashMap::putAll);
+    // {李四=李四, 张三=张三, 王五=王五}
+    System.out.println(hashMap);
+}
+```
+
+#### TreeMap
+
+TreeMap以Key的顺序来进行排序，TreeMap的Key必须实现Comparable接口，如果作为Key的class没有实现Comparable接口，那么，必须在创建TreeMap时同时指定一个自定义排序算法
+
+```java
+@Test
+public void test4() {
+    Map<Integer, String> map = new TreeMap<>();
+    map.put(6, "赵六");
+    map.put(3, "张三");
+    map.put(5, "王五");
+    map.put(4, "李四");
+    List<String> sortNames = new ArrayList<>(map.values());
+    // [张三, 李四, 王五, 赵六]
+    System.out.println(sortNames);
+}
+```
+
 #### Concurrent 集合
 
 | interface | non-thread-safe         | thread-safe                              |
