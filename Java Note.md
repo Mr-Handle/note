@@ -78,7 +78,6 @@ public void function(List<Integer> list) {}
 public void function(ArrayList<Integer> list) {}
 ```
 
-- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
 - 用来存储对象的变量称为引用变量。
 - 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
 - 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
@@ -107,6 +106,38 @@ public enum ColorEnum {
 - DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
 - DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
 - PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
+
+#### 继承
+
+- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
+
+- 子类自动获得父类的所有字段，严禁定义与父类重名的字段！
+
+- 子类能不能访问父类字段要看父类字段的访问修饰符
+
+- 任何class的构造方法，第一行语句必须是调用父类的构造方法。如果没有明确地调用父类的构造方法，编译器会帮我们自动加一句super();
+
+- 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
+
+#### 继承关系判断
+
+```java
+// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
+Assertions.assertTrue("handle" instanceof Object);
+
+  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
+Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
+```
+
+- 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型。
+
+```java
+ Object obj = "hello";
+if (obj instanceof String s) {
+    // 可以直接使用变量s:
+    System.out.println(s.toUpperCase());
+}
+```
 
 #### `==`比较运算符
 
@@ -138,16 +169,6 @@ public class User {
 User a = new User("handle");
 User b = new User("handle");
 Assertions.assertFalse(a == b);
-```
-
-#### 继承关系判断
-
-```java
-// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
-Assertions.assertTrue("handle" instanceof Object);
-
-  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
-Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
 ```
 
 - 定义常量
@@ -343,6 +364,27 @@ int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
 `&`
 `|`
 `+= -= *= /=`
+
+### 数组
+
+- 数组排序
+
+```java
+Integer[] array = new Integer[]{1, 3, 2};
+Arrays.sort(array);
+// [1, 2, 3]
+System.out.println(Arrays.toString(array));
+```
+
+- 不用for循环快速打印一维数组：Arrays.toString()
+
+```java
+Integer[] array = new Integer[]{1, 2, 3};
+// [1, 2, 3]
+System.out.println(Arrays.toString(array));
+```
+
+- 不用for循环快速打印多维数组：Arrays.deepToString()
 
 ### 集合
 
