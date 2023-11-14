@@ -2374,6 +2374,23 @@ $.ajax({
 
 #### JDK命令行工具
 
+如果我们要执行一个jar包的class，就可以把jar包放到classpath中，这样JVM会自动在hello.jar文件里去搜索某个类
+
+- 通过指定classpath和主类运行某个路径下的class文件
+
+```sh
+# .表示当前路径，假设class文件路径为：./com/handle/HelloWorld.class
+java -classpath . com.handle.HelloWorld
+```
+
+- 通过指定classpath和主类运行jar包中的class文件
+
+```sh
+# ./HelloWorld.jar 表示当前目录下的HelloWorld.jar文件，里面包含com.handle.HelloWorld.class文件
+# com.handle.HelloWorld表示入口类
+java -classpath ./HelloWorld.jar com.handle.HelloWorld
+```
+
 ## lombok
 
 - maven依赖
