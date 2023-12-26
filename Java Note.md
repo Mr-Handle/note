@@ -2399,6 +2399,14 @@ java -classpath ./HelloWorld.jar com.handle.HelloWorld
 
 ## lombok
 
+### eclipse安装lombok
+
+运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
+
+```sh
+java -jar lombok.jar
+```
+
 - maven依赖
 
 ```xml
