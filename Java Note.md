@@ -6523,7 +6523,7 @@ git stash: 备份当前的工作区的内容，从最近的一次提交中读取
 
 git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区的相关内容。由于可能存在多个Stash的内容，所以用栈来管理，pop会从最近的一个stash中读取内容并恢复。
 
-## 数据库篇
+## 数据库
 
 ### PostgreSQL
 
@@ -6663,6 +6663,30 @@ docker run -p 5050:80 \
 -e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
 --name pgadmin401 \
 -d dpage/pgadmin4:<tag name>
+```
+
+#### 常用sql
+
+```sql
+create table account (
+    id bigint,
+    name varchar(32),
+    gender boolean,
+    creator bigint,
+    modifier bigint,
+    creation_time timestamptz,
+    modification_time timestamptz,
+    primary key(id)
+);
+
+comment on table account is '账号表'; 
+comment on column account.id is '主键';
+comment on column account.name is '姓名';
+comment on column account.gender is '性别';
+comment on column account.creator is '创建人';
+comment on column account.modifier is '修改人';
+comment on column account.creation_time is '创建时间';
+comment on column account.modification_time is '修改时间';
 ```
 
 ### MySQL
@@ -7380,6 +7404,14 @@ ldf 文档太大处理方法（先备份数据库）：
 数据库导数据OLEDB.12.0未注册解决方法：安装AccessDatabaseEngine2007
 
 ### Oracle
+
+```sql
+# 修改字段名
+alter table student rename column password to pwd;
+
+# 修改字段数据类型
+alter table student modify password varchar(16) not null;
+```
 
 #### 函数
 
