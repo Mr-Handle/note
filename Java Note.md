@@ -9032,6 +9032,26 @@ public class ExceptionTest {
 }
 ```
 
+## vue
+
+- 创建vue3项目
+
+```sh
+npm create vue@latest
+```
+
+- 安装所有的依赖
+
+```sh
+npm i
+```
+
+- 运行项目
+
+```sh
+npm run dev
+```
+
 ## Windows的host文件
 
 - hosts文件里可建立许多常用域名与其对应IP的映射。当用户在浏览器中输入一个想要浏览的网址时，系统会首先在hosts文件里面查找有没有对应的IP，若有的话，则会立即打开对应的网页；若是没有，则会请求DNS服务器进行解析
