@@ -4894,10 +4894,12 @@ docker run [选项] 镜像名:标签 [命令] [ARG...]
 docker run -it centos /bin/bash
 ```
 
-- 设置容器开机启动
+- 设置容器开机/关闭自启动
 
 ```sh
 docker update 容器id --restart always
+
+docker update 容器id --restart no
 ```
 
 - 启动容器(已停止运行的容器)
@@ -6565,7 +6567,7 @@ nat网络，需要配置virtualbox端口映射，如5432:5432，则直接用127.
 
 - 3.pgadmin4连接数据库
 
-假设pgadmin4也是docker版本的并且和数据库在同一个虚拟系统上，则连接连接时直接用虚拟系统的ip+数据库端口连接
+假设pgadmin4也是docker版本的并且和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
 
 #### pg控制台命令
 
@@ -8084,6 +8086,52 @@ lock.lock();
 lock.unlock();
 ```
 
+## 分布式定时任务
+
+### PowerJob
+
+#### 部署PowerJob
+
+- 创建数据库
+
+```sql
+-- 根据部署的环境（日常（daily）、预发（pre）和线上（product））
+-- 分别创建对应的数据库powerjob-daily、powerjob-pre 和 powerjob-product
+create database powerjob-daily;
+create database powerjob-pre;
+create database powerjob_product;
+```
+
+- 拉取powerjob的docker镜像
+
+```sh
+docker pull powerjob/powerjob-server:latest
+```
+
+- 启动调度服务器powerjob-server
+
+```sh
+# 这里用的是product环境启动，所以前面的步骤要创建好powerjob_product数据库
+# 如果powerjob-server和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
+docker run -d \
+    --restart=always \
+    --name powerjob-server01 \
+    -p 7700:7700 -p 10086:10086 -p 10010:10010 \
+    -e TZ="Asia/Shanghai" \
+    -e JVMOPTIONS="" \
+    -e PARAMS="--spring.profiles.active=product --spring.datasource.core.driver-class-name=org.postgresql.Driver --spring.datasource.core.jdbc-url=jdbc:postgresql://10.0.2.15:5432/handle --spring.datasource.core.username=postgres --spring.datasource.core.password=postgres123" \
+    -v /data/powerjob/powerjob-server:/root/powerjob/server -v /data/powerjob/.m2:/root/.m2 \
+    powerjob/powerjob-server:latest
+```
+
+- 检查是否启动成功
+
+```sh
+# 打开链接http://ip:${server.port:7700} 检验是否部署成功
+# 不成功则查看日志
+tail -f /data/powerjob/powerjob-server/logs powerjob-server-application.log
+```
+
 ## IDE
 
 ### Eclipse
@@ -9032,7 +9080,9 @@ public class ExceptionTest {
 }
 ```
 
-## vue
+## 前端篇
+
+### vue
 
 - 创建vue3项目
 
@@ -9050,6 +9100,53 @@ npm i
 
 ```sh
 npm run dev
+```
+
+- main.ts
+
+```ts
+// 引入createApp用于创建应用
+import { createApp } from "vue";
+
+// 引入App根组件(src目录下的App.vue)
+import App from "./App.vue";
+
+// 调用createApp，传入App，并且挂载到index.html中id为app的标签中
+createApp(App).mount('#app')
+```
+
+- App.vue
+
+```vue
+<!-- .vue文件里面可以写三种标签 -->
+<template>
+    <!-- 写html -->
+    <div class="app">
+        <h1>hello vue3</h1>
+        // 显示组件
+        <Person/>
+    </div>
+</template>
+
+<script lang="ts">
+    // 导入其它组件
+    import Person from './components/Person.vue';
+    // 写ts(js)
+    export default {
+        name: 'App', //组件名
+        components: {Person} // 注册组件
+    }
+</script>
+
+<style>
+/* 写样式 */
+.app {
+    background-color: #ddd;
+    box-shadow: 0 0 10px;
+    border-radius: 10px;
+    padding: 20px;
+}
+</style>
 ```
 
 ## Windows的host文件
