@@ -8105,7 +8105,7 @@ create database powerjob_product;
 - 拉取powerjob的docker镜像
 
 ```sh
-docker pull powerjob/powerjob-server:latest
+docker pull powerjob/powerjob-server:4.3.9
 ```
 
 - 启动调度服务器powerjob-server
@@ -8121,7 +8121,7 @@ docker run -d \
     -e JVMOPTIONS="" \
     -e PARAMS="--spring.profiles.active=product --spring.datasource.core.driver-class-name=org.postgresql.Driver --spring.datasource.core.jdbc-url=jdbc:postgresql://10.0.2.15:5432/handle --spring.datasource.core.username=postgres --spring.datasource.core.password=postgres123" \
     -v /data/powerjob/powerjob-server:/root/powerjob/server -v /data/powerjob/.m2:/root/.m2 \
-    powerjob/powerjob-server:latest
+    powerjob/powerjob-server:4.3.9
 ```
 
 - 检查是否启动成功
@@ -8129,7 +8129,17 @@ docker run -d \
 ```sh
 # 打开链接http://ip:${server.port:7700} 检验是否部署成功
 # 不成功则查看日志
-tail -f /data/powerjob/powerjob-server/logs powerjob-server-application.log
+tail -f /data/powerjob/powerjob-server/logs/powerjob-server-application.log
+```
+
+- 查看账号密码(5.x)
+
+```sh
+# 搜索关键字命令1
+cat /data/powerjob/powerjob-server/logs/powerjob-server-application.log | grep "username"
+
+# 搜索关键字命令2
+grep 'administrator' /data/powerjob/powerjob-server/logs/powerjob-server-application.log
 ```
 
 ## IDE
@@ -8694,7 +8704,7 @@ cat -n /etc/profile | more
 
 #### more命令
 
-more命令时基于vi编辑器的文本过滤器，它以全屏幕的方式按页显示文本文件的内容
+more命令是基于vi编辑器的文本过滤器，它以全屏幕的方式按页显示文本文件的内容
 
 ```sh
 more 文件名称
