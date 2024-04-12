@@ -47,7 +47,11 @@ source /etc/profile
 java -version
 ```
 
-### 代码笔记
+### 约定
+
+- 文件夹名称一律用小驼峰，并且单个单词的文件夹名称一律用单数形式
+
+- 变量命名：变量名+变量类型，这样可以快速知道变量属于什么类型，并且不用输入那么多字母就弹出来代码补全了，省的都是时间啊
 
 - 若将多个类的声明放在一个文档中，只能有一个类声明为公有类。
 
@@ -2413,7 +2417,7 @@ java -jar lombok.jar
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
-    <version>1.18.24</version>
+    <version>1.18.30</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -8102,7 +8106,7 @@ create database powerjob-pre;
 create database powerjob_product;
 ```
 
-- 拉取powerjob的docker镜像
+- 拉取powerjob的docker镜像(由于server和worker需要在同一局域网部署，镜像的方式有很多问题，笔者这里也是部署到最后worker卡在等待worker接收这一步，推荐自己打包server然后作为服务器和worker放在同一个局域网)
 
 ```sh
 docker pull powerjob/powerjob-server:4.3.9
@@ -8113,13 +8117,17 @@ docker pull powerjob/powerjob-server:4.3.9
 ```sh
 # 这里用的是product环境启动，所以前面的步骤要创建好powerjob_product数据库
 # 如果powerjob-server和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
+# 如果server和worker不是部署同一个局域网（如worker在宿主机ide运行，server在虚拟机（nat）的docker运行）
+# 则server需要添加jvm参数-e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010"
+# 且worker需要添加jvm参数-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port=27777
+# 但是最后server调用worker的时候会卡在等待worker接收这里，因为server调用的地址为localhost:27777，其对于server来说，worker根本不在同一个主机上
 docker run -d \
     --restart=always \
     --name powerjob-server01 \
     -p 7700:7700 -p 10086:10086 -p 10010:10010 \
     -e TZ="Asia/Shanghai" \
-    -e JVMOPTIONS="" \
-    -e PARAMS="--spring.profiles.active=product --spring.datasource.core.driver-class-name=org.postgresql.Driver --spring.datasource.core.jdbc-url=jdbc:postgresql://10.0.2.15:5432/handle --spring.datasource.core.username=postgres --spring.datasource.core.password=postgres123" \
+    -e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010" \
+    -e PARAMS="--spring.profiles.active=product --spring.datasource.core.driver-class-name=org.postgresql.Driver --spring.datasource.core.jdbc-url=jdbc:postgresql://10.0.2.15:5432/powerjob_product --spring.datasource.core.username=postgres --spring.datasource.core.password=postgres123" \
     -v /data/powerjob/powerjob-server:/root/powerjob/server -v /data/powerjob/.m2:/root/.m2 \
     powerjob/powerjob-server:4.3.9
 ```
