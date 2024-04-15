@@ -6193,6 +6193,14 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 
 ### 打包时跳过测试
 
+- 1.命令方式
+
+```sh
+mvn clean package -Dmaven.test.skip=true
+```
+
+- 2.插件方式
+
 ```xml
 <build>
     <plugins>
@@ -8096,6 +8104,12 @@ lock.unlock();
 
 #### 部署PowerJob
 
+正式环境server和worker一定要部署在同一个网段！
+
+如果server和worker不是部署在同一个局域网（如worker在宿主机ide运行，server在虚拟机（nat）的docker运行）
+则server需要添加jvm参数-e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010"；
+且worker需要添加jvm参数-Dpowerjob.network.external.address=192.168.56.1 -Dpowerjob.network.external.port=27777，其中192.168.56.1为nat模式下virtualbox虚拟网卡分配的宿主机ip，千万不要用因特网网卡的ip
+
 - 创建数据库
 
 ```sql
@@ -8117,10 +8131,6 @@ docker pull powerjob/powerjob-server:4.3.9
 ```sh
 # 这里用的是product环境启动，所以前面的步骤要创建好powerjob_product数据库
 # 如果powerjob-server和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
-# 如果server和worker不是部署同一个局域网（如worker在宿主机ide运行，server在虚拟机（nat）的docker运行）
-# 则server需要添加jvm参数-e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010"
-# 且worker需要添加jvm参数-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port=27777
-# 但是最后server调用worker的时候会卡在等待worker接收这里，因为server调用的地址为localhost:27777，其对于server来说，worker根本不在同一个主机上
 docker run -d \
     --restart=always \
     --name powerjob-server01 \
@@ -9167,7 +9177,19 @@ createApp(App).mount('#app')
 </style>
 ```
 
-## Windows的host文件
+## Windows篇
+
+### cmd命令
+
+```sh
+# 查看端口占用情况
+netstat -ano|findstr 端口号
+
+# 根据进程id查看进程信息
+tasklist|findstr 进程id
+```
+
+### host文件
 
 - hosts文件里可建立许多常用域名与其对应IP的映射。当用户在浏览器中输入一个想要浏览的网址时，系统会首先在hosts文件里面查找有没有对应的IP，若有的话，则会立即打开对应的网页；若是没有，则会请求DNS服务器进行解析
 
