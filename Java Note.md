@@ -1,6 +1,6 @@
-# Java Notes
+# 程序员笔记
 
-## 基础
+## Java基础
 
 ### 安装jdk
 
@@ -2401,9 +2401,9 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
-## lombok
+## Lombok
 
-### eclipse安装lombok
+### Eclipse安装Lombok
 
 运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
 
@@ -8431,6 +8431,25 @@ make uninstall
 rm -rf 安装目标路径
 ```
 
+#### yum工具安装
+
+```sh
+# 搜索软件
+yum search 软件名
+
+# 安装软件
+yum install 软件名
+
+# 卸载软件
+yum remove 软件名
+
+# 升级软件
+yum update 软件名
+
+# 升级操作系统所有软件及内核
+yum upgrade 
+```
+
 ### Linux常用命令
 
 #### Linux帮助命令
@@ -8913,6 +8932,16 @@ systemctl status firewalld
 # 放行端口
 firewall -cmd --zone=public --add -port=80/tcp --permanent
 
+```
+
+#### 应用/端口查询命令
+
+```sh
+# 查看应用有没有启动
+ps -ef|grep 应用名
+
+# 查看应用占用的端口
+netstat -tunlp|grep 应用名
 ```
 
 ### 其它命令
