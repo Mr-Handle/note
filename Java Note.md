@@ -1,6 +1,6 @@
-# Java Notes
+# 程序员笔记
 
-## 基础
+## Java基础
 
 ### 安装jdk
 
@@ -47,7 +47,11 @@ source /etc/profile
 java -version
 ```
 
-### 代码笔记
+### 约定
+
+- 文件夹名称一律用小驼峰，并且单个单词的文件夹名称一律用单数形式
+
+- 变量命名：变量名+变量类型，这样可以快速知道变量属于什么类型，并且不用输入那么多字母就弹出来代码补全了，省的都是时间啊
 
 - 若将多个类的声明放在一个文档中，只能有一个类声明为公有类。
 
@@ -2400,9 +2404,9 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
-## lombok
+## Lombok
 
-### eclipse安装lombok
+### Eclipse安装Lombok
 
 运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
 
@@ -2416,7 +2420,7 @@ java -jar lombok.jar
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
-    <version>1.18.24</version>
+    <version>1.18.30</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -4897,10 +4901,12 @@ docker run [选项] 镜像名:标签 [命令] [ARG...]
 docker run -it centos /bin/bash
 ```
 
-- 设置容器开机启动
+- 设置容器开机/关闭自启动
 
 ```sh
 docker update 容器id --restart always
+
+docker update 容器id --restart no
 ```
 
 - 启动容器(已停止运行的容器)
@@ -6190,6 +6196,14 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 
 ### 打包时跳过测试
 
+- 1.命令方式
+
+```sh
+mvn clean package -Dmaven.test.skip=true
+```
+
+- 2.插件方式
+
 ```xml
 <build>
     <plugins>
@@ -6526,7 +6540,7 @@ git stash: 备份当前的工作区的内容，从最近的一次提交中读取
 
 git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区的相关内容。由于可能存在多个Stash的内容，所以用栈来管理，pop会从最近的一个stash中读取内容并恢复。
 
-## 数据库篇
+## 数据库
 
 ### PostgreSQL
 
@@ -6568,7 +6582,7 @@ nat网络，需要配置virtualbox端口映射，如5432:5432，则直接用127.
 
 - 3.pgadmin4连接数据库
 
-假设pgadmin4也是docker版本的并且和数据库在同一个虚拟系统上，则连接连接时直接用虚拟系统的ip+数据库端口连接
+假设pgadmin4也是docker版本的并且和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
 
 #### pg控制台命令
 
@@ -6666,6 +6680,30 @@ docker run -p 5050:80 \
 -e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
 --name pgadmin401 \
 -d dpage/pgadmin4:<tag name>
+```
+
+#### 常用sql
+
+```sql
+create table account (
+    id bigint,
+    name varchar(32),
+    gender boolean,
+    creator bigint,
+    modifier bigint,
+    creation_time timestamptz,
+    modification_time timestamptz,
+    primary key(id)
+);
+
+comment on table account is '账号表'; 
+comment on column account.id is '主键';
+comment on column account.name is '姓名';
+comment on column account.gender is '性别';
+comment on column account.creator is '创建人';
+comment on column account.modifier is '修改人';
+comment on column account.creation_time is '创建时间';
+comment on column account.modification_time is '修改时间';
 ```
 
 ### MySQL
@@ -7384,6 +7422,14 @@ ldf 文档太大处理方法（先备份数据库）：
 
 ### Oracle
 
+```sql
+# 修改字段名
+alter table student rename column password to pwd;
+
+# 修改字段数据类型
+alter table student modify password varchar(16) not null;
+```
+
 #### 函数
 
 - upper('value')
@@ -8055,6 +8101,68 @@ lock.lock();
 lock.unlock();
 ```
 
+## 分布式定时任务
+
+### PowerJob
+
+#### 部署PowerJob
+
+正式环境server和worker一定要部署在同一个网段！
+
+如果server和worker不是部署在同一个局域网（如worker在宿主机ide运行，server在虚拟机（nat）的docker运行）
+则server需要添加jvm参数-e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010"；
+且worker需要添加jvm参数-Dpowerjob.network.external.address=192.168.56.1 -Dpowerjob.network.external.port=27777，其中192.168.56.1为nat模式下virtualbox虚拟网卡分配的宿主机ip，千万不要用因特网网卡的ip
+
+- 创建数据库
+
+```sql
+-- 根据部署的环境（日常（daily）、预发（pre）和线上（product））
+-- 分别创建对应的数据库powerjob-daily、powerjob-pre 和 powerjob-product
+create database powerjob-daily;
+create database powerjob-pre;
+create database powerjob_product;
+```
+
+- 拉取powerjob的docker镜像(由于server和worker需要在同一局域网部署，镜像的方式有很多问题，笔者这里也是部署到最后worker卡在等待worker接收这一步，推荐自己打包server然后作为服务器和worker放在同一个局域网)
+
+```sh
+docker pull powerjob/powerjob-server:4.3.9
+```
+
+- 启动调度服务器powerjob-server
+
+```sh
+# 这里用的是product环境启动，所以前面的步骤要创建好powerjob_product数据库
+# 如果powerjob-server和数据库在同一个虚拟系统上，则连接时直接用虚拟系统的ip+数据库端口连接
+docker run -d \
+    --restart=always \
+    --name powerjob-server01 \
+    -p 7700:7700 -p 10086:10086 -p 10010:10010 \
+    -e TZ="Asia/Shanghai" \
+    -e JVMOPTIONS="-Dpowerjob.network.external.address=localhost -Dpowerjob.network.external.port.http=10010" \
+    -e PARAMS="--spring.profiles.active=product --spring.datasource.core.driver-class-name=org.postgresql.Driver --spring.datasource.core.jdbc-url=jdbc:postgresql://10.0.2.15:5432/powerjob_product --spring.datasource.core.username=postgres --spring.datasource.core.password=postgres123" \
+    -v /data/powerjob/powerjob-server:/root/powerjob/server -v /data/powerjob/.m2:/root/.m2 \
+    powerjob/powerjob-server:4.3.9
+```
+
+- 检查是否启动成功
+
+```sh
+# 打开链接http://ip:${server.port:7700} 检验是否部署成功
+# 不成功则查看日志
+tail -f /data/powerjob/powerjob-server/logs/powerjob-server-application.log
+```
+
+- 查看账号密码(5.x)
+
+```sh
+# 搜索关键字命令1
+cat /data/powerjob/powerjob-server/logs/powerjob-server-application.log | grep "username"
+
+# 搜索关键字命令2
+grep 'administrator' /data/powerjob/powerjob-server/logs/powerjob-server-application.log
+```
+
 ## IDE
 
 ### Eclipse
@@ -8324,6 +8432,25 @@ make uninstall
 
 ```sh
 rm -rf 安装目标路径
+```
+
+#### yum工具安装
+
+```sh
+# 搜索软件
+yum search 软件名
+
+# 安装软件
+yum install 软件名
+
+# 卸载软件
+yum remove 软件名
+
+# 升级软件
+yum update 软件名
+
+# 升级操作系统所有软件及内核
+yum upgrade 
 ```
 
 ### Linux常用命令
@@ -8617,7 +8744,7 @@ cat -n /etc/profile | more
 
 #### more命令
 
-more命令时基于vi编辑器的文本过滤器，它以全屏幕的方式按页显示文本文件的内容
+more命令是基于vi编辑器的文本过滤器，它以全屏幕的方式按页显示文本文件的内容
 
 ```sh
 more 文件名称
@@ -8808,6 +8935,16 @@ systemctl status firewalld
 # 放行端口
 firewall -cmd --zone=public --add -port=80/tcp --permanent
 
+```
+
+#### 应用/端口查询命令
+
+```sh
+# 查看应用有没有启动
+ps -ef|grep 应用名
+
+# 查看应用占用的端口
+netstat -tunlp|grep 应用名
 ```
 
 ### 其它命令
@@ -9003,7 +9140,88 @@ public class ExceptionTest {
 }
 ```
 
-## Windows的host文件
+## 前端篇
+
+### vue
+
+- 创建vue3项目
+
+```sh
+npm create vue@latest
+```
+
+- 安装所有的依赖
+
+```sh
+npm i
+```
+
+- 运行项目
+
+```sh
+npm run dev
+```
+
+- main.ts
+
+```ts
+// 引入createApp用于创建应用
+import { createApp } from "vue";
+
+// 引入App根组件(src目录下的App.vue)
+import App from "./App.vue";
+
+// 调用createApp，传入App，并且挂载到index.html中id为app的标签中
+createApp(App).mount('#app')
+```
+
+- App.vue
+
+```vue
+<!-- .vue文件里面可以写三种标签 -->
+<template>
+    <!-- 写html -->
+    <div class="app">
+        <h1>hello vue3</h1>
+        // 显示组件
+        <Person/>
+    </div>
+</template>
+
+<script lang="ts">
+    // 导入其它组件
+    import Person from './components/Person.vue';
+    // 写ts(js)
+    export default {
+        name: 'App', //组件名
+        components: {Person} // 注册组件
+    }
+</script>
+
+<style>
+/* 写样式 */
+.app {
+    background-color: #ddd;
+    box-shadow: 0 0 10px;
+    border-radius: 10px;
+    padding: 20px;
+}
+</style>
+```
+
+## Windows篇
+
+### cmd命令
+
+```sh
+# 查看端口占用情况
+netstat -ano|findstr 端口号
+
+# 根据进程id查看进程信息
+tasklist|findstr 进程id
+```
+
+### host文件
 
 - hosts文件里可建立许多常用域名与其对应IP的映射。当用户在浏览器中输入一个想要浏览的网址时，系统会首先在hosts文件里面查找有没有对应的IP，若有的话，则会立即打开对应的网页；若是没有，则会请求DNS服务器进行解析
 
