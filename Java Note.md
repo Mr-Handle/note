@@ -2,7 +2,10 @@
 
 ## Java基础
 
-### 安装jdk
+### JDK
+
+- `JRE` 是 Java 运行时环境。它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。但是，它不能用于创建新程序。
+- `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。它拥有 JRE 所拥有的一切，还有编译器（javac）和工具（如 javadoc 和 jdb）。它能够创建和编译程序。
 
 #### 1.windows安装jdk
 
@@ -47,7 +50,267 @@ source /etc/profile
 java -version
 ```
 
-### 约定
+### 二进制知识
+
+#### 原码、反码、补码
+
+- 原码：正数，它的绝对值转换成的二进制数；负数，它的绝对值转换成的二进制数，然后最高位置1
+
+- 反码：正数的反码与原码相同；负数的反码为其原码`除符号位`外`按位取反`
+
+- 补码：正数的补码与原码相同；负数的补码为其反码加1
+
+- 正数的二进制数为其原码，负数的二进制数为其补码
+
+```java
+// 原码 10000000 00000000 00000000 00000010
+// 反码 11111111 11111111 11111111 11111101
+// 补码 11111111 11111111 11111111 11111110
+String b = Integer.toBinaryString(-2); 
+```
+
+#### 进制转换
+
+- 8位二进制为一个字节，范围值从0B00000000～0B11111111，程序中用十六进制表示的时候就是从0X00到0XFF
+
+- 二进制4位一组，遵循8,4,2,1的规律比如 1111，那么从最高位开始算，数字大小是`8 * 1 + 4 * 1 + 2 * 1 + 1 * 1` = 15，那么十进制就是15，十六进制就是0XF。
+
+- 二进制转十六进制的时候，十六进制一位刚好是和二进制4位相互对应的。8位二进制为一个字节，对应十六进制2位。
+
+- Java中，byte、short、int、long分别占1、2、4、8个字节，char占2个字节
+
+#### 十进制转其它进制
+
+```java
+int a = 10;
+// 二进制   1010
+System.out.println(Integer.toBinaryString(a)); 
+// 八进制   12
+System.out.println(Integer.toOctalString(a));  
+// 十六进制 a
+System.out.println(Integer.toHexString(a));    
+```
+
+#### byte[] 和十六进制字符串互转
+
+- Java 8及以前版本，String用char数组存储，每个char元素2字节，转换的实质为一个1字节的byte元素，转换为一个2字节的char元素
+- Java 9之后，String用byte数组存储，转换的实质为一个1字节的byte元素，转换为一个1字节的byte元素
+
+##### 用Java自带方法转换
+
+```java
+byte[] datas = {15, 15};
+// 00001111 00001111，（0x0f0f) 结果为f0f（byte数组首个元素高4位为0，被去掉了) 
+String hexString = new BigInteger(1, datas).toString(16);
+```
+
+##### 引入第三方库转换
+
+```xml
+<dependency>
+    <groupId>commons-codec</groupId>
+    <artifactId>commons-codec</artifactId>
+    <version>1.14</version>
+</dependency>
+```
+
+```java
+byte[] datas = {15, 15};
+// byte[] 转 16进制字符串
+// 0f0f，当byte数组首个元素高4位为0时也会保留
+String hexString = Hex.encodeHexString(datas);
+
+// 16进制字符串 转 byte[]
+byte[] datas = Hex.decodeHex(hexString);
+```
+
+- Hex.encodeHexString 底层代码剖析
+
+```java
+public String encodeHexString(final byte[] data) {
+    char[] DIGITS_UPPER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    final int outlength = data.length;
+    // 一个字节用两位16进制表示，out长度为data长度乘以2
+    final char[] out = new char[outlength << 1];
+    for (int i = 0, j = 0; i < outlength; i++) {
+    // 取高4位，无符号右移四位，得到16进制高位
+    // 0x41 = 0100 0001
+    // 0xF0 = 1111 0000
+    // 0x40 = 0100 0000
+    // 0x04 = 0000 0100
+    // 相当于 out[j++] = DIGITS_UPPER[data[i] / 16];
+    out[j++] = DIGITS_UPPER[(0xF0 & data[i]) >>> 4];
+    // 直接取低4位，得到16进制低位
+    // 0x41 = 0100 0001
+    // 0x0F = 0000 1111
+    // 0x01 = 0000 0001 = 1
+    // 相当于 out[j++] = DIGITS_UPPER[data[i] % 16];
+    out[j++] = DIGITS_UPPER[0x0F & data[i]];
+    }
+    return new String(out);
+}
+```
+
+#### 移位运算
+
+对byte和short类型进行移位时，会首先转换为int再进行位移
+
+- 左移`<<`，最低位补0，十进制数m左移n位相当于m乘以2的n次方
+
+```java
+int m = 1;       // 00000000 00000000 00000000 00000001 = 1
+int r = m << 1;  // 00000000 00000000 00000000 00000010 = 2
+```
+
+- 右移`>>`，最高位补0，十进制数m右移n位相当于m除以2的n次方
+
+```java
+int m = 2;       // 00000000 00000000 00000000 00000010 = 2
+int r = m >> 1;  // 00000000 00000000 00000000 00000001 = 1
+```
+
+- 无符号右移`>>>`，高位总是补0，注意，`没有无符号左移`！
+
+```java
+int m = -2;        // 11111111 11111111 11111111 11111110 = -2
+int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
+```
+
+#### 位运算
+
+位运算是按位进行与（&）、或（|）、非（!）和异或（~，异或运算的规则是，如果两个数不同，结果为1，否则为0）的运算
+
+### Java知识
+
+#### 运算优先级
+
+在Java的计算表达式中，运算优先级从高到低依次是：
+
+`()`
+`! ~ ++ --`
+`* / %`
+`+ -`
+`<< >> >>>`
+`&`
+`|`
+`+= -= *= /=`
+
+#### 继承
+
+- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
+
+- 子类自动获得父类的所有字段，严禁定义与父类重名的字段
+
+- 子类不能继承父类的静态属性，但可以对父类静态属性操作
+
+- 子类能不能访问父类字段要看父类字段的访问修饰符
+
+- 任何class的构造方法，第一行语句必须是调用父类的构造方法。如果没有明确地调用父类的构造方法，编译器会帮我们自动加一句super();
+
+- 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
+
+- 如果一个父类的方法本身不需要实现任何功能，仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法；因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
+
+- 如果一个抽象类没有字段，所有方法全部都是抽象方法，就可以把该抽象类改写为接口
+
+#### 继承关系判断
+
+```java
+// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
+Assertions.assertTrue("handle" instanceof Object);
+
+  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
+Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
+```
+
+- 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型。
+
+```java
+ Object object = "hello";
+if (object instanceof String s) {
+    // 可以直接使用变量s:
+    System.out.println(s.toUpperCase());
+}
+```
+
+#### `==`比较运算符
+
+- 基本数据类型，`==`比较的是`值`
+
+```java
+Assertions.assertTrue(3 == 3);
+```
+
+- 复合数据类型，`==`比较的是`地址`
+
+```java
+String a = new String("handle");
+String b = new String("handle");
+Assertions.assertFalse(a == b);
+```
+
+- 复合数据类型，`equals`在没有覆写的情况下，比较的也是`地址`
+
+```java
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+public class User {
+  private String name;
+}
+
+User a = new User("handle");
+User b = new User("handle");
+Assertions.assertFalse(a == b);
+```
+
+#### 定义常量
+
+```java
+public class C() {
+    // 定义类常量
+    private final double PI =3.14;
+
+    // 定义局部常量
+    public void fun() {
+        final double PI =3.14;
+    }
+}
+```
+
+#### 静态方法中获取所在类实例
+
+```java
+Class clazz = MethodHandles.lookup().lookupClass();
+```
+
+#### 打印对象内存地址
+
+```java
+Object object = new Object();
+// 方法1，推荐
+String hexAddress1 = Integer.toHexString(System.identityHashCode(object));
+
+// 方法2，前提是没有重写toString()
+String hexAddress2 = object.toString().substring(object.toString().indexOf("@") + 1);
+```
+
+#### 文件复制
+
+```java
+try (InputStream inputStream = Application.class.getClassLoader().getResourceAsStream(fileName);
+    BufferedInputStream in = new BufferedInputStream(inputStream);
+    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFileName));) {
+    int length = 0;
+    byte[] buffer = new byte[1024];
+    while (-1 != (length = in.read(buffer))) {
+        out.write(buffer, 0, length);
+    }
+}
+```
+
+#### 其它
 
 - 文件夹名称一律用小驼峰，并且单个单词的文件夹名称一律用单数形式
 
@@ -86,10 +349,26 @@ public void function(ArrayList<Integer> list) {}
 - 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
 - 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
 - Java编译器自动引入java.lang。
-- 内存回收：调用System.gc()；在类中重写finalize()方法：`protected void finalize() throws throwable`
-- 子类不能继承父类的静态属性，但可以对父类静态属性操作
-- `方法的签名`（signature): 要完整地描述一个方法，需要指出`方法名`以及`参数类型`。返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数类型也相同却返回不同类型值的方法。
-- 枚举:所有的枚举类型都是`Enum`类的子类。在比较两个枚举类型的值时， 永远不需要调用equals, 而直接使用`==`。如果需要的话， 可以在枚举类型中添加一些构造器、方法和域。当然，构造器只是在构造枚举常量的时候被调用。可以定义构造函数，默认是`private`。
+- 内存回收：调用`System.gc()`，一般不会手动调用此方法；
+- `方法的签名`（signature）: 要完整地描述一个方法，需要指出`方法名`以及`参数类型`。返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
+- VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
+- DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
+- DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
+- PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
+- 不用public、protected、private修饰的字段和方法就是包作用域。位于同一个包的类，可以访问包作用域的字段和方法。
+
+### java 数据类型
+
+#### BigDecimal
+
+- 防止精度丢失，更推荐使用`BigDecimal(String val)`构造方法来创建对象；`BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
+
+- 除法计算要指定结果精度
+
+#### 枚举
+
+- 枚举:所有的枚举类型都是`Enum`类的子类。在比较两个枚举类型的值时， 永远不需要调用equals, 而直接使用`==`。
+- 如果需要的话， 可以在枚举类型中添加一些构造器、方法和域。当然，构造器只是在构造枚举常量的时候被调用。可以定义构造函数，默认是`private`。
 
 ```java
 import lombok.Getter;
@@ -100,293 +379,13 @@ public enum ColorEnum {
 
     private String value;
 
-    ColorEnum(String value) {
+    private ColorEnum(String value) {
         this.value = value;
     }
 }
 ```
 
-- VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
-- DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
-- DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
-- PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
-
-- 不用public、protected、private修饰的字段和方法就是包作用域。位于同一个包的类，可以访问包作用域的字段和方法。
-
-#### 继承
-
-- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
-
-- 子类自动获得父类的所有字段，严禁定义与父类重名的字段！
-
-- 子类能不能访问父类字段要看父类字段的访问修饰符
-
-- 任何class的构造方法，第一行语句必须是调用父类的构造方法。如果没有明确地调用父类的构造方法，编译器会帮我们自动加一句super();
-
-- 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
-
-- 如果一个父类的方法本身不需要实现任何功能，仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法；因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
-
-- 如果一个抽象类没有字段，所有方法全部都是抽象方法，就可以把该抽象类改写为接口
-
-#### 继承关系判断
-
-```java
-// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
-Assertions.assertTrue("handle" instanceof Object);
-
-  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
-Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
-```
-
-- 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型。
-
-```java
- Object obj = "hello";
-if (obj instanceof String s) {
-    // 可以直接使用变量s:
-    System.out.println(s.toUpperCase());
-}
-```
-
-#### `==`比较运算符
-
-- `基本数据类型`，== 比较的是`值`
-
-```java
-Assertions.assertTrue(3 == 3);
-```
-
-- `复合数据类型`，== 比较的是`地址`
-
-```java
-String a = new String("handle");
-String b = new String("handle");
-Assertions.assertFalse(a == b);
-```
-
-- `复合数据类型`，`equals在没有复写`的情况下，比较的也是`地址`
-
-```java
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-public class User {
-  private String name;
-}
-
-User a = new User("handle");
-User b = new User("handle");
-Assertions.assertFalse(a == b);
-```
-
-- 定义常量
-
-```java
-public class C() {
-    // 定义类常量
-    private final double PI =3.14;
-
-    // 定义局部常量
-    public void fun() {
-        final double PI =3.14;
-    }
-}
-```
-
-- 静态方法中获取所在类实例
-
-```java
-Class clazz = MethodHandles.lookup().lookupClass();
-```
-
-- 打印对象内存地址
-
-```java
-Object object = new Object();
-// 方法1，推荐
-String hexAddress1 = Integer.toHexString(System.identityHashCode(object));
-
-// 方法2，前提是没有重写toString()
-String hexAddress2 = object.toString().substring(object.toString().indexOf("@") + 1);
-```
-
-- 文件复制
-
-```java
-try (InputStream inputStream = Application.class.getClassLoader().getResourceAsStream(fileName);
-    BufferedInputStream in = new BufferedInputStream(inputStream);
-    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFileName));) {
-    int length = 0;
-    byte[] buffer = new byte[1024];
-    while (-1 != (length = in.read(buffer))) {
-        out.write(buffer, 0, length);
-    }
-}
-```
-
-- `JRE` 是 Java 运行时环境。它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。但是，它不能用于创建新程序。
-- `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。它拥有 JRE 所拥有的一切，还有编译器（javac）和工具（如 javadoc 和 jdb）。它能够创建和编译程序。
-
-### java 数据类型
-
-#### BigDecimal
-
-- 防止精度丢失，更推荐使用`BigDecimal(String val)`构造方法来创建对象；`BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
-
-- 除法计算要指定结果精度
-
-### 二进制
-
-- 原码：一个正数，按照绝对值大小转换成的二进制数；一个负数，先按照绝对值大小转换成的二进制数，然后最高位置1
-
-- 反码：正数的反码与原码相同，负数的反码为其原码`除符号位`外`按位取反`
-
-- 补码：正数的补码与原码相同，负数的补码为其反码加1
-
-- 正数的二进制数为其原码，负数的二进制数为其补码
-
-```java
-// 原码 10000000 00000000 00000000 00000010
-// 反码 11111111 11111111 11111111 11111101
-// 反码 11111111 11111111 11111111 11111110
-String b = Integer.toBinaryString(-2); 
-```
-
-### 进制转换
-
-- 8位二进制为一个字节，范围值从0B00000000～0B11111111，程序中用十六进制表示的时候就是从0X00到0XFF
-
-- 二进制4位一组，遵循8,4,2,1的规律比如 1111，那么从最高位开始算，数字大小是`8 * 1 + 4 * 1 + 2 * 1 + 1 * 1` = 15，那么十进制就是15，十六进制就是0XF。
-
-- 二进制转十六进制的时候，十六进制一位刚好是和二进制4位相互对应的。8位二进制为一个字节，对应十六进制2位。
-
-- Java中，byte、short、int、long分别占1、2、4、8个字节，char占2个字节
-
-#### 十进制转其它进制
-
-```java
-int a = 10;
-// 二进制   1010
-System.out.println(Integer.toBinaryString(a)); 
-// 八进制   12
-System.out.println(Integer.toOctalString(a));  
-// 十六进制 a
-System.out.println(Integer.toHexString(a));    
-```
-
-#### byte[] 和十六进制字符串互转
-
-String用char数组存储，每个char元素2字节，转换的实质为一个1字节的byte元素，转换为一个2字节的char元素
-
-- 用Java自带方法转换
-
-```java
-byte[] datas = {15, 15};
-// 00001111 00001111，（0x0f0f) 结果为f0f（byte数组首个元素高4位为0，被去掉了) 
-String hexString = new BigInteger(1, datas).toString(16);
-```
-
-- 引入第三方库转换
-
-```xml
-<dependency>
-    <groupId>commons-codec</groupId>
-    <artifactId>commons-codec</artifactId>
-    <version>1.14</version>
-</dependency>
-```
-
-```java
-byte[] datas = {15, 15};
-// byte[] 转 16进制字符串
-// 0f0f，当byte数组首个元素高4位为0时也会保留
-String hexString = Hex.encodeHexString(datas);
-
-// 16进制字符串 转 byte[]
-byte[] datas = Hex.decodeHex(hexString);
-```
-
-- Hex.encodeHexString 底层代码剖析
-
-```java
-public String encodeHexString(final byte[] data) {
-    char[] DIGITS_UPPER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    final int outlength = data.length;
-    // 一个字节用两位16进制表示，out长度为data长度乘以2
-    final char[] out = new char[outlength << 1];
-    for (int i = 0, j = 0; i < outlength; i++) {
-    // 取高4位，无符号右移四位，得到16进制高位
-    // 0x41 = 0100 0001
-    // 0xF0 = 1111 0000
-    // 0x40 = 0100 0000
-    // 0x04 = 0000 0100
-    // 相当于 out[j++] = DIGITS_UPPER[data[i] / 16];
-    out[j++] = DIGITS_UPPER[(0xF0 & data[i]) >>> 4];
-    // 直接取低4位，得到16进制地位
-    // 0x41 = 0100 0001
-    // 0x0F = 0000 1111
-    // 0x01 = 0000 0001 = 1
-    // 相当于 out[j++] = DIGITS_UPPER[data[i] % 16];
-    out[j++] = DIGITS_UPPER[0x0F & data[i]];
-    }
-    return new String(out);
-}
-```
-
-### 移位运算
-
-对byte和short类型进行移位时，会首先转换为int再进行位移
-
-- 左移`<<`，最低位补0，十进制数m左移n位相当于m乘以2的n次方
-
-```java
-int m = 1;       // 00000000 00000000 00000000 00000001 = 1
-int r = m << 1;  // 00000000 00000000 00000000 00000010 = 2
-```
-
-- 右移`>>`，最高位补0，十进制数m右移n位相当于m除以2的n次方
-
-```java
-int m = 2;       // 00000000 00000000 00000000 00000010 = 2
-int r = m >> 1;  // 00000000 00000000 00000000 00000001 = 1
-```
-
-- 无符号右移`>>>`，高位总是补0，注意，`没有无符号左移`！
-
-```java
-int m = -2;        // 11111111 11111111 11111111 11111110 = -2
-int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
-```
-
-### 位运算
-
-位运算是按位进行与（&）、或（|）、非（!）和异或（~，异或运算的规则是，如果两个数不同，结果为1，否则为0）的运算
-
-### 运算优先级
-
-在Java的计算表达式中，运算优先级从高到低依次是：
-
-`()`
-`! ~ ++ --`
-`* / %`
-`+ -`
-`<< >> >>>`
-`&`
-`|`
-`+= -= *= /=`
-
-### 数组
-
-- 数组排序
-
-```java
-Integer[] array = new Integer[]{1, 3, 2};
-Arrays.sort(array);
-// [1, 2, 3]
-System.out.println(Arrays.toString(array));
-```
+#### 数组
 
 - 不用for循环快速打印一维数组：Arrays.toString()
 
@@ -398,7 +397,19 @@ System.out.println(Arrays.toString(array));
 
 - 不用for循环快速打印多维数组：Arrays.deepToString()
 
-### 集合
+```java
+Integer[][] array = new Integer[][]{{1, 2, 3}, {4, 5, 6}};
+System.out.println(Arrays.deepToString(array));
+```
+
+- 数组排序
+
+```java
+Integer[] array = new Integer[]{1, 3, 2};
+Arrays.sort(array);
+// [1, 2, 3]
+System.out.println(Arrays.toString(array));
+```
 
 #### List
 
@@ -510,7 +521,7 @@ System.out.println(sortNames);
 | Queue     | ArrayDeque / LinkedList | ArrayBlockingQueue / LinkedBlockingQueue |
 | Deque     | ArrayDeque / LinkedList | LinkedBlockingDeque                      |
 
-使用这些并发集合与使用非线程安全的集合类完全相同。我们以`ConcurrentHashMap`为例：
+使用这些并发集合与使用非线程安全的集合类完全相同。以`ConcurrentHashMap`为例：
 
 ```java
 Map<String, String> map = new ConcurrentHashMap<>();
