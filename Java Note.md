@@ -233,8 +233,7 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 
 #### BigDecimal
 
-- 防止精度丢失，更推荐使用`BigDecimal(String val)`构造方法来创建对象；
-`BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
+- 防止精度丢失，更推荐使用`BigDecimal(String val)`构造方法来创建对象；`BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
 
 - 除法计算要指定结果精度
 
