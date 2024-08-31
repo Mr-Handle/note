@@ -1125,17 +1125,22 @@ String shortMenu = menu.stream().map(Dish::getName).collect(Collectors.joining()
 #### 分组 Collectors.groupingBy
 
 ```java
-Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType));
+Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(Collectors.groupingBy(Dish::getType));
 ```
 
 ```java
 public enum CaloricLevel { DIET, NORMAL, FAT }
 Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream().collect(
-    groupingBy(dish -> {
-        if (dish.getCalories() <= 400) return CaloricLevel.DIET;
-        else if (dish.getCalories() <= 700) return
-        CaloricLevel.NORMAL;
-        else return CaloricLevel.FAT;
+    Collectors.groupingBy(dish -> {
+        if (dish.getCalories() <= 400) {
+            return CaloricLevel.DIET;
+        }
+        else if (dish.getCalories() <= 700) {
+            return CaloricLevel.NORMAL;
+        }
+        else {
+            return CaloricLevel.FAT;
+        }
 })); 
 ```
 
@@ -1143,10 +1148,16 @@ Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream().collect(
   
   ```java
   Map<Dish.Type, Map<CaloricLevel, List<Dish>>> dishesByTypeCaloricLevel = menu.stream().collect(
-      groupingBy(Dish::getType, groupingBy(dish -> {
-          if (dish.getCalories() <= 400) return CaloricLevel.DIET;
-          else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
-          else return CaloricLevel.FAT;
+      Collectors.groupingBy(Dish::getType, Collectors.groupingBy(dish -> {
+          if (dish.getCalories() <= 400) {
+            return CaloricLevel.DIET;
+          }
+          else if (dish.getCalories() <= 700) {
+            return CaloricLevel.NORMAL;
+          }
+          else {
+            return CaloricLevel.FAT;
+          }
   })));
   ```
 
@@ -1155,33 +1166,46 @@ Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream().collect(
   ```java
   // 每类菜有多少个
   Map<Dish.Type, Long> typesCount = menu.stream().collect(
-      groupingBy(Dish::getType, counting()));
+      Collectors.groupingBy(Dish::getType, counting()));
   
   // 查找每个子组中热量最高的Dish
   Map<Dish.Type, Optional<Dish>> mostCaloricByType = menu.stream().collect(
-      groupingBy(Dish::getType, maxBy(comparingInt(Dish::getCalories))));
+      Collectors.groupingBy(Dish::getType, maxBy(comparingInt(Dish::getCalories))));
   
   // 查找每个子组中热量最高的Dish, 把收集器的结果转换为另一种类型
   Map<Dish.Type, Dish> mostCaloricByType = menu.stream().collect(
-      groupingBy(Dish::getType, collectingAndThen(maxBy(comparingInt(Dish::getCalories)), Optional::get)));
+      Collectors.groupingBy(Dish::getType, collectingAndThen(maxBy(comparingInt(Dish::getCalories)), Optional::get)));
   
   // 每类菜肴热量总和 
   Map<Dish.Type, Integer> totalCaloriesByType = menu.stream().collect(
-      groupingBy(Dish::getType, summingInt(Dish::getCalories))); 
+      Collectors.groupingBy(Dish::getType, summingInt(Dish::getCalories))); 
   
   // 每种类型的Dish，菜单中都有哪些CaloricLevel
   Map<Dish.Type, Set<CaloricLevel>> caloricLevelsByType = menu.stream().collect(
-      groupingBy(Dish::getType, mapping(dish -> { 
-          if (dish.getCalories() <= 400) return CaloricLevel.DIET;
-          else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
-          else return CaloricLevel.FAT; },toSet())));
+      Collectors.groupingBy(Dish::getType, mapping(dish -> { 
+          if (dish.getCalories() <= 400) {
+            return CaloricLevel.DIET;
+          }
+          else if (dish.getCalories() <= 700) {
+            return CaloricLevel.NORMAL;
+          }
+          else {
+            return CaloricLevel.FAT;
+            }
+        },toSet())));
   
   // 每种类型的Dish，菜单中都有哪些CaloricLevel 指定set类型为HashSet
   Map<Dish.Type, Set<CaloricLevel>> caloricLevelsByType = menu.stream().collect(
-      groupingBy(Dish::getType, mapping(dish -> { 
-          if (dish.getCalories() <= 400) return CaloricLevel.DIET;
-          else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
-          else return CaloricLevel.FAT; },toCollection(HashSet::new) ))); 
+      Collectors.groupingBy(Dish::getType, mapping(dish -> { 
+          if (dish.getCalories() <= 400) {
+            return CaloricLevel.DIET;
+          }
+          else if (dish.getCalories() <= 700) {
+            return CaloricLevel.NORMAL;
+          }
+          else {
+            return CaloricLevel.FAT;}
+        },toCollection(HashSet::new) ))); 
   ```
 
 ### 分区 partitioningBy
