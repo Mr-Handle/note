@@ -2475,6 +2475,15 @@ public static void initStatic() {
 }
 ```
 
+### Junit5执行顺序
+
+- 1.@BeforeAll
+- 2.循环
+  - 2.1 @BeforeEach
+  - 2.2 @Test
+  - 2.3 @AfterEach
+- 3.@AfterAll
+
 ## Lombok
 
 ### Eclipse安装Lombok
