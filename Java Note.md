@@ -2438,6 +2438,43 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
+## Junit5
+
+### Maven依赖
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>${junit.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+### 常用注解
+
+#### @BeforeEach/@AfterEach
+
+可简单理解为在每个测试方法执行前/后执行
+
+```java
+@BeforeEach
+public void init() {
+    // todo
+}
+```
+
+#### @BeforeAll/@AfterAll
+
+可简单理解为在所有测试方法执行前/后执行，对于一个测试类只执行一次，并且必须注解在静态方法上
+
+```java
+@BeforeAll
+public static void initStatic() {
+    // todo
+}
+```
+
 ## Lombok
 
 ### Eclipse安装Lombok
