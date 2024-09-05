@@ -1854,7 +1854,7 @@ public class EncodingFilter implements Filter {
 
 #### 3. Listener 组件
 
-1. ==ServletContextListener==：一个Web服务器可以运行一个或多个WebApp，对于每个WebApp，Web服务器都会为其创建一个全局唯一的`ServletContext`实例，`ServletContext`实例最大的作用就是设置和共享全局信息；此外，`ServletContext`还提供了动态添加Servlet、Filter、Listener等功能，它允许应用进程在运行期间动态添加一个组件，虽然这个功能不是很常用；
+1. **ServletContextListener**：一个Web服务器可以运行一个或多个WebApp，对于每个WebApp，Web服务器都会为其创建一个全局唯一的`ServletContext`实例，`ServletContext`实例最大的作用就是设置和共享全局信息；此外，`ServletContext`还提供了动态添加Servlet、Filter、Listener等功能，它允许应用进程在运行期间动态添加一个组件，虽然这个功能不是很常用；
 2. `HttpSessionListener`：监听HttpSession的创建和销毁事件；
 3. `ServletRequestListener`：监听ServletRequest请求的创建和销毁事件；
 4. `ServletRequestAttributeListener`：监听ServletRequest请求的属性变化事件（即调用`ServletRequest.setAttribute()`方法）；
@@ -1883,125 +1883,6 @@ public class Applistener implements ServletContextListener {
 
 }
 ```
-
-### CSS
-
-#### CSS 语法
-
-- CSS 规则由两个主要的部分构成：选择器，以及一条或多条声明。
-- 选择器通常是您需要改变样式的 HTML 元素。
-- 每条声明由一个==属性==和一个==值==组成。
-- 属性（property）是您希望设置的样式属性（style attribute）。每个属性有一个值。属性和值被冒号(`:`)分开。
-- CSS声明总是以分号(`;`)结束，声明总以大括号(`{}`)括起来。
-- CSS注释以 **/\*** 开始, 以 ***/** 结束。
-
-```css
-p {
-    color:red;
-    text-align:center;
-}
-```
-
-#### 选择器
-
-- #### id 选择器(#id)
-
-- #### class 选择器(.class)
-
-- #### *element* 选择器(*element* )
-
-```css
-#username {
-
-}
-#.mydiv {
-
-}
-div,p {
-
-}
-```
-
-#### 插入样式表
-
-- 1. 外部样式表
-
-```html
-<link rel="stylesheet" type="text/css" href="xxx/xxx.css">
-```
-
-- 2. 内部样式表
-
-```html
-<style type="text/css">
-    ...
-</style>
-```
-
-- 3. 内联样式表
-
-```html
-<div style="..."></div>
-```
-
-#### @keyframes
-
-语法：@keyframes *animationname* {*keyframes-selector* {*css-styles;}*}
-
-| 值                    | 说明                                                                                      |
-|:-------------------- |:--------------------------------------------------------------------------------------- |
-| *animationname*      | 必需的。定义animation的名称。                                                                     |
-| *keyframes-selector* | 必需的。动画持续时间的百分比。合法值：0-100% from (和0%相同) to (和100%相同)**注意：** 您可以用一个动画keyframes-selectors。 |
-| *css-styles*         | 必需的。一个或多个合法的CSS样式属性                                                                     |
-
-例：
-
-```css
-@keyframes dynamicBorder {
-    0% {
-        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 0 0;
-    }
-    100% {
-        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 500px 0;
-    }
-}
-```
-
-#### animation
-
-语法：animation: name duration timing-function delay iteration-count direction fill-mode play-state;
-
-| 值                                                                                                   | 说明                                                                                   |
-|:--------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------ |
-| *[animation-name](https://www.runoob.com/cssref/css3-pr-animation-name.html)*                       | 指定要绑定到选择器的关键帧的名称                                                                     |
-| *[animation-duration](https://www.runoob.com/cssref/css3-pr-animation-duration.html)*               | 动画指定需要多少秒或毫秒完成                                                                       |
-| *[animation-timing-function](https://www.runoob.com/cssref/css3-pr-animation-timing-function.html)* | 设置动画将如何完成一个周期                                                                        |
-| *[animation-delay](https://www.runoob.com/cssref/css3-pr-animation-delay.html)*                     | 设置动画在启动前的延迟间隔。                                                                       |
-| *[animation-iteration-count](https://www.runoob.com/cssref/css3-pr-animation-iteration-count.html)* | 定义动画的播放次数。                                                                           |
-| *[animation-direction](https://www.runoob.com/cssref/css3-pr-animation-direction.html)*             | 指定是否应该轮流反向播放动画。                                                                      |
-| [animation-fill-mode](https://www.runoob.com/cssref/css3-pr-animation-fill-mode.html)               | 规定当动画不播放时（当动画完成时，或当动画有一个延迟未开始播放时），要应用到元素的样式。                                         |
-| *[animation-play-state](https://www.runoob.com/cssref/css3-pr-animation-play-state.html)*           | 指定动画是否正在运行或已暂停。                                                                      |
-| initial                                                                                             | 设置属性为其默认值。 [阅读关于 *initial*的介绍。](https://www.runoob.com/cssref/css-initial.html)      |
-| inherit                                                                                             | 从父元素继承属性。 [阅读关于 *initinherital*的介绍。](https://www.runoob.com/cssref/css-inherit.html) |
-
-例：
-
-```css
-.div {
-    animation:mymove 5s infinite;
-    -webkit-animation:mymove 5s infinite; /* Safari 和 Chrome */
-}
-```
-
-#### calc 函数
-
-calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）前后都需要保留一个空格
-
-语法：calc(expression)
-
-| 值            | 描述                       |
-|:------------ |:------------------------ |
-| *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
 
 ### JSP
 
@@ -6351,7 +6232,7 @@ mvn clean package -Dmaven.test.skip=true
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.handle</groupId>
-    <artifactId>app</artifactId>
+    <artifactId>application</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -9228,38 +9109,130 @@ WantedBy=multi-user.target
 - 百度开源的分布式唯一id生成器UidGenerator
 - Leaf--美团点评分布式id生成系统
 
-## 面试篇
+## 前端篇
 
-### 异常问题
+### CSS
 
-#### catch捕获了异常，try中的return还会返回吗？
+#### CSS 语法
 
-答：不返回！
+- CSS 规则由两个主要部分构成：
+  - 1.`选择器`：通常是需要改变样式的`HTML元素`
+  - 2.`声明`（一条或多条）：声明用`{}`括起来，其中的每条声明由一个`属性`和一个`值`组成，属性和值用`:`分开，每条声明以`;`结束
+- CSS注释以 `/*` 开始, 以 `*/` 结束。
+
+```css
+p {
+    color: red;
+    text-align: center;
+}
+```
+
+#### 选择器
+
+- #### id 选择器(#id)
+
+```css
+#username {
+    
+}
+```
+
+- #### class 选择器(.class)
+
+```css
+#.mydiv {
+
+}
+```
+
+- #### *element* 选择器(*element* )
+
+```css
+div, p {
+
+}
+```
+
+#### 插入样式表
+
+- 1.外部样式表
+
+```html
+<link rel="stylesheet" type="text/css" href="xxx/xxx.css">
+```
+
+- 2.内部样式表
+
+```html
+<style type="text/css">
+    ...
+</style>
+```
+
+- 3.内联样式表
+
+```html
+<div style="..."></div>
+```
+
+#### @keyframes
+
+语法：@keyframes *animationname* {*keyframes-selector* {*css-styles;}*}
+
+| 值                    | 说明                                                                                      |
+|:-------------------- |:--------------------------------------------------------------------------------------- |
+| *animationname*      | 必需的。定义animation的名称。                                                                     |
+| *keyframes-selector* | 必需的。动画持续时间的百分比。合法值：0-100% from (和0%相同) to (和100%相同)**注意：** 您可以用一个动画keyframes-selectors。 |
+| *css-styles*         | 必需的。一个或多个合法的CSS样式属性                                                                     |
 
 例：
 
-```java
-@Slf4j
-public class ExceptionTest {
-    @Test
-    public void test() {
-        // 返回2
-        log.info("result of fun: {}", fun());
+```css
+@keyframes dynamicBorder {
+    0% {
+        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 0 0;
     }
-
-    private int fun() {
-        try {
-            int a = 1 / 0;
-            return 1;
-        } catch (Exception e) {
-            log.error("", e);
-        }
-        return 2;
+    100% {
+        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 500px 0;
     }
 }
 ```
 
-## 前端篇
+#### animation
+
+语法：animation: name duration timing-function delay iteration-count direction fill-mode play-state;
+
+| 值                                                                                                   | 说明                                                                                   |
+|:--------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------ |
+| *[animation-name](https://www.runoob.com/cssref/css3-pr-animation-name.html)*                       | 指定要绑定到选择器的关键帧的名称                                                                     |
+| *[animation-duration](https://www.runoob.com/cssref/css3-pr-animation-duration.html)*               | 动画指定需要多少秒或毫秒完成                                                                       |
+| *[animation-timing-function](https://www.runoob.com/cssref/css3-pr-animation-timing-function.html)* | 设置动画将如何完成一个周期                                                                        |
+| *[animation-delay](https://www.runoob.com/cssref/css3-pr-animation-delay.html)*                     | 设置动画在启动前的延迟间隔。                                                                       |
+| *[animation-iteration-count](https://www.runoob.com/cssref/css3-pr-animation-iteration-count.html)* | 定义动画的播放次数。                                                                           |
+| *[animation-direction](https://www.runoob.com/cssref/css3-pr-animation-direction.html)*             | 指定是否应该轮流反向播放动画。                                                                      |
+| [animation-fill-mode](https://www.runoob.com/cssref/css3-pr-animation-fill-mode.html)               | 规定当动画不播放时（当动画完成时，或当动画有一个延迟未开始播放时），要应用到元素的样式。                                         |
+| *[animation-play-state](https://www.runoob.com/cssref/css3-pr-animation-play-state.html)*           | 指定动画是否正在运行或已暂停。                                                                      |
+| initial                                                                                             | 设置属性为其默认值。 [阅读关于 *initial*的介绍。](https://www.runoob.com/cssref/css-initial.html)      |
+| inherit                                                                                             | 从父元素继承属性。 [阅读关于 *initinherital*的介绍。](https://www.runoob.com/cssref/css-inherit.html) |
+
+例：
+
+```css
+.div {
+    animation:mymove 5s infinite;
+    -webkit-animation:mymove 5s infinite; /* Safari 和 Chrome */
+}
+```
+
+#### calc 函数
+
+calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）前后都需要保留一个空格
+
+语法：calc(expression)
+
+| 值            | 描述                       |
+|:------------ |:------------------------ |
+| *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
 
 ### vue
 
@@ -9332,7 +9305,7 @@ createApp(App).mount('#app')
 
 ### cmd命令
 
-```sh
+```cmd
 # 查看端口占用情况
 netstat -ano|findstr 端口号
 
@@ -9342,19 +9315,51 @@ tasklist|findstr 进程id
 
 ### host文件
 
-- hosts文件里可建立许多常用域名与其对应IP的映射。当用户在浏览器中输入一个想要浏览的网址时，系统会首先在hosts文件里面查找有没有对应的IP，若有的话，则会立即打开对应的网页；若是没有，则会请求DNS服务器进行解析
+hosts文件里可建立许多常用域名与其对应IP的映射。当用户在浏览器中输入一个想要浏览的网址时，系统会首先在hosts文件里面查找有没有对应的IP，若有的话，则会立即打开对应的网页；若是没有，则会请求DNS服务器进行解析
 
 - hosts文件目录为在`C:\Windows\System32\drivers\etc\`
 
-- hosts语法格式 1个IP对应1个主机名或域名，构成一组对应关系。一组对应关系占一行。IP在前，主机名或网址在后；IP与主机名间至少有1个空格。加注释就在前面加上#，如果这一行开头有个#，则这一行全为注释内容。
+- hosts语法格式 1个IP对应1个主机名或域名，构成一组对应关系。一组对应关系占一行。IP在前，主机名或网址在后；IP与主机名间至少有1个空格。
 
 ```hosts
+# 这行是注释
 127.0.0.1 www.baidu.com
 ```
 
 - 当我们在文件中写入“127.0.0.1+空格+你想屏蔽的网址”，或者是“0.0.0.0+空格+你想屏蔽的网址”就可以实现该网站的屏蔽
   
 - cmd 输入 `ipconfig /flushdns` 让host文件生效
+
+## 面试篇
+
+### 异常问题
+
+#### catch捕获了异常，try中的return还会返回吗？
+
+答：不返回！
+
+例：
+
+```java
+@Slf4j
+public class ExceptionTest {
+    @Test
+    public void test() {
+        // 返回2
+        log.info("result of fun: {}", fun());
+    }
+
+    private int fun() {
+        try {
+            int a = 1 / 0;
+            return 1;
+        } catch (Exception e) {
+            log.error("", e);
+        }
+        return 2;
+    }
+}
+```
 
 ## 参考文献
 
