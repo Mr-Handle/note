@@ -3408,7 +3408,7 @@ public class AopAspect {
 
 - jdbcTemplate的增删改都是用update方法，不同的只有执行的sql
 
-## SPRING BOOT
+## Spring Boot
 
 - maven dependency
 
@@ -4700,7 +4700,7 @@ seata.transport.enable-client-batch-send-request=true
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
 
-## zookeeper
+## Zookeeper
 
 ### 启动zookeeper
 
@@ -4727,7 +4727,7 @@ bin/zkServer.sh stop
 bin/zkServer.sh status
 ```
 
-## docker
+## Docker
 
 docker的基本组成：镜像、容器、仓库
 
@@ -8163,34 +8163,98 @@ cat /data/powerjob/powerjob-server/logs/powerjob-server-application.log | grep "
 grep 'administrator' /data/powerjob/powerjob-server/logs/powerjob-server-application.log
 ```
 
-## IDE
+## Nginx
 
-### Eclipse
+- 官网：<http://nginx.org/>
 
-|快捷键|功能|
-|:-|:-|
-|Tab|向右缩进|
-|Shift + Tab|向左缩进|
-|Ctrl + /|注释/取消注释|
-|Ctrl + Shift + C|全局注释/取消注释|
+### 安装nginx
 
-### IDEA
+```sh
+# 解压
+tar zxvf nginx-1.21.6.tar.gz
 
-|快捷键|功能|
-|:-|:-|
-|Tab|向右缩进|
-|Shift + Tab|向左缩进|
-|Ctrl + /|注释/取消注释|
-|按两下Shift|类搜索|
-|Ctrl + Shift + F|全局搜索|
-|Ctrl + Shift + R|全局替换|
-|Ctrl + Shift + U|大小写转换|
-|Ctrl + Shift + O|优化导入语句|
-|Ctrl + Shift + L|代码格式化|
-|Ctrl + Alt + M|提取代码为作为方法|
-|Ctrl + Alt + C|修改变量作用域|
+# 进入解压后的目录
+cd nginx-1.21.6
 
-### 常见问题及处理方法
+# 设置安装路径
+./configure --prefix=/usr/local/bin/nginx
+# 如果提示C编译器没有安装，则安装gcc
+yum install -y gcc
+
+# 如果提示pcre模块没安装，则安装pcre
+yum install -y pcre pcre-devel
+
+# 如果提示安装zlib则安装zlib
+yum install -y zlib zlib-devel
+
+# make
+make
+
+# make install
+make install
+```
+
+### 启动nginx
+
+```sh
+# 进入nginx的sbin目录
+cd /usr/local/bin/nginx/sbin
+# 启动nginx
+./nginx
+
+# 快速停止
+./nginx -s stop
+
+# 优雅关闭，nginx在退出前完成已经接收的连接请求
+./nginx -s quit
+
+# 重新加载配置
+./nginx -s reload
+```
+
+### 创建脚本启动nginx服务
+
+```sh
+# 创建脚本，脚本内容
+vim /usr/lib/systemd/system/nginx.service
+
+# 重新加载系统服务
+systemctl daemon-reload
+
+# 启动nginx服务
+systemctl start nginx.service
+
+# 查看nginx服务启动状态
+systemctl status nginx.service
+
+# 设置nginx服务为开机启动
+systemctl enable nginx.service
+
+# 取消nginx服务开机启动
+systemctl disable nginx.service
+```
+
+- 脚本内容
+
+```service
+[Unit]
+Description=nginx - web server
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/bin/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/bin/nginx/sbin/nginx -t -c
+/usr/local/bin/nginx/conf/nginx.conf
+ExecStart=/usr/local/bin/nginx/sbin/nginx -c /usr/local/bin/nginx/conf/nginx.conf
+ExecReload=/usr/local/bin/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/bin/nginx/sbin/nginx -s stop
+ExecQuit=/usr/local/bin/nginx/sbin/nginx -s quit
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
 
 ## VirtualBox
 
@@ -8291,6 +8355,227 @@ DNS1=114.114.114.114
 ```
 
 - 用127.0.0.1:2222连接虚拟机操作系统
+
+## IDE
+
+### Eclipse
+
+|快捷键|功能|
+|:-|:-|
+|Tab|向右缩进|
+|Shift + Tab|向左缩进|
+|Ctrl + /|注释/取消注释|
+|Ctrl + Shift + C|全局注释/取消注释|
+
+### IDEA
+
+|快捷键|功能|
+|:-|:-|
+|Tab|向右缩进|
+|Shift + Tab|向左缩进|
+|Ctrl + /|注释/取消注释|
+|按两下Shift|类搜索|
+|Ctrl + Shift + F|全局搜索|
+|Ctrl + Shift + R|全局替换|
+|Ctrl + Shift + U|大小写转换|
+|Ctrl + Shift + O|优化导入语句|
+|Ctrl + Shift + L|代码格式化|
+|Ctrl + Alt + M|提取代码为作为方法|
+|Ctrl + Alt + C|修改变量作用域|
+
+### 常见问题及处理方法
+
+## 前端篇
+
+### CSS
+
+#### CSS 语法
+
+- CSS 规则由两个主要部分构成：
+  - 1.`选择器`：通常是需要改变样式的`HTML元素`
+  - 2.`声明`（一条或多条）：声明用`{}`括起来，其中的每条声明由一个`属性`和一个`值`组成，属性和值用`:`分开，每条声明以`;`结束
+- CSS注释以 `/*` 开始, 以 `*/` 结束。
+
+```css
+p {
+    color: red;
+    text-align: center;
+}
+```
+
+#### 选择器
+
+- #### id 选择器(#id)
+
+```css
+#username {
+    
+}
+```
+
+- #### class 选择器(.class)
+
+```css
+#.mydiv {
+
+}
+```
+
+- #### *element* 选择器(*element* )
+
+```css
+div, p {
+
+}
+```
+
+#### 插入样式表
+
+- 1.外部样式表
+
+```html
+<link rel="stylesheet" type="text/css" href="xxx/xxx.css">
+```
+
+- 2.内部样式表
+
+```html
+<style type="text/css">
+    ...
+</style>
+```
+
+- 3.内联样式表
+
+```html
+<div style="..."></div>
+```
+
+#### @keyframes
+
+语法：@keyframes *animationname* {*keyframes-selector* {*css-styles;}*}
+
+| 值                    | 说明                                                                                      |
+|:-------------------- |:--------------------------------------------------------------------------------------- |
+| *animationname*      | 必需的。定义animation的名称。                                                                     |
+| *keyframes-selector* | 必需的。动画持续时间的百分比。合法值：0-100% from (和0%相同) to (和100%相同)**注意：** 您可以用一个动画keyframes-selectors。 |
+| *css-styles*         | 必需的。一个或多个合法的CSS样式属性                                                                     |
+
+例：
+
+```css
+@keyframes dynamicBorder {
+    0% {
+        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 0 0;
+    }
+    100% {
+        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 500px 0;
+    }
+}
+```
+
+#### animation
+
+语法：animation: name duration timing-function delay iteration-count direction fill-mode play-state;
+
+| 值                                                                                                   | 说明                                                                                   |
+|:--------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------ |
+| *[animation-name](https://www.runoob.com/cssref/css3-pr-animation-name.html)*                       | 指定要绑定到选择器的关键帧的名称                                                                     |
+| *[animation-duration](https://www.runoob.com/cssref/css3-pr-animation-duration.html)*               | 动画指定需要多少秒或毫秒完成                                                                       |
+| *[animation-timing-function](https://www.runoob.com/cssref/css3-pr-animation-timing-function.html)* | 设置动画将如何完成一个周期                                                                        |
+| *[animation-delay](https://www.runoob.com/cssref/css3-pr-animation-delay.html)*                     | 设置动画在启动前的延迟间隔。                                                                       |
+| *[animation-iteration-count](https://www.runoob.com/cssref/css3-pr-animation-iteration-count.html)* | 定义动画的播放次数。                                                                           |
+| *[animation-direction](https://www.runoob.com/cssref/css3-pr-animation-direction.html)*             | 指定是否应该轮流反向播放动画。                                                                      |
+| [animation-fill-mode](https://www.runoob.com/cssref/css3-pr-animation-fill-mode.html)               | 规定当动画不播放时（当动画完成时，或当动画有一个延迟未开始播放时），要应用到元素的样式。                                         |
+| *[animation-play-state](https://www.runoob.com/cssref/css3-pr-animation-play-state.html)*           | 指定动画是否正在运行或已暂停。                                                                      |
+| initial                                                                                             | 设置属性为其默认值。 [阅读关于 *initial*的介绍。](https://www.runoob.com/cssref/css-initial.html)      |
+| inherit                                                                                             | 从父元素继承属性。 [阅读关于 *initinherital*的介绍。](https://www.runoob.com/cssref/css-inherit.html) |
+
+例：
+
+```css
+.div {
+    animation:mymove 5s infinite;
+    -webkit-animation:mymove 5s infinite; /* Safari 和 Chrome */
+}
+```
+
+#### calc 函数
+
+calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）前后都需要保留一个空格
+
+语法：calc(expression)
+
+| 值            | 描述                       |
+|:------------ |:------------------------ |
+| *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
+
+### vue
+
+- 创建vue3项目
+
+```sh
+npm create vue@latest
+```
+
+- 安装所有的依赖
+
+```sh
+npm i
+```
+
+- 运行项目
+
+```sh
+npm run dev
+```
+
+- main.ts
+
+```ts
+// 引入createApp用于创建应用
+import { createApp } from "vue";
+
+// 引入App根组件(src目录下的App.vue)
+import App from "./App.vue";
+
+// 调用createApp，传入App，并且挂载到index.html中id为app的标签中
+createApp(App).mount('#app')
+```
+
+- App.vue
+
+```vue
+<!-- .vue文件里面可以写三种标签 -->
+<template>
+    <!-- 写html -->
+    <div class="app">
+        <h1>hello vue3</h1>
+        // 显示组件
+        <Person/>
+    </div>
+</template>
+
+<script lang="ts">
+    // 导入其它组件
+    import Person from './components/Person.vue';
+    // 写ts(js)
+    export default {
+        name: 'App', //组件名
+        components: {Person} // 注册组件
+    }
+</script>
+
+<style>
+/* 写样式 */
+.app {
+    background-color: #ddd;
+    box-shadow: 0 0 10px;
+    border-radius: 10px;
+    padding: 20px;
+}
+</style>
+```
 
 ## Linux篇
 
@@ -8998,309 +9283,6 @@ vim就是vi的增强版
 
 - 查找，`/关键字`，按回车开始查找，按`n`查找下一个
 
-## nginx
-
-- 官网：<http://nginx.org/>
-
-### 安装nginx
-
-```sh
-# 解压
-tar zxvf nginx-1.21.6.tar.gz
-
-# 进入解压后的目录
-cd nginx-1.21.6
-
-# 设置安装路径
-./configure --prefix=/usr/local/bin/nginx
-# 如果提示C编译器没有安装，则安装gcc
-yum install -y gcc
-
-# 如果提示pcre模块没安装，则安装pcre
-yum install -y pcre pcre-devel
-
-# 如果提示安装zlib则安装zlib
-yum install -y zlib zlib-devel
-
-# make
-make
-
-# make install
-make install
-```
-
-### 启动nginx
-
-```sh
-# 进入nginx的sbin目录
-cd /usr/local/bin/nginx/sbin
-# 启动nginx
-./nginx
-
-# 快速停止
-./nginx -s stop
-
-# 优雅关闭，nginx在退出前完成已经接收的连接请求
-./nginx -s quit
-
-# 重新加载配置
-./nginx -s reload
-```
-
-### 创建脚本启动nginx服务
-
-```sh
-# 创建脚本，脚本内容
-vim /usr/lib/systemd/system/nginx.service
-
-# 重新加载系统服务
-systemctl daemon-reload
-
-# 启动nginx服务
-systemctl start nginx.service
-
-# 查看nginx服务启动状态
-systemctl status nginx.service
-
-# 设置nginx服务为开机启动
-systemctl enable nginx.service
-
-# 取消nginx服务开机启动
-systemctl disable nginx.service
-```
-
-- 脚本内容
-
-```service
-[Unit]
-Description=nginx - web server
-After=network.target remote-fs.target nss-lookup.target
-
-[Service]
-Type=forking
-PIDFile=/usr/local/bin/nginx/logs/nginx.pid
-ExecStartPre=/usr/local/bin/nginx/sbin/nginx -t -c
-/usr/local/bin/nginx/conf/nginx.conf
-ExecStart=/usr/local/bin/nginx/sbin/nginx -c /usr/local/bin/nginx/conf/nginx.conf
-ExecReload=/usr/local/bin/nginx/sbin/nginx -s reload
-ExecStop=/usr/local/bin/nginx/sbin/nginx -s stop
-ExecQuit=/usr/local/bin/nginx/sbin/nginx -s quit
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-```
-
-## markdown
-
-```md
-# 图片
-![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
-
-# 链接
-[超链接显示名](超链接地址 "超链接title，当鼠标悬停在链接上时会出现的文字")
-```
-
-## 算法篇
-
-### 全局唯一id生成
-
-- snowflake算法
-- 百度开源的分布式唯一id生成器UidGenerator
-- Leaf--美团点评分布式id生成系统
-
-## 前端篇
-
-### CSS
-
-#### CSS 语法
-
-- CSS 规则由两个主要部分构成：
-  - 1.`选择器`：通常是需要改变样式的`HTML元素`
-  - 2.`声明`（一条或多条）：声明用`{}`括起来，其中的每条声明由一个`属性`和一个`值`组成，属性和值用`:`分开，每条声明以`;`结束
-- CSS注释以 `/*` 开始, 以 `*/` 结束。
-
-```css
-p {
-    color: red;
-    text-align: center;
-}
-```
-
-#### 选择器
-
-- #### id 选择器(#id)
-
-```css
-#username {
-    
-}
-```
-
-- #### class 选择器(.class)
-
-```css
-#.mydiv {
-
-}
-```
-
-- #### *element* 选择器(*element* )
-
-```css
-div, p {
-
-}
-```
-
-#### 插入样式表
-
-- 1.外部样式表
-
-```html
-<link rel="stylesheet" type="text/css" href="xxx/xxx.css">
-```
-
-- 2.内部样式表
-
-```html
-<style type="text/css">
-    ...
-</style>
-```
-
-- 3.内联样式表
-
-```html
-<div style="..."></div>
-```
-
-#### @keyframes
-
-语法：@keyframes *animationname* {*keyframes-selector* {*css-styles;}*}
-
-| 值                    | 说明                                                                                      |
-|:-------------------- |:--------------------------------------------------------------------------------------- |
-| *animationname*      | 必需的。定义animation的名称。                                                                     |
-| *keyframes-selector* | 必需的。动画持续时间的百分比。合法值：0-100% from (和0%相同) to (和100%相同)**注意：** 您可以用一个动画keyframes-selectors。 |
-| *css-styles*         | 必需的。一个或多个合法的CSS样式属性                                                                     |
-
-例：
-
-```css
-@keyframes dynamicBorder {
-    0% {
-        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 0 0;
-    }
-    100% {
-        background: linear-gradient(to right, #2196F3,#fdfdfd,#2196F3) repeat-x 500px 0;
-    }
-}
-```
-
-#### animation
-
-语法：animation: name duration timing-function delay iteration-count direction fill-mode play-state;
-
-| 值                                                                                                   | 说明                                                                                   |
-|:--------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------ |
-| *[animation-name](https://www.runoob.com/cssref/css3-pr-animation-name.html)*                       | 指定要绑定到选择器的关键帧的名称                                                                     |
-| *[animation-duration](https://www.runoob.com/cssref/css3-pr-animation-duration.html)*               | 动画指定需要多少秒或毫秒完成                                                                       |
-| *[animation-timing-function](https://www.runoob.com/cssref/css3-pr-animation-timing-function.html)* | 设置动画将如何完成一个周期                                                                        |
-| *[animation-delay](https://www.runoob.com/cssref/css3-pr-animation-delay.html)*                     | 设置动画在启动前的延迟间隔。                                                                       |
-| *[animation-iteration-count](https://www.runoob.com/cssref/css3-pr-animation-iteration-count.html)* | 定义动画的播放次数。                                                                           |
-| *[animation-direction](https://www.runoob.com/cssref/css3-pr-animation-direction.html)*             | 指定是否应该轮流反向播放动画。                                                                      |
-| [animation-fill-mode](https://www.runoob.com/cssref/css3-pr-animation-fill-mode.html)               | 规定当动画不播放时（当动画完成时，或当动画有一个延迟未开始播放时），要应用到元素的样式。                                         |
-| *[animation-play-state](https://www.runoob.com/cssref/css3-pr-animation-play-state.html)*           | 指定动画是否正在运行或已暂停。                                                                      |
-| initial                                                                                             | 设置属性为其默认值。 [阅读关于 *initial*的介绍。](https://www.runoob.com/cssref/css-initial.html)      |
-| inherit                                                                                             | 从父元素继承属性。 [阅读关于 *initinherital*的介绍。](https://www.runoob.com/cssref/css-inherit.html) |
-
-例：
-
-```css
-.div {
-    animation:mymove 5s infinite;
-    -webkit-animation:mymove 5s infinite; /* Safari 和 Chrome */
-}
-```
-
-#### calc 函数
-
-calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）前后都需要保留一个空格
-
-语法：calc(expression)
-
-| 值            | 描述                       |
-|:------------ |:------------------------ |
-| *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
-
-### vue
-
-- 创建vue3项目
-
-```sh
-npm create vue@latest
-```
-
-- 安装所有的依赖
-
-```sh
-npm i
-```
-
-- 运行项目
-
-```sh
-npm run dev
-```
-
-- main.ts
-
-```ts
-// 引入createApp用于创建应用
-import { createApp } from "vue";
-
-// 引入App根组件(src目录下的App.vue)
-import App from "./App.vue";
-
-// 调用createApp，传入App，并且挂载到index.html中id为app的标签中
-createApp(App).mount('#app')
-```
-
-- App.vue
-
-```vue
-<!-- .vue文件里面可以写三种标签 -->
-<template>
-    <!-- 写html -->
-    <div class="app">
-        <h1>hello vue3</h1>
-        // 显示组件
-        <Person/>
-    </div>
-</template>
-
-<script lang="ts">
-    // 导入其它组件
-    import Person from './components/Person.vue';
-    // 写ts(js)
-    export default {
-        name: 'App', //组件名
-        components: {Person} // 注册组件
-    }
-</script>
-
-<style>
-/* 写样式 */
-.app {
-    background-color: #ddd;
-    box-shadow: 0 0 10px;
-    border-radius: 10px;
-    padding: 20px;
-}
-</style>
-```
-
 ## Windows篇
 
 ### cmd命令
@@ -9329,6 +9311,24 @@ hosts文件里可建立许多常用域名与其对应IP的映射。当用户在�
 - 当我们在文件中写入“127.0.0.1+空格+你想屏蔽的网址”，或者是“0.0.0.0+空格+你想屏蔽的网址”就可以实现该网站的屏蔽
   
 - cmd 输入 `ipconfig /flushdns` 让host文件生效
+
+## Markdown
+
+```md
+# 图片
+![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
+
+# 链接
+[超链接显示名](超链接地址 "超链接title，当鼠标悬停在链接上时会出现的文字")
+```
+
+## 算法篇
+
+### 全局唯一id生成器
+
+- snowflake算法
+- 百度开源的分布式唯一id生成器UidGenerator
+- Leaf--美团点评分布式id生成系统
 
 ## 面试篇
 
