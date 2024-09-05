@@ -889,12 +889,12 @@ public class ClassName {
 泛型类名<具体类型> object = new 泛型类名<具体类型>();
 ```
 
-### 1. 通配符类型(wildcard type)
+#### 1. 通配符类型(wildcard type)
 
 在Java库中， 使用变量E表示集合的元素类型，K和V分别表示表的关键字与值的类型。T(需要时还可以用临近的
 字母U和S)表示“任意类型”。
 
-### 2. 类型变量的限定（子类型限定）
+#### 2. 类型变量的限定（子类型限定）
 
 `<T extends BoundingType>`，表示T应该是绑定类型的子类型（subtype)。T和绑定类型可以是类，也可以是接口。
 
@@ -902,13 +902,13 @@ public class ClassName {
 `T extends Comparable & Serializable`
 限定类型用`&`分隔，而逗号用来分隔类型变量。在Java的继承中，可以根据需要拥有多个接口超类型，但限定中至多有一个类。如果用一个类作为限定，它必须是限定列表中的第一个。为了提高效率，应该将标签（tagging）接口（即没有方法的接口）放在边界列表的末尾。
 
-### 3. 通配符的超类型限定
+#### 3. 通配符的超类型限定
 
 `<? super BoundingType>`，表示这个通配符限制为绑定类型的所有超类型。
 
 直观地讲，带有超类型限定的通配符可以向泛型对象写入，带有子类型限定的通配符可以从泛型对象读取。
 
-### 4. 无限定通配符<?>
+#### 4. 无限定通配符<?>
 
 ### 匿名类
 
@@ -1208,7 +1208,7 @@ Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream().collect(
         },toCollection(HashSet::new) ))); 
   ```
 
-### 分区 partitioningBy
+#### 分区 partitioningBy
 
 分区是分组的特殊情况:最多可以分为两组——true是一组，false是一组。
 
@@ -1644,6 +1644,25 @@ Container contentPane = frame.getContentPane();
 // 将组件添加到内容窗格中
 contentPane.add(component);
 ```
+
+### 序列化/反序列化
+
+- serialVersionUID 起版本控制的作用。反序列化时，会检查 serialVersionUID 是否和当前类的 serialVersionUID 一致。如果 serialVersionUID 不一致则会抛出 InvalidClassException 异常。
+
+```java
+public class ClassName implements Serializable {
+    // 推荐手动指定，生成一个64位的哈希字段
+    private static final long serialVersionUID = -6898003192839424203L;
+
+    // 如果不手动指定，编译器会生成默认的 serialVersionUID = 1L
+    private static final long serialVersionUID = 1L;
+}
+```
+
+- 对于不想进行序列化的变量，可以使用`transient`关键字修饰
+- `transient`只能修饰变量，不能修饰类和方法。
+- `transient`修饰的变量，在反序列化后变量值将会被置成类型的默认值。
+- `static`变量因为不属于任何对象，无论有没有`transient`关键字修饰，均不会被序列化
 
 ### XML
 
