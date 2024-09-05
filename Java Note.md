@@ -2438,9 +2438,11 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
-## Junit5
+## 单元测试
 
-### Maven依赖
+### Junit5
+
+#### Maven依赖
 
 ```xml
 <dependency>
@@ -2451,9 +2453,9 @@ java -classpath ./HelloWorld.jar com.handle.HelloWorld
 </dependency>
 ```
 
-### 常用注解
+#### 常用注解
 
-#### @BeforeEach/@AfterEach
+##### @BeforeEach/@AfterEach
 
 可简单理解为在每个测试方法执行前/后执行
 
@@ -2464,7 +2466,7 @@ public void init() {
 }
 ```
 
-#### @BeforeAll/@AfterAll
+##### @BeforeAll/@AfterAll
 
 可简单理解为在所有测试方法执行前/后执行，对于一个测试类只执行一次，并且必须注解在静态方法上
 
@@ -2475,7 +2477,7 @@ public static void initStatic() {
 }
 ```
 
-### Junit5执行顺序
+#### Junit5执行顺序
 
 - 1.@BeforeAll
 - 2.循环
@@ -2483,6 +2485,25 @@ public static void initStatic() {
   - 2.2 @Test
   - 2.3 @AfterEach
 - 3.@AfterAll
+
+### Mock
+
+### @Resource/@Autowired
+
+真实调用
+
+#### @MockBean
+
+- 如果没有制定规则，返回默认值（对象为null,基本数据类型为0）
+- 如果制定了规则，就按照规则走
+
+```java
+when(someService.someMethod(parameter...)).thenReturn(someValue);
+```
+
+#### SpyBean
+
+如果制定了规则就按照规则走，没有制定规则就按照真实调用走
 
 ## Lombok
 
