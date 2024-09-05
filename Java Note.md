@@ -1391,7 +1391,7 @@ public class BaseException extends RuntimeException {
 ### 加密
 
 ```java
-package com.lsh.demo.common;
+package com.handle.demo.common;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -1412,9 +1412,8 @@ import lombok.NoArgsConstructor;
 /**
  * HmacUtils
  *
- * @author lsh
+ * @author handle
  * @date 2023-03-22 16:00:37
- * @since jdk-1.8
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class HmacUtils {
@@ -1553,7 +1552,7 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
 2.logback.xml定义LOG_HOME
 
 ```xml
-<define name="LOG_HOME" class="com.lsh.application.configuration.LogHomeConfiguration"/>
+<define name="LOG_HOME" class="com.handle.application.configuration.LogHomeConfiguration"/>
 ```
 
 ### GUI
@@ -2739,11 +2738,11 @@ public class Account {
 ```
 
 ```xml
-<resultMap id="accountUserMap" type="com.lsh.application.Account">
+<resultMap id="accountUserMap" type="com.handle.application.Account">
     <id property="accountId" column="account_id"/>
     <result property="userId" column="user_id"/>
     <result property="money" column="money"/>
-    <association property="user" column="user_id" javaType="com.lsh.application.User">
+    <association property="user" column="user_id" javaType="com.handle.application.User">
         <id property="userId" column="user_id"/>
         <result property="userName" column="user_name"/>
     </association>
@@ -2783,10 +2782,10 @@ public class Account {
 ```
 
 ```xml
-<resultMap id="userAccountMap" type="com.lsh.application.User">
+<resultMap id="userAccountMap" type="com.handle.application.User">
     <id property="userId" column="user_id"/>
     <result property="userName" column="user_name"/>
-    <collection property="accounts" javaType="com.lsh.application.Account">
+    <collection property="accounts" javaType="com.handle.application.Account">
         <id property="accountId" column="account_id"/>
         <result property="userId" column="user_id"/>
         <result property="money" column="money"/>
@@ -2825,10 +2824,10 @@ public class Role {
 ```
 
 ```xml
-<resultMap id="someName" type="com.lsh.application.Role">
+<resultMap id="someName" type="com.handle.application.Role">
     <id property="roleId" column="role_id"/>
     <result property="roleName" column="role_name"/>
-    <collection property="users" ofType="com.lsh.application.User">
+    <collection property="users" ofType="com.handle.application.User">
         <id property="userId" column="user_id"/>
         <result property="userName" column="user_name"/>
     </collection>
@@ -2860,8 +2859,8 @@ public class Role {
 - IUserDAO.xml
 
 ```xml
-<mapper namespace="com.lsh.dao.IUserDAO">
-    <select id="queryUserById" resultType="com.lsh.entity.User">
+<mapper namespace="com.handle.dao.IUserDAO">
+    <select id="queryUserById" resultType="com.handle.entity.User">
         select user_id as userId, user_name as userName from user where user_id=#{userId}
     </select>
 </mapper>
@@ -2872,12 +2871,12 @@ public class Role {
 `association`元素添加select标签
 
 ```xml
-<mapper namespace="com.lsh.dao.IAccountDAO">
-    <resultMap id="accountUserMap" type="com.lsh.entity.Account">
+<mapper namespace="com.handle.dao.IAccountDAO">
+    <resultMap id="accountUserMap" type="com.handle.entity.Account">
         <id property="accountId" column="account_id"/>
         <result property="userId" column="user_id"/>
         <result property="money" column="money"/>
-        <association property="user" column="user_id" javaType="com.lsh.entity.User" select="com.lsh.dao.IAccountDao.queryUserById">
+        <association property="user" column="user_id" javaType="com.handle.entity.User" select="com.handle.dao.IAccountDao.queryUserById">
             <id property="userId" column="user_id"/>
             <result property="userName" column="user_name"/>
         </association>
@@ -2890,8 +2889,8 @@ public class Role {
 - IAccountDAO.xml
 
 ```xml
-<mapper namespace="com.lsh.dao.IAccountDAO">
-    <select id="queryAccountByUserId" resultType="com.lsh.entity.Account">
+<mapper namespace="com.handle.dao.IAccountDAO">
+    <select id="queryAccountByUserId" resultType="com.handle.entity.Account">
         select account_id as accountId, user_id as userId, money from account where account_id=#{accountId}
     </select>
 </mapper>
@@ -2902,11 +2901,11 @@ public class Role {
 `collection`元素添加select标签
 
 ```xml
-<mapper namespace="com.lsh.application.IUserDAO">
-    <resultMap id="userAccountMap" type="com.lsh.entity.User">
+<mapper namespace="com.handle.application.IUserDAO">
+    <resultMap id="userAccountMap" type="com.handle.entity.User">
         <id property="userId" column="user_id"/>
         <result property="userName" column="user_name"/>
-        <collection property="accounts" javaType="com.lsh.entity.Account" select="com.lsh.dao.IAccountDAO.queryAccountByUserId">
+        <collection property="accounts" javaType="com.handle.entity.Account" select="com.handle.dao.IAccountDAO.queryAccountByUserId">
             <id property="accountId" column="account_id"/>
             <result property="userId" column="user_id"/>
             <result property="money" column="money"/>
@@ -2941,7 +2940,7 @@ public class Role {
 - 配置当前映射文件支持二级缓存，mapper.xml
 
 ```xml
-<mapper namespace="com.lsh.application.IUserDAO">
+<mapper namespace="com.handle.application.IUserDAO">
     <cache/>
 </mapper>
 ```
@@ -2949,8 +2948,8 @@ public class Role {
 - 配置当前操作支持二级缓存
 
 ```xml
-<mapper namespace="com.lsh.application.IUserDAO">
-    <select id="queryUserById" resultType="com.lsh.entity.User" useCache="true>
+<mapper namespace="com.handle.application.IUserDAO">
+    <select id="queryUserById" resultType="com.handle.entity.User" useCache="true>
         select user_id as userId, user_name as userName from user where user_id=#{userId}
     </select>
 </mapper>
@@ -3009,7 +3008,7 @@ public interface IAccountDAO {
         @Result(id = true,  property = "accountId", column = "account_id"),
         @Result(id = false,  property = "userId", column = "user_id"),
         @Result(id = false,  property = "money", column = "money"),
-        @Result(id = false,  property = "user", column = "user_id", one = @One(select = "com.lsh.dao.IUserDAO.queryUserById"), fetchType = FetchType.EAGER)
+        @Result(id = false,  property = "user", column = "user_id", one = @One(select = "com.handle.dao.IUserDAO.queryUserById"), fetchType = FetchType.EAGER)
     })
     List<Account> queryAll();
 }
@@ -3036,7 +3035,7 @@ public interface IUserDAO {
         @Result(id = true,  property = "userId", column = "user_id"),
         @Result(id = false,  property = "userName", column = "user_name"),
         // 在支持延迟加载的情况下fetchType = FetchType.LAZY可以延迟加载
-        @Result(id = false,  property = "accounts", column = "user_id", many = @Many(select = "com.lsh.dao.IAccountDAO.queryAccountByUserId"), fetchType = FetchType.EAGER)
+        @Result(id = false,  property = "accounts", column = "user_id", many = @Many(select = "com.handle.dao.IAccountDAO.queryAccountByUserId"), fetchType = FetchType.EAGER)
     })
     List<Account> queryAll();
 }
@@ -3081,7 +3080,7 @@ public interface IAccountDAO {
 
 ```xml
 <!-- keyProperty为实体类属性名称，keyColumn为数据库字段名称，resultType为返回值类型，AFTER表示执行插入语句后，再执行获取id的操作 -->
-<select id="addUser" parameterType="com.lsh.application.domain.UserDO">
+<select id="addUser" parameterType="com.handle.application.domain.UserDO">
     <selectKey keyProperty="id" keyColumn="id" resultType="java.lang.Integer" order="AFTER">
         select last_insert_id()
     </selectKey>
@@ -3168,9 +3167,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.springframework.org/schema/beans
 https://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="account" class="com.lsh.application.entity.Account">
+    <bean id="account" class="com.handle.application.entity.Account">
         <property name="id" value="001"></property>
-        <property name="name" value="lsh"></property>
+        <property name="name" value="handle"></property>
     </bean>
 
     <!-- 定义bean的别名 -->
@@ -3307,7 +3306,7 @@ public void test() {
 
     <!-- 用于给list结构集合注入的标签有：list、array、set，这些标签可以互换 -->
     <!-- array的注入 -->
-    <bean id="accountService" class="com.lsh.application.service.AccountServiceImpl">
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
         <property name="myArray">
             <array>
                 <value>a</value>
@@ -3317,7 +3316,7 @@ public void test() {
     </bean>
 
     <!-- list的注入 -->
-    <bean id="accountService" class="com.lsh.application.service.AccountServiceImpl">
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
         <property name="myList">
             <list>
                 <value>a</value>
@@ -3327,7 +3326,7 @@ public void test() {
     </bean>
 
     <!-- set的注入 -->
-    <bean id="accountService" class="com.lsh.application.service.AccountServiceImpl">
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
         <property name="mySet">
             <set>
                 <value>a</value>
@@ -3338,7 +3337,7 @@ public void test() {
 
     <!-- 用于给map结构集合注入的标签有：map、props，这些标签可以互换 -->
     <!-- map的注入 -->
-    <bean id="accountService" class="com.lsh.application.service.AccountServiceImpl">
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
         <property name="myMap">
             <map>
                 <entry key="dog" value="1"></entry>
@@ -3350,7 +3349,7 @@ public void test() {
     </bean>
 
     <!-- property的注入 -->
-    <bean id="accountService" class="com.lsh.application.service.AccountServiceImpl">
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
         <property name="myPropertys">
             <props>
                 <prop key="username">tomcat</prop>
@@ -3392,7 +3391,7 @@ public void test() {
 - 参数列表还可以使用通配符表示任意类型，但是只匹配有参数的方法
 - 参数列表还可以使用`..`表示有无参数均可，有参数时可以是任意类型
 - 全通配写法：`* *..*.*(..)`，实际开发不会这么写
-- 实际开发中通常切入到业务层实现了下的所有方法：*`com.lsh.application.service.impl.*.*(..)`
+- 实际开发中通常切入到业务层实现了下的所有方法：*`com.handle.application.service.impl.*.*(..)`
 
 #### xml版本配置切面
 
@@ -3400,26 +3399,26 @@ public void test() {
 
 ```xml
 <!-- 1.配置包含切入点（方法）的Service对象 -->
-<bean id="accountService" class="com.lsh.application.service.impl.AccountServiceImpl" />
+<bean id="accountService" class="com.handle.application.service.impl.AccountServiceImpl" />
 
 <!-- 2.配置通知类Logger的对象 -->
-<bean id="logger" class="com.lsh.application.logger.Logger" />
+<bean id="logger" class="com.handle.application.logger.Logger" />
 
 <!-- 3.配置AOP -->
 <aop:config>
     <!-- 7.aop:pointcut写在aop:config标签内，并且在所有aop:pointcut标签前，则变成所有切面使用-->
-    <aop:pointcut id="pointcut02" expression="execution(public void com.lsh.application.service.impl.AccountServiceImpl.saveAccount())" />
+    <aop:pointcut id="pointcut02" expression="execution(public void com.handle.application.service.impl.AccountServiceImpl.saveAccount())" />
 
     <!-- 4.配置切面，id为切面的唯一标识，ref为第二部配置的bean的id -->
     <aop:ascept id="logAdvice" ref="logger">
         <!-- 5.配置通知的类型为前置通知，并且建立通知方法和切入点（方法）的关联 -->
-        <aop:before method="printLog" pointcut="execution(public void com.lsh.application.service.impl.AccountServiceImpl.saveAccount())" />
+        <aop:before method="printLog" pointcut="execution(public void com.handle.application.service.impl.AccountServiceImpl.saveAccount())" />
 
         <!-- 6.第二种方法配置切入点表达式 -->
         <aop:before method="printLog" pointcut-ref="pointcut01" />
 
         <!-- aop:pointcut写在aop:ascept标签内只能是该切面使用-->
-        <aop:pointcut id="pointcut01" expression="execution(public void com.lsh.application.service.impl.AccountServiceImpl.saveAccount())" />
+        <aop:pointcut id="pointcut01" expression="execution(public void com.handle.application.service.impl.AccountServiceImpl.saveAccount())" />
     </aop:ascept>
 </aop:config>
 ```
@@ -3432,7 +3431,7 @@ public void test() {
 @Aspect
 @Slf4j
 public class AopAspect {
-    @Pointcut("execution(* com.lsh.spring.service.impl.*.*(..))")
+    @Pointcut("execution(* com.handle.spring.service.impl.*.*(..))")
     private void pointCut() {}
 
     // 表达式引用切入点方法的时候必须加括号，单单写方法名是无效的
@@ -3510,7 +3509,7 @@ public class AopAspect {
 
 <aop:config>
     <!-- 配置通用切入点表达式 -->
-    <aop:pointcut id="pointcut01" expression="execution(* com.lsh.service.impl.*.*(..))" />
+    <aop:pointcut id="pointcut01" expression="execution(* com.handle.service.impl.*.*(..))" />
     <aop:aspect id="txAdvice" ref="txManager">
         <!-- 配置前置通知：开启事务 -->
         <aop:before method="beginTransaction", pointcut-ref="pointcut01" />
@@ -3626,7 +3625,7 @@ public class DruidConfiguration {}
 
 ```java
 @Configuration
-@ComponentScan(basePackages = {"com.lsh"})
+@ComponentScan(basePackages = {"com.handle"})
 public class ApplicationConfiguration {}
 ```
 
@@ -3648,7 +3647,7 @@ public class ApplicationContextConfiguration {
 
 ```java
 @Configuration
-@ComponentScan(basePackages = {"com.lsh"})
+@ComponentScan(basePackages = {"com.handle"})
 public class ApplicationConfiguration {
     @Bean(name = "queryRunner")
     public QueryRunner queryRunner(DataSource dataSource) {
@@ -3679,7 +3678,7 @@ public class ApplicationConfiguration {
 
 ```java
 @Configuration
-@ComponentScan(basePackages = {"com.lsh"})
+@ComponentScan(basePackages = {"com.handle"})
 public class ApplicationConfiguration {
     @Bean(name = "queryRunner")
     public QueryRunner queryRunner(@Qualifier("dataSource2") DataSource dataSource) {
@@ -3723,7 +3722,7 @@ public class UserDO {
 
 ```java
 @Configuration
-@ComponentScan(basePackages = {"com.lsh"})
+@ComponentScan(basePackages = {"com.handle"})
 public class ApplicationConfiguration {
     @Bean(name = "queryRunner")
     // 使用场景1
@@ -3882,7 +3881,7 @@ public interface UserDAO {
 如果嫌每个DAO接口都加@Mapper注解太麻烦，可以在主启动类上面加上注解@MapperScan，就会自动扫描指定的包下的DAO
 
 ```java
-@MapperScan("com.lsh.application.dao")
+@MapperScan("com.handle.application.dao")
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
@@ -5608,7 +5607,7 @@ spring.rabbitmq.virtual-host=/
 - 启动类
 
 ```java
-package com.lsh.amqp;
+package com.handle.amqp;
 
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
@@ -5629,7 +5628,7 @@ public class AmqpApplication {
 - 监听服务类
 
 ```java
-package com.lsh.amqp.service;
+package com.handle.amqp.service;
 
 import java.util.Map;
 
@@ -5667,7 +5666,7 @@ public class OrderService {
 #### 定义默认消息转换器
 
 ```java
-package com.lsh.amqp.configuration;
+package com.handle.amqp.configuration;
 
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -5677,7 +5676,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 配置amqp默认的消息转换器，将对象转成json发送
  *
- * @author lsh
+ * @author handle
  * @date 2022-05-06 22:24:30
  * @since jdk-1.8
  */
@@ -5694,7 +5693,7 @@ public class AmqpConfiguration {
 #### 发送消息
 
 ```java
-package com.lsh.amqp;
+package com.handle.amqp;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -5712,7 +5711,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * AmqpApplicationTests
  *
- * @author lsh
+ * @author handle
  * @date 2022-05-06 22:41:14
  * @since jdk-1.8
  */
@@ -5748,7 +5747,7 @@ public class AmqpApplicationTests {
     void testSendDirectMessage() {
         Map<String, String> map = new HashMap<>();
         map.put("message", "java to rabbitmq, hello " + LocalDateTime.now().toString());
-        rabbitTemplate.convertAndSend("lsh.direct", "order.hat", map);
+        rabbitTemplate.convertAndSend("handle.direct", "order.hat", map);
     }
 
     @Test
@@ -5761,7 +5760,7 @@ public class AmqpApplicationTests {
     void testSendFanoutMessage() {
         Map<String, String> map = new HashMap<>();
         map.put("message", "java to rabbitmq, fanout hello");
-        rabbitTemplate.convertAndSend("lsh.fanout", "", map);
+        rabbitTemplate.convertAndSend("handle.fanout", "", map);
     }
 }
 ```
@@ -6351,7 +6350,7 @@ mvn clean package -Dmaven.test.skip=true
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.lsh</groupId>
+    <groupId>com.handle</groupId>
     <artifactId>app</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -6375,7 +6374,7 @@ mvn clean package -Dmaven.test.skip=true
 
     <!-- 引入父工程坐标 -->
     <parent>
-        <groupId>com.lsh</groupId>
+        <groupId>com.handle</groupId>
         <artifactId>app</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
