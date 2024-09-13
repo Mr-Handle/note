@@ -8888,6 +8888,35 @@ DNS1=114.114.114.114
 
 ### Eclipse
 
+#### 基本设置
+
+打开`Window->Preferences`
+
+- 设置字体和字号，General->Apperance->Colors and Fonts->Basic->Text Font，点击`Edit`进行设置
+
+- 设置自动保存，General->Editors->Autosave，勾上`Enable autosave for dirty editors`，根据需要设置自动保存间隔时间
+
+- 显示行号，General->Editors->Text Editors，勾上`Show line numbers`
+
+- 自动刷新文件夹改动，General->Workspace,勾上`Refresh using native hooks or polling`
+    - 设置源文件编码，`Text file encoding`设置为UTF-8
+    - 设置换行符，`New text file line delimiter`设置为Unix
+    - 手动构建自动保存，Build，勾上`Save automatically before manual build`
+
+- 设置代码补全，Java->Editor->Content Assist，
+    - 取消代码自动补全由回车键触发，取消勾选`Disable insertion trigger except 'Enter'`
+    - 设置代码补全触发器，`Auto activation triggers for Java`覆盖填入`.qwertyuiopasdfghjklzxcvbnm`
+
+- 设置编译器语法版本，Java->Compiler，`Compiler compliance level`设置为自己的Java版本
+
+- 设置JRE，Java->Installed JREs，点`Add`添加自己的Java版本
+
+- 设置Maven，Maven->Installations，点`Add`添加自己的Maven版本
+
+- 设置Maven配置文件，Maven->User Settings，设置为自己的..\settings.xml
+
+#### 快捷键
+
 |快捷键|功能|
 |:-|:-|
 |Tab|向右缩进|
