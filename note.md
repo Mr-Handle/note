@@ -8892,6 +8892,8 @@ DNS1=114.114.114.114
 
 打开`Window->Preferences`
 
+##### 通用设置
+
 - 设置字体和字号，General->Apperance->Colors and Fonts->Basic->Text Font，点击`Edit`进行设置
 
 - 设置自动保存，General->Editors->Autosave，勾上`Enable autosave for dirty editors`，根据需要设置自动保存间隔时间
@@ -8903,17 +8905,33 @@ DNS1=114.114.114.114
     - 设置换行符，`New text file line delimiter`设置为Unix
     - 手动构建自动保存，Build，勾上`Save automatically before manual build`
 
-- 设置代码补全，Java->Editor->Content Assist，
-    - 取消代码自动补全由回车键触发，取消勾选`Disable insertion trigger except 'Enter'`
-    - 设置代码补全触发器，`Auto activation triggers for Java`覆盖填入`.qwertyuiopasdfghjklzxcvbnm`
+##### Java设置
 
 - 设置编译器语法版本，Java->Compiler，`Compiler compliance level`设置为自己的Java版本
 
+- 设置代码补全，Java->Editor->Content Assist，
+    - 取消只有按回车才触发代码补全提示，取消勾选`Disable insertion trigger except 'Enter'`
+    - 不使用静态导入，取消勾选`Use static imports`
+    - 设置代码补全触发器，`Auto activation triggers for Java`覆盖填入`.qwertyuiopasdfghjklzxcvbnm`
+    - 启动Java后缀模板提示，Advance，勾上`Java Postfix Template Proposals`
+
+- 自定义模板，Java->Editor->Templates
+    - `.sout` 自动补全
+![](images/code-template1.png)
+    - `fori` 自动补全
+![](images/code-template2.png)
+
 - 设置JRE，Java->Installed JREs，点`Add`添加自己的Java版本
+
+##### Maven设置
 
 - 设置Maven，Maven->Installations，点`Add`添加自己的Maven版本
 
 - 设置Maven配置文件，Maven->User Settings，设置为自己的..\settings.xml
+
+##### XML配置
+
+- 设置缩进，XML->XML Files->Editor，选择`Indent using spaces`，`Indentation size`设置为4
 
 #### 快捷键
 
