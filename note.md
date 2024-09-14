@@ -3382,222 +3382,16 @@ long total = new PageInfo<>(users).getTotal();
 <br/>
 作用：削减计算机程序的耦合（降低代码之间的依赖关系）
 
-#### xml配置文件方式
+#### IOC容器
 
-- Account.java
-
-```java
-@Getter
-@Setter
-@ToString
-public class Account {
-    private Integer id;
-
-    private String name;
-}
-```
-
-- spring.xml
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.springframework.org/schema/beans
-https://www.springframework.org/schema/beans/spring-beans.xsd">
-
-    <bean id="account" class="com.handle.application.entity.Account">
-        <property name="id" value="001"></property>
-        <property name="name" value="handle"></property>
-    </bean>
-
-    <!-- 定义bean的别名 -->
-    <alias name="account" alias="account1" />
-</beans>
-```
-
-- test
-
-```java
-@Test
-public void test() {
-    ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-    ApplicationContext context2 = new FileSystemXmlApplicationContext("...\\spring.xml");
-    ApplicationContext context3 = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
-    Account a = context.getBean("account1", Account.class);
-    log.info(a.toString());
-}
-```
-
-#### ApplicationContext的三个常用实现类
-
-- `ClassPathXmlApplicationContext`：加载累路径下的配置文件
-- `FileSystemXmlApplicationContext`：加载磁盘任意路径下的配置文件（必须有访问权限）
-- `AnnotationConfigApplicationContext`：读取注解创建容器
-
-#### 两个核心容器
-
-- `ApplicationContext`：它在构建核心容器时，创建对象采用`立即加载`的方式，只要一读取完配置文件就马上创建配置文件中配置的对象。`单例对象适用`。
 - `BeanFactory`：它在构建核心容器时，创建对象采用`延迟加载`的方式，什么时候根据id获取对象，什么时候才真正创建对象。`多例对象适用`。
+- `ApplicationContext`：它在构建核心容器时，创建对象采用`立即加载`的方式，只要一读取完配置文件就马上创建配置文件中配置的对象。`单例对象适用`。
 
-#### spring对bean的管理
+##### ApplicationContext的三个常用实现类
 
-- 创建 bean 的三种方式
-
-```xml
-    <!-- 1）使用默认构造函数创建：bean标签里面只有id 和 class 属性，如果类没有默认构造函数，则无法创建对象 -->
-    <bean id="accountService" class="com.handle.learn.service.AccountServiceImpl"></bean>
-
-    <!-- 2）使用某个类（普通工厂）中的方法创建对象，并存入spring容器 -->
-    <bean id="instanceFactory" class="com.handle.learn.factory.InstanceFactory"></bean>
-    <bean id="accountService2" factory-bean="instanceFactory" factory-method="getAccountService"></bean>
-
-    <!-- 3）使用某个类（普通工厂）中的静态方法创建对象，并存入spring容器 -->
-    <bean id="accountService3" class="com.handle.learn.factory.StaticFactory" factory-method="getAccountService"></bean>
-```
-
-- bean 对象的作用范围
-
-```xml
-<!-- bean标签的 scope 属性指定 bean 的作用范围，取值有：
-    1）singleton：单例（默认）
-    2）prototype：多例
-    3）request：作用于web应用的请求范围
-    4）session：作用于web应用的会话范围
-    5）global-session：作用于集群环境的会话范围（全局会话范围），当不是集群环境是，相当于session
--->
-<bean id="accountService4" class="com.handle.learn.service.AccountServiceImpl" scope="singleton"></bean>
-```
-
-- bean 对象的生命周期
-
-```xml
-<!--
-    1）单例对象
-        出生：当容器创建时出生
-        活着：只要容器还在，对象一直存活
-        死亡：容器销毁，对象死亡
-        总结：单例对象的生命周期和容器相同
-    2）多例对象
-        出生：使用对象时spring框架才开始创建
-        活着：对象只要是在使用过程中就一直活着
-        死亡：当对象长时间不用，且没有别的对象引用是，由java的垃圾回收器回收
--->
-<bean id="accountService5" class="com.handle.learn.service.AccountServiceImpl" scope="singleton" init-method="init" destroy-method="destroy"></bean>
-```
-
-- spring 的依赖注入（Dependency Injection）
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd">
-    
-    <!-- IOC 的作用：降低程序间的耦合（依赖关系）
-            依赖关系的管理：交给 Spring 来维护
-            当前类需要用到其他类的对象，由 Spring 提供，我们只需在配置文件中说明
-            依赖关系的维护：
-                就称之为依赖注入
-            能注入的数据有三类：
-                1）基本数据类型和String
-                2）其他bean类型（在配置文件中或者注解配置过的bean）
-                3）复杂类型/集合类型
-            注入的方式有三种：
-                1）使用构造函数注入
-                2）使用set方法注入（常用）
-                3）使用注解注入
-    -->
-
-    <!-- 1）使用构造函数注入 
-            使用标签：constructor-arg，标签在bean标签内部
-            标签constructor-arg的属性：
-                1）type：指定数据类型，该类型是构造函数中某个或某些参数的类型
-                2）index：指定给构造函数中指定索引位置的参数赋值，索引从0开始
-                3）name：指定给构造函数中指定名称的参数赋值（最常用）
-                以上三个属性用于给指定构造函数中的指定参数赋值
-                4）value：指定基本数据类型和String类型的数据
-                5）ref：指定其他bean类型数据（在spring的ioc核心容器中出现过的bean对象）
-            优点：在获取bean对象时，注入数据是必须的操作，否则对象无法创建
-            缺点：改变了bean对象的实例化方式，使得在创建对象时，如果用不到这些数据也必须提供
-    -->
-    <bean id="accountService6" class="com.handle.learn.service.AccountServiceImpl">
-        <constructor-arg name="parameterName1" value="123456"></constructor-arg>
-        <constructor-arg name="parameterName2" ref="now"></constructor-arg>
-    </bean>
-    <bean id="now" class="java.util.Date"></bean>
-
-    <!-- 2）使用set方法注入 
-            涉及的标签：property，标签在bean标签内部
-            标签property的属性：
-                1）name：指定注入时调用的set方法名称（不是类属性名称）
-                2）value：指定基本数据类型和String类型的数据
-                3）ref：指定其他bean类型数据（在spring的ioc核心容器中出现过的bean对象）
-            优点：创建对象没有明确限制，可以直接使用默认构造函数
-            缺点：如果有某个成员必须有值，则获取对象时有可能set方法没有执行
-    -->
-    <bean id="accountService6" class="com.handle.learn.service.AccountServiceImpl">
-        <property name="parameterName1" value="123456"></property>
-        <property name="parameterName2" ref="now"></property>
-    </bean>
-    <bean id="now" class="java.util.Date"></bean>
-
-    <!-- 用于给list结构集合注入的标签有：list、array、set，这些标签可以互换 -->
-    <!-- array的注入 -->
-    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
-        <property name="myArray">
-            <array>
-                <value>a</value>
-                <value>b</value>
-            </array>
-        </property>
-    </bean>
-
-    <!-- list的注入 -->
-    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
-        <property name="myList">
-            <list>
-                <value>a</value>
-                <value>b</value>
-            </list>
-        </property>
-    </bean>
-
-    <!-- set的注入 -->
-    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
-        <property name="mySet">
-            <set>
-                <value>a</value>
-                <value>b</value>
-            </set>
-        </property>
-    </bean>
-
-    <!-- 用于给map结构集合注入的标签有：map、props，这些标签可以互换 -->
-    <!-- map的注入 -->
-    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
-        <property name="myMap">
-            <map>
-                <entry key="dog" value="1"></entry>
-                <entry key="cat">
-                    <value>2</value>
-                </entry>
-            </set>
-        </property>
-    </bean>
-
-    <!-- property的注入 -->
-    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
-        <property name="myPropertys">
-            <props>
-                <prop key="username">tomcat</prop>
-            </props>
-        </property>
-    </bean>
-</beans>
-
-```
+- `AnnotationConfigApplicationContext`，读取注解创建容器
+- `ClassPathXmlApplicationContext`，加载类路径下的配置文件
+- `FileSystemXmlApplicationContext`，加载磁盘任意路径下的配置文件（必须有访问权限）
 
 ### 注解
 
@@ -3942,7 +3736,7 @@ public class ApplicationContextConfiguration {
 }
 ```
 
-### 作用域注解
+#### 作用域注解
 
 - @Scope，指定bean的作用域，值SCOPE_SINGLETON、SCOPE_PROTOTYPE，默认单例
 
@@ -3963,7 +3757,230 @@ public class ApplicationConfiguration {
 }
 ```
 
+### xml方式配置Bean(不推荐了)
+
+- Account.java
+
+```java
+@Getter
+@Setter
+@ToString
+public class Account {
+    private Integer id;
+
+    private String name;
+}
+```
+
+- spring.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="account" class="com.handle.application.entity.Account">
+        <property name="id" value="001"></property>
+        <property name="name" value="handle"></property>
+    </bean>
+
+    <!-- 定义bean的别名 -->
+    <alias name="account" alias="account1" />
+</beans>
+```
+
+- test
+
+```java
+@Test
+public void test() {
+    ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+    ApplicationContext context2 = new FileSystemXmlApplicationContext("...\\spring.xml");
+    ApplicationContext context3 = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
+    Account a = context.getBean("account1", Account.class);
+    log.info(a.toString());
+}
+```
+
+#### spring对bean的管理
+
+- 创建 bean 的三种方式
+
+```xml
+    <!-- 1）使用默认构造函数创建：bean标签里面只有id 和 class 属性，如果类没有默认构造函数，则无法创建对象 -->
+    <bean id="accountService" class="com.handle.learn.service.AccountServiceImpl"></bean>
+
+    <!-- 2）使用某个类（普通工厂）中的方法创建对象，并存入spring容器 -->
+    <bean id="instanceFactory" class="com.handle.learn.factory.InstanceFactory"></bean>
+    <bean id="accountService2" factory-bean="instanceFactory" factory-method="getAccountService"></bean>
+
+    <!-- 3）使用某个类（普通工厂）中的静态方法创建对象，并存入spring容器 -->
+    <bean id="accountService3" class="com.handle.learn.factory.StaticFactory" factory-method="getAccountService"></bean>
+```
+
+- bean 对象的作用范围
+
+```xml
+<!-- bean标签的 scope 属性指定 bean 的作用范围，取值有：
+    1）singleton：单例（默认）
+    2）prototype：多例
+    3）request：作用于web应用的请求范围
+    4）session：作用于web应用的会话范围
+    5）global-session：作用于集群环境的会话范围（全局会话范围），当不是集群环境是，相当于session
+-->
+<bean id="accountService4" class="com.handle.learn.service.AccountServiceImpl" scope="singleton"></bean>
+```
+
+- bean 对象的生命周期
+
+```xml
+<!--
+    1）单例对象
+        出生：当容器创建时出生
+        活着：只要容器还在，对象一直存活
+        死亡：容器销毁，对象死亡
+        总结：单例对象的生命周期和容器相同
+    2）多例对象
+        出生：使用对象时spring框架才开始创建
+        活着：对象只要是在使用过程中就一直活着
+        死亡：当对象长时间不用，且没有别的对象引用是，由java的垃圾回收器回收
+-->
+<bean id="accountService5" class="com.handle.learn.service.AccountServiceImpl" scope="singleton" init-method="init" destroy-method="destroy"></bean>
+```
+
+- spring 的依赖注入（Dependency Injection）
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <!-- IOC 的作用：降低程序间的耦合（依赖关系）
+            依赖关系的管理：交给 Spring 来维护
+            当前类需要用到其他类的对象，由 Spring 提供，我们只需在配置文件中说明
+            依赖关系的维护：
+                就称之为依赖注入
+            能注入的数据有三类：
+                1）基本数据类型和String
+                2）其他bean类型（在配置文件中或者注解配置过的bean）
+                3）复杂类型/集合类型
+            注入的方式有三种：
+                1）使用构造函数注入
+                2）使用set方法注入（常用）
+                3）使用注解注入
+    -->
+
+    <!-- 1）使用构造函数注入 
+            使用标签：constructor-arg，标签在bean标签内部
+            标签constructor-arg的属性：
+                1）type：指定数据类型，该类型是构造函数中某个或某些参数的类型
+                2）index：指定给构造函数中指定索引位置的参数赋值，索引从0开始
+                3）name：指定给构造函数中指定名称的参数赋值（最常用）
+                以上三个属性用于给指定构造函数中的指定参数赋值
+                4）value：指定基本数据类型和String类型的数据
+                5）ref：指定其他bean类型数据（在spring的ioc核心容器中出现过的bean对象）
+            优点：在获取bean对象时，注入数据是必须的操作，否则对象无法创建
+            缺点：改变了bean对象的实例化方式，使得在创建对象时，如果用不到这些数据也必须提供
+    -->
+    <bean id="accountService6" class="com.handle.learn.service.AccountServiceImpl">
+        <constructor-arg name="parameterName1" value="123456"></constructor-arg>
+        <constructor-arg name="parameterName2" ref="now"></constructor-arg>
+    </bean>
+    <bean id="now" class="java.util.Date"></bean>
+
+    <!-- 2）使用set方法注入 
+            涉及的标签：property，标签在bean标签内部
+            标签property的属性：
+                1）name：指定注入时调用的set方法名称（不是类属性名称）
+                2）value：指定基本数据类型和String类型的数据
+                3）ref：指定其他bean类型数据（在spring的ioc核心容器中出现过的bean对象）
+            优点：创建对象没有明确限制，可以直接使用默认构造函数
+            缺点：如果有某个成员必须有值，则获取对象时有可能set方法没有执行
+    -->
+    <bean id="accountService6" class="com.handle.learn.service.AccountServiceImpl">
+        <property name="parameterName1" value="123456"></property>
+        <property name="parameterName2" ref="now"></property>
+    </bean>
+    <bean id="now" class="java.util.Date"></bean>
+
+    <!-- 用于给list结构集合注入的标签有：list、array、set，这些标签可以互换 -->
+    <!-- array的注入 -->
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
+        <property name="myArray">
+            <array>
+                <value>a</value>
+                <value>b</value>
+            </array>
+        </property>
+    </bean>
+
+    <!-- list的注入 -->
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
+        <property name="myList">
+            <list>
+                <value>a</value>
+                <value>b</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- set的注入 -->
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
+        <property name="mySet">
+            <set>
+                <value>a</value>
+                <value>b</value>
+            </set>
+        </property>
+    </bean>
+
+    <!-- 用于给map结构集合注入的标签有：map、props，这些标签可以互换 -->
+    <!-- map的注入 -->
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
+        <property name="myMap">
+            <map>
+                <entry key="dog" value="1"></entry>
+                <entry key="cat">
+                    <value>2</value>
+                </entry>
+            </set>
+        </property>
+    </bean>
+
+    <!-- property的注入 -->
+    <bean id="accountService" class="com.handle.application.service.AccountServiceImpl">
+        <property name="myPropertys">
+            <props>
+                <prop key="username">tomcat</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
+
+```
+
 ### AOP
+
+- 依赖
+
+```xml
+<!-- 使用spring的功能一般都会导入spring-context，里面包含了spring-aop，一般不单独导入spring-aop -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+    <version>${spring.version}</version>
+</dependency>
+<!-- spring-aspects，里面包含了aspectjweaver -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-aspects</artifactId>
+    <version>${spring.version}</version>
+</dependency>
+```
 
 #### AOP相关术语
 
@@ -3973,15 +3990,15 @@ public class ApplicationConfiguration {
 
 - Advice通知/增强：拦截到连接点之后要做的事情，分为前置通知，后置通知，异常通知，最终通知，环绕通知
 
+- Aspect切面：切入点和通知（引介）的结合
+
+- Weaving织入：把通知应用到被代理对象从而创建新的代理对象的过程
+
 - Introduction引介：一种特殊的通知，在不修改类代码的前提下，引介可以在运行期为类动态地添加一些方法或属性
 
 - Target目标对象：被代理对象
 
-- Weaving织入：把通知应用到被代理对象从而创建新的代理对象的过程
-
 - Proxy代理：一个类被AOP织入后，就产生一个代理类
-
-- Aspect切面：切入点和通知（引介）的结合
 
 #### 切入点表达式写法
 
@@ -8898,7 +8915,9 @@ DNS1=114.114.114.114
 
 - 设置自动保存，General->Editors->Autosave，勾上`Enable autosave for dirty editors`，根据需要设置自动保存间隔时间
 
-- 显示行号，General->Editors->Text Editors，勾上`Show line numbers`
+- General->Editors->Text Editors
+    - 设置Tab键插入空格，勾上`Insert spaces for tabs`
+    - 显示行号，勾上`Show line numbers`
 
 - 自动刷新文件夹改动，General->Workspace,勾上`Refresh using native hooks or polling`
     - 设置源文件编码，`Text file encoding`设置为UTF-8
