@@ -3535,15 +3535,20 @@ public class ApplicationTest {
 - @ComponentScan
 
 - 指定spring创建容器时要扫描的包，相当于在bean.xml配置了：<context:component-scan base-package="package1,package2,..." />
-- 该注解指定的包中含有配置类，也会扫描这些配置类
+
+- 该注解指定的包中含有配置类，也会扫描这些配置类，这时不用写@Import(会被扫描的配置类名.class)
 
 ```java
-package com.handle.application.configuration;
-
-// 会扫描到配置类ApplicationConfiguration
+// DataSourceConfiguration会被扫描到，不用写@Import(DataSourceConfiguration.class)
 @Configuration
 @ComponentScan(basePackages = {"com.handle.application"})
 public class ApplicationConfiguration {}
+
+
+package com.handle.application.configuration;
+
+@Configuration
+public class DataSourceConfiguration {}
 ```
 
 #### 配置文件注解
