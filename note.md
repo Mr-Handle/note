@@ -3386,8 +3386,6 @@ long total = new PageInfo<>(users).getTotal();
 - `ClassPathXmlApplicationContext`，加载类路径下的配置文件
 - `FileSystemXmlApplicationContext`，加载磁盘任意路径下的配置文件（必须有访问权限）
 
-### 注解
-
 #### IOC注解
 
 ##### 自定义类使用的注解
@@ -3750,7 +3748,7 @@ public class ApplicationConfiguration {
 }
 ```
 
-### xml方式配置Bean(不推荐了)
+#### xml方式配置Bean(了解)
 
 - Account.java
 
@@ -3797,7 +3795,7 @@ public void test() {
 }
 ```
 
-#### spring对bean的管理
+##### spring对bean的管理
 
 - 创建 bean 的三种方式
 
@@ -4113,10 +4111,14 @@ public class ApplicationConfiguration {}
 </aop:config>
 ```
 
-#### Spring 5、Spring 6切面执行顺序
+#### Spring 5/Spring 6切面执行顺序
 
-- 正常执行：@Around环绕前 -> `@Before` -> 切入点 -> `@AfterReturning` -> `@After` -> @Around环绕后
-- 异常执行：@Around环绕前 -> `@Before` -> 切入点 -> `@AfterThrowing`  -> `@After`
+- 1.@Around环绕前
+    - 2.@Before
+        - 3.切入点
+        - 4.@AfterReturning/（异常时，执行@AfterThrowing）
+    - 5.@After
+- 6.@Around环绕后/（异常时，执行@Around方法的catch代码，然后执行@Around方法的finally代码）
 
 ### TX
 
@@ -4146,6 +4148,42 @@ public class ApplicationConfiguration {}
 #### JdbcTemplate
 
 - jdbcTemplate的增删改都是用update方法，不同的只有执行的sql
+
+### Test
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>${spring.test.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>${junit.jupiter.version}</version>
+</dependency>
+```
+
+- 使用
+
+```java
+// 1.spring-test的注解，指定配置类，这个配置类可以不用写@Configuration
+@SpringJUnitConfig(value = ApplicationConfiguration.class)
+public class ApplicationTest {
+    // 2.注入组件
+    @Autowired
+    private CalculatorService calculatorService;
+
+    @Test
+    public void test() {
+        // 3.使用组件
+        BigDecimal result = calculatorService.divide(new BigDecimal("2.2"), new BigDecimal("0.2"));
+        System.out.println(result);
+    }
+}
+```
 
 ## Spring Boot
 
