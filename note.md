@@ -3958,7 +3958,7 @@ public void test() {
 
 ### AOP
 
-- 依赖
+- 依赖：spring-aop、spring-aspects、aspectjweaver
 
 ```xml
 <!-- 使用spring的功能一般都会导入spring-context，里面包含了spring-aop，一般不单独导入spring-aop -->
@@ -4006,7 +4006,84 @@ public void test() {
 - 全通配写法：`* *..*.*(..)`，实际开发不会这么写
 - 实际开发中通常切入到业务层实现了下的所有方法：*`com.handle.application.service.impl.*.*(..)`
 
-#### xml版本配置切面
+#### 注解方式配置AOP
+
+##### 配置切面类
+
+```java
+@Slf4j
+// 表示当前类是一个切面类，里面可以定义各种通知
+@Aspect
+@Component
+public class LogAspect {
+    // 增强哪些目标类的方法
+    @Pointcut("execution(* com.handle.springAopDemo.service.impl.*.*(..))")
+    private void pointcut() {}
+
+    // 表达式引用切入点方法的时候必须加括号，单单写方法名是无效的
+    @Before("pointcut()")
+    public void beforeAdvice() {
+        // 前置通知逻辑
+    }
+
+    @AfterReturning("pointcut()")
+    public void afterReturningAdvice() {
+        // 后置通知逻辑
+        log.info("execute afterReturningAdvice");
+    }
+
+    @AfterThrowing("pointcut()")
+    public void afterThrowingAdvice() {
+        // 异常通知逻辑
+        log.info("execute afterThrowingAdvice");
+    }
+
+    @After("pointcut()")
+    public void afterAdvice() {
+        // 最终通知逻辑
+        log.info("execute afterAdvice");
+    }
+
+    /**
+     * Spring框架提供了一个接口ProceedingJointPoint，该接口有一个proceed()方法，调用此方法相当于调用了切入点方法。
+     * 该接口可以作为环绕通知的方法参数，在程序执行时，Spring框架会提供该接口的实现类以供使用。
+     * Spring中的环绕通知，是Spring框架提供的一种可以在代码中手动控制增强方法何时执行的方式。
+     */
+    @Around("pointcut()")
+    public Object aroundAdvice(ProceedingJoinPoint joinPoint) {
+        Object result = null;
+        try {
+            // 此处可以写前置通知代码
+            log.info("execute aroundAdvice: before");
+
+            // 得到切入点方法执行所需参数
+            Object[] args = joinPoint.getArgs();
+            // 调用切入点方法
+            result = joinPoint.proceed(args);
+
+            // 此处可以写后置通知代码
+            log.info("execute aroundAdvice: afterReturning");
+        } catch (Throwable t) {
+            // 此处可以写异常通知代码
+            log.error("execute aroundAdvice: afterThrowing", t);
+        } finally {
+            // 此处可以写最终通知代码
+            log.info("execute aroundAdvice: after");
+        }
+        return result;
+    }
+}
+```
+
+##### 支持注解配置（@Aspect声明的组件）
+
+```java
+// 跟xml配置方式的<aop:aspectj-autoproxy />一样
+@EnableAspectJAutoProxy
+public class ApplicationConfiguration {}
+```
+
+#### xml方式配置AOP（了解）
 
 - xml方式配置
 
@@ -4036,77 +4113,7 @@ public void test() {
 </aop:config>
 ```
 
-- 注解方式配置
-
-```java
-@Component
-// 表示当前类是一个切面类，里面可以定义各种通知
-@Aspect
-@Slf4j
-public class AopAspect {
-    @Pointcut("execution(* com.handle.spring.service.impl.*.*(..))")
-    private void pointCut() {}
-
-    // 表达式引用切入点方法的时候必须加括号，单单写方法名是无效的
-    @Before("pointCut()")
-    public void beforeAdvice() {
-        // 前置通知逻辑
-    }
-
-    @AfterReturning("pointCut()")
-    public void afterReturningAdvice() {
-        // 后置通知逻辑
-        log.info("execute afterReturningAdvice");
-    }
-
-    @AfterThrowing("pointCut()")
-    public void afterThrowingAdvice() {
-        // 异常通知逻辑
-        log.info("execute afterThrowingAdvice");
-    }
-
-    @After("pointCut()")
-    public void afterAdvice() {
-        // 最终通知逻辑
-        log.info("execute afterAdvice");
-    }
-
-    /**
-     * Spring框架提供了一个接口ProceedingJointPoint，该接口有一个proceed()方法，调用次方法相当于调用了切入点方法。该接口可以作为环绕通知的方法参数，在程序执行时，Spring框架会提供该接口的实现类以供使用。
-     * Spring中的环绕通知，是Spring框架提供的一种可以在代码中手动控制增强方法何时执行的方式。
-     */
-    @Around("pointCut()")
-    public Object aroundAdvice(ProceedingJoinPoint joinPoint) {
-        Object result = null;
-        try {
-            // 此处可以写前置通知代码
-            log.info("execute aroundAdvice: before");
-
-            // 得到切入点方法执行所需参数
-            Object[] args = joinPoint.getArgs();
-            // 调用切入点方法
-            result = joinPoint.proceed(args);
-
-            // 此处可以写后置通知代码
-            log.info("execute aroundAdvice: afterReturning");
-        } catch (Throwable t) {
-            // 此处可以写异常通知代码
-            log.error("execute aroundAdvice: afterThrowing", t);
-        } finally {
-            // 此处可以写最终通知代码
-            log.info("execute aroundAdvice: after");
-        }
-        return result;
-    }
-}
-```
-
-#### spring4切面执行顺序
-
-- 正常执行：@Around环绕前 -> `@Before` -> 切入点 -> @Around环绕后 -> `@After` -> `@AfterReturning`
-- 异常执行：@Around环绕前 -> `@Before` -> 切入点 -> `@After` -> `@AfterThrowing`
-  
-#### spring5切面执行顺序
+#### Spring 5、Spring 6切面执行顺序
 
 - 正常执行：@Around环绕前 -> `@Before` -> 切入点 -> `@AfterReturning` -> `@After` -> @Around环绕后
 - 异常执行：@Around环绕前 -> `@Before` -> 切入点 -> `@AfterThrowing`  -> `@After`
@@ -8953,7 +8960,7 @@ DNS1=114.114.114.114
 java -jar lombok.jar
 ```
 
-- 2.在弹出的界面选择eclipse的所在位置，然后重启Eclipse
+- 2.在弹出的界面选择eclipse.exe的所在位置，然后重启Eclipse
 
 #### 快捷键
 
