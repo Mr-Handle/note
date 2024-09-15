@@ -8947,11 +8947,13 @@ DNS1=114.114.114.114
 
 ##### 安装Lombok插件
 
-运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
+- 1.下载Lombok，运行如下命令
 
 ```sh
 java -jar lombok.jar
 ```
+
+- 2.在弹出的界面选择eclipse的所在位置，然后重启Eclipse
 
 #### 快捷键
 
