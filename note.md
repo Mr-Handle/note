@@ -3993,18 +3993,89 @@ public void test() {
 
 #### 切入点表达式写法
 
-- execution(访问修饰符 返回值 包名.包名.包名...类名.方法名(参数列表))
-- 访问修饰符可以省略
-- 返回值可以使用通配符，表示任意返回值
-- 包名可以使用通配符，表示任意包，有几级包就写几个`*.`，也可以用`..`表示当前包及其子包
-- 类名和方法名也可以使用*来实现通配
-- 参数列表可以直接写数据类型，基本数据类型直接写类型名，引用类型写全限定类名，如：int，java.lang.String
-- 参数列表还可以使用通配符表示任意类型，但是只匹配有参数的方法
-- 参数列表还可以使用`..`表示有无参数均可，有参数时可以是任意类型
+- execution(访问修饰符 返回类型 包名.类名.方法名(参数列表))
+
+- 访问修饰符：public/private
+
+- 返回类型：基本数据类型/引用类型/void
+
+- 只有同时不考虑访问修饰符和返回类型，二者才可一起写成`*`
+
+- 包名可以使用通配符
+    - 单层模糊，一级写一个`*`：`*.handle.*.service.*`
+    - 多层模糊：`com..impl`，
+    - `..`不能在开头，错误写法：`..impl`；正确写法`*..impl`
+
+- 类名和方法名也可以使用*来实现通配：`*Impl`
+
+- 参数列表
+    - 具体参数，基本数据类型直接写类型名，引用类型写全限定类名，如：int，java.lang.String
+    - 模糊参数，参数列表还可以使用通配符表示任意类型，但是只匹配有参数的方法
+    - 任意参数：`..`，但是无参数还是建议用具体写法`()`
+
 - 全通配写法：`* *..*.*(..)`，实际开发不会这么写
-- 实际开发中通常切入到业务层实现了下的所有方法：*`com.handle.application.service.impl.*.*(..)`
+
+- 实际开发中通常切入到业务层实现了下的所有方法：`* com.handle.application.service.impl.*.*(..)`
 
 #### 注解方式配置AOP
+
+##### 切点表达式复用
+
+###### 当前类复用
+
+```java
+// 1.定义一个public void的无参切点表达式方法
+// 2.@Pointcut指定切点表达式
+@Pointcut("execution(* com.handle.springAopDemo.service.impl.*.*(..))")
+public void pointcut() {}
+
+// 3.增强注解中引用：切点表达式方法名（必须加括号）
+@Before("pointcut()")
+public void before() {}
+```
+
+###### 全局复用
+
+```java
+public class ApplicationPointcut {
+    // 1.定义一个public void的无参切点表达式方法
+    // 2.@Pointcut指定切点表达式
+    @Pointcut("execution(* com.handle.springAopDemo.service.impl.*.*(..))")
+    public void pointcut() {}
+}
+
+public class LogAspect {
+    // 3.增强注解中引用：全限定类名.切点表达式方法名（必须加括号）
+    @Before("com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()")
+    public void before() {}
+}
+```
+
+- 所有的增强方法，都可以根据需要添加参数JoinPoint，获取目标方法的信息
+
+```java
+@Before("pointcut()")
+public void before(JoinPoint joinPoint) {
+    String targetMethodName = joinPoint.getSignature().getName();
+    System.out.println(targetMethodName);
+}
+```
+
+- @AfterReturning的方法还可以获取目标方法的返回值
+
+```java
+// returning指定接收返回值的形参名
+@AfterReturning(pointcut = "pointcut()", returning = "result")
+public void afterReturning(JoinPoint joinPoint , Object result) {}
+```
+
+- @AfterThrowing的方法还可以获取目标方法的异常信息
+
+```java
+// throwing指定接收异常信息的形参名
+@AfterThrowing(pointcut = "pointcut()", throwing = "t")
+public void afterThrowing(Throwable t) {}
+```
 
 ##### 配置切面类
 
@@ -4020,27 +4091,21 @@ public class LogAspect {
 
     // 表达式引用切入点方法的时候必须加括号，单单写方法名是无效的
     @Before("pointcut()")
-    public void beforeAdvice() {
+    public void before() {
         // 前置通知逻辑
     }
 
     @AfterReturning("pointcut()")
-    public void afterReturningAdvice() {
+    public void afterReturning() {
         // 后置通知逻辑
-        log.info("execute afterReturningAdvice");
+        log.info("execute afterReturning");
     }
 
     @AfterThrowing("pointcut()")
-    public void afterThrowingAdvice() {
-        // 异常通知逻辑
-        log.info("execute afterThrowingAdvice");
-    }
+    public void afterThrowing() {}
 
     @After("pointcut()")
-    public void afterAdvice() {
-        // 最终通知逻辑
-        log.info("execute afterAdvice");
-    }
+    public void after() {}
 
     /**
      * Spring框架提供了一个接口ProceedingJointPoint，该接口有一个proceed()方法，调用此方法相当于调用了切入点方法。
@@ -4048,7 +4113,7 @@ public class LogAspect {
      * Spring中的环绕通知，是Spring框架提供的一种可以在代码中手动控制增强方法何时执行的方式。
      */
     @Around("pointcut()")
-    public Object aroundAdvice(ProceedingJoinPoint joinPoint) {
+    public Object around(ProceedingJoinPoint joinPoint) {
         Object result = null;
         try {
             // 此处可以写前置通知代码
