@@ -4085,53 +4085,52 @@ public void afterThrowing(Throwable t) {}
 @Aspect
 @Component
 public class LogAspect {
-    // 增强哪些目标类的方法
-    @Pointcut("execution(* com.handle.springAopDemo.service.impl.*.*(..))")
-    private void pointcut() {}
-
-    // 表达式引用切入点方法的时候必须加括号，单单写方法名是无效的
-    @Before("pointcut()")
-    public void before() {
-        // 前置通知逻辑
+    @Before("com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()")
+    public void before(JoinPoint joinPoint) {
+        log.info("2.执行before");
     }
 
-    @AfterReturning("pointcut()")
-    public void afterReturning() {
-        // 后置通知逻辑
-        log.info("execute afterReturning");
+    // returning指定接收返回值的形参名
+    @AfterReturning(pointcut = "com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()", returning = "result")
+    public void afterReturning(Object result) {
+        log.info("3.执行afterReturning");
     }
 
-    @AfterThrowing("pointcut()")
-    public void afterThrowing() {}
+    // throwing指定接收异常信息的形参名
+    @AfterThrowing(pointcut = "com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()", throwing = "t")
+    public void afterThrowing(Throwable t) {
+        log.info("3.执行afterThrowing");
+    }
 
-    @After("pointcut()")
-    public void after() {}
+    @After("com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()")
+    public void after() {
+        log.info("4.执行after");
+    }
 
     /**
      * Spring框架提供了一个接口ProceedingJointPoint，该接口有一个proceed()方法，调用此方法相当于调用了切入点方法。
      * 该接口可以作为环绕通知的方法参数，在程序执行时，Spring框架会提供该接口的实现类以供使用。
      * Spring中的环绕通知，是Spring框架提供的一种可以在代码中手动控制增强方法何时执行的方式。
      */
-    @Around("pointcut()")
+    @Around("com.handle.springAopDemo.pointcut.ApplicationPointcut.pointcut()")
     public Object around(ProceedingJoinPoint joinPoint) {
         Object result = null;
         try {
             // 此处可以写前置通知代码
-            log.info("execute aroundAdvice: before");
-
+            log.info("1.执行aroundBefore");
             // 得到切入点方法执行所需参数
             Object[] args = joinPoint.getArgs();
             // 调用切入点方法
             result = joinPoint.proceed(args);
-
             // 此处可以写后置通知代码
-            log.info("execute aroundAdvice: afterReturning");
+            log.info("5.执行aroundAfterReturning");
         } catch (Throwable t) {
             // 此处可以写异常通知代码
-            log.error("execute aroundAdvice: afterThrowing", t);
+            log.error("5.执行aroundThrowing");
+            throw new RuntimeException(t);
         } finally {
             // 此处可以写最终通知代码
-            log.info("execute aroundAdvice: after");
+            log.info("6.执行aroundFinally");
         }
         return result;
     }
@@ -4184,6 +4183,17 @@ public class ApplicationConfiguration {}
         - 4.@AfterReturning/（异常时，执行@AfterThrowing）
     - 5.@After
 - 6.@Around环绕后/（异常时，执行@Around方法的catch代码，然后执行@Around方法的finally代码）
+
+#### 切面优先级
+
+```java
+// 值越小，优先级越高，可以简单地把值当成执行顺序理解
+@Order(1)
+@Aspect
+@Component
+public class LogAspect {
+}
+```
 
 ### TX
 
