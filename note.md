@@ -8974,9 +8974,9 @@ DNS1=114.114.114.114
 
 - 自定义模板，Java->Editor->Templates
     - `.sout` 自动补全
-![](images/code-template1.png)
+![](/images/code-template1.png)
     - `fori` 自动补全
-![](images/code-template2.png)
+![](/images/code-template2.png)
 
 - 设置JRE，Java->Installed JREs，点`Add`添加自己的Java版本
 
