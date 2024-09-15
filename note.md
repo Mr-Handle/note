@@ -2762,21 +2762,13 @@ when(someService.someMethod(parameter...)).thenReturn(someValue);
 
 ## Lombok
 
-### Eclipse安装Lombok
-
-运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
-
-```sh
-java -jar lombok.jar
-```
-
 - maven依赖
 
 ```xml
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
-    <version>1.18.30</version>
+    <version>${lombok.version}</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -2788,6 +2780,7 @@ java -jar lombok.jar
 @Setter
 @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class Account {
     private Long id;
 }
@@ -8951,6 +8944,14 @@ DNS1=114.114.114.114
 ##### XML配置
 
 - 设置缩进，XML->XML Files->Editor，选择`Indent using spaces`，`Indentation size`设置为4
+
+##### 安装Lombok插件
+
+运行如下命令，然后选择eclipse的所在位置，然后重启eclipse
+
+```sh
+java -jar lombok.jar
+```
 
 #### 快捷键
 
