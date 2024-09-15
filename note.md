@@ -7207,6 +7207,15 @@ git stash pop: 从Git栈中读取最近一次保存的内容，恢复工作区�
 
 ### PostgreSQL
 
+#### 数据库连接串
+
+```properties
+jdbc.driverClassName=org.postgresql.Driver
+jdbc.jdbcUrl=jdbc:postgresql://localhost:5432/handle
+jdbc.username=postgres
+jdbc.password=postgres123
+```
+
 #### 安装docker版本PostgreSQL
 
 ```sh
