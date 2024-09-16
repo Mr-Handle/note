@@ -4204,7 +4204,38 @@ public class LogAspect {
 
 - 事务的传播行为：增删改操作一般用默认的REQUIRED，查询操作一般用SUPPORT
 
-- 配置事务管理器
+#### 注解配置事务管理器
+
+```java
+// 1.开启事务注解的支持
+@EnableTransactionManagement
+@Configuration
+public class TransactionManagerConfiguration {
+    @Bean
+    public TransactionManager transactionManager(DataSource dataSource) {
+        // 2.定义基于连接池的事务管理器实现（内部进行事务的操作）
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+
+// 3.添加事务用@Transactional，注解在类上时，给该类的所有方法添加事务；注解在方法上时，给该方法添加事务。
+// rollbackFor指定什么异常回滚，一般定义异常的基类
+@Transactional(rollbackFor = Exception.class)
+@Service
+public class AccountService {
+    @Autowired
+    private AccountDao accountDao;
+ 
+    // 4.也可以定义在方法上
+    // @Transactional(rollbackFor = Exception.class)
+    public void updateAccount(Long id, String name, boolean gender) {
+        accountDao.updateNameById(name, id);
+        accountDao.updateGenderById(gender, id);
+    }
+}
+```
+
+#### 配置事务管理器
 
 ```xml
 <bean id="txManager" class="...TransactionManager">
