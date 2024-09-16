@@ -4202,8 +4202,6 @@ public class LogAspect {
 
 ### TX
 
-- 事务的传播行为：增删改操作一般用默认的REQUIRED，查询操作一般用SUPPORT
-
 #### 注解配置事务管理器
 
 ```java
@@ -4218,22 +4216,40 @@ public class TransactionManagerConfiguration {
     }
 }
 
-// 3.添加事务用@Transactional，注解在类上时，给该类的所有方法添加事务；注解在方法上时，给该方法添加事务。
-// rollbackFor指定什么异常回滚，一般定义异常的基类
-@Transactional(rollbackFor = Exception.class)
+// 3.添加事务用@Transactional，注解在类上时，给该类的所有方法添加事务；注解在方法上时，给该方法添加事务，并且覆盖类上的注解定义。
+@Transactional
 @Service
 public class AccountService {
     @Autowired
     private AccountDao accountDao;
  
     // 4.也可以定义在方法上
-    // @Transactional(rollbackFor = Exception.class)
+    // @Transactional
     public void updateAccount(Long id, String name, boolean gender) {
         accountDao.updateNameById(name, id);
         accountDao.updateGenderById(gender, id);
     }
 }
 ```
+
+#### @Transactional的属性（事务的属性）
+
+- readOnly，只读，默认false，当在类上添加事务注解时，如果该类有纯查询方法，可以在该查询方法上再次添加事务注解，设置为只读模式，提高效率
+
+- timeout，事务超时时间（秒），默认-1（永不超时），超过时间会回滚事务和抛出异常
+
+- rollbackFor，指定遇到什么异常才回滚，开发项目必须设置，一般设置为`Exception.class`，所有异常都回滚
+
+- noRollbackFor，指定遇到什么异常不回滚（在回滚异常范围内，控制某个异常不回滚）
+
+- isolation，事务隔离级别，根据使用场景设置，一般`Isolation.READ_COMMITTED`
+
+- propagation，事务的传播行为（事务之间调用，如何影响子事务，事务的传播行为是设置到子事务的。如当一个事务里面包含另一个事务时）。
+    - 增删改操作一般用默认的`Propagation.REQUIRED`，查询操作一般用`Propagation.SUPPORTS`
+    - `Propagation.SUPPORTS`，如果父方法存在事务，则加入，否则自己以非事务方式执行
+    - `Propagation.REQUIRED`，默认值，如果父方法有事务，加入；如果没有，就新建事务自己独立
+    - `Propagation.REQUIRES_NEW`，无论父方法是否有事务，都新建事务自己独立
+    - 在同一个类中，对注解@Transactional的方法调用，事务传播行为不会生效。因为Spring框架是使用代理模式实现事务机制的，但是同一个类中的方法调用不经过代理，而是通过对象方法的调用，不会被代理捕获，也就不产生事务传播行为的效果。
 
 #### 配置事务管理器
 
