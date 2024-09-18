@@ -2831,6 +2831,13 @@ select account_id as accountId from Account
 
 ### 表映射
 
+```xml
+<settings>
+    <!-- 设置对于resultMap标签，无论有没有嵌套（association/collection）都自动映射result标签的列名和属性 -->
+    <setting name="autoMappingBehavior" value="FULL" />
+</settings>
+```
+
 #### 一对一
 
 从表实体包含主表实体的对象引用，一个账号对应一个用户
@@ -2859,6 +2866,7 @@ public class Account {
 
     private BigDecimal money;
 
+    // 一对一，属性中包含对方对象
     private User user;
 }
 ```
@@ -2889,6 +2897,7 @@ public class User {
 
     private String userName;
 
+    // 一对多，属性中包含对方对象集合
     private List<Account> accounts;
 }
 ```
@@ -2911,7 +2920,7 @@ public class Account {
 <resultMap id="userAccountMap" type="com.handle.application.User">
     <id column="user_id" property="userId" />
     <result column="user_name" property="userName" />
-    <collection property="accounts" javaType="com.handle.application.Account">
+    <collection property="accounts" ofType="com.handle.application.Account">
         <id column="account_id" property="accountId" />
         <result column="user_id" property="userId" />
         <result column="money" property="money" />
