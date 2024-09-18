@@ -3007,9 +3007,9 @@ public class Role {
 | 单引号 | ' | `&apos;` |
 | 双引号 | " | `&quot;` |
 
-### 常用xml元素
+### 动态SQL
 
-#### `if`元素
+#### `if`标签
 
 - 字符串判空
 
@@ -3051,7 +3051,17 @@ public class Role {
 </if>
 ```
 
-#### `foreach`元素
+#### `foreach`标签
+
+- collection，方法为单个List类型的参数时，如果不指定别名，则foreach的collection属性可填list或collection
+
+- item，用来获取集合的每个元素
+
+- open，遍历之前要添加的字符串
+
+- separator，两次遍历之间添加的分隔符
+
+- close，遍历之后要添加的字符串
 
 ```xml
 <foreach collection="集合变量名称" item="item" index="index" open="(" separator="," close=")">
@@ -3059,10 +3069,38 @@ public class Role {
 </foreach>
 ```
 
-#### `where`元素
+##### 批量插入写法
 
-- 只有在一个以上的`if`条件有值的情况下才去插入`where`子句
-- 自动去掉开头、末尾的`and`或`or`
+```xml
+insert into account (account_name, gender) values
+    <foreach collection="accounts" item="item" separator=",">
+        (#{item.accountName}, #{item.gender})
+    </foreach>
+```
+
+##### 批量更新写法
+
+- 1.jdbcUrl设置允许执行多语句
+
+```properties
+jdbc.jdbcUrl=jdbc:postgresql://localhost:5432/handle?allowMultiQueries=true
+```
+
+- 2.编写sql
+
+```xml
+<foreach collection="accounts" item="item">
+    update account 
+    set account_name=#{item.accountName},gender=#{item.gender}
+    where account_id = #{item.accountId};
+</foreach>
+```
+
+#### `where`标签
+
+- 只有在一个以上的`if`条件满足的情况下才去插入`where`子句
+
+- 自动去掉开头、末尾多余的`and`和`or`
 
 ```xml
 <select id="findActiveBlogLike" resultType="Blog">
@@ -3078,7 +3116,7 @@ public class Role {
 </select>
 ```
 
-#### `set`元素
+#### `set`标签
 
 - 用于动态包含需要更新的列
 - 会动态前置`set`关键字
@@ -3095,7 +3133,7 @@ public class Role {
 </update>
 ```
 
-#### choose元素
+#### choose标签
 
 ```xml
 <choose>  
@@ -3107,6 +3145,23 @@ public class Role {
     </otherwise>  
 </choose>  
 
+```
+
+#### sql标签
+
+- 提取重复的sql片段
+
+```xml
+<!-- 1.定义 -->
+<sql id="baseSql">
+    select * from account
+</sql>
+
+<select id="queryAccountById">
+    <!-- 2.引用 -->
+    <include refid="baseSql" />
+    where account_id=#{id}
+</select>
 ```
 
 #### in 条件大于1000
