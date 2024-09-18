@@ -2795,6 +2795,194 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ## Mybatis
 
+### 列名和属性映射
+
+#### 1.开启驼峰式映射
+
+```xml
+<settings>
+    <!-- account_id accountId 自动映射 -->
+    <setting name="mapUnderscoreToCamelCase" value="true" />
+</settings>
+```
+
+#### 2.定义别名
+
+```sql
+select account_id as accountId from Account
+```
+
+#### 3.resultMap自定义映射
+
+```xml
+<!-- 1.定义 -->
+<resultMap id="AccountMap" type="com.handle.Application.po.Account">
+    <!-- 1.1定义主键映射关系 -->
+    <id column="account_id" property="accountId" />
+    <!-- 1.2定义普通列映射关系 -->
+    <result column="account_name" property="accountName"/>
+</resultMap>
+
+<!-- 2.使用 -->
+<select id="queryAccountById" resultMap="AccountMap">
+    select account_id from Account
+</select>
+```
+
+### 表映射
+
+#### 一对一
+
+从表实体包含主表实体的对象引用，一个账号对应一个用户
+
+- 用户实体
+
+```java
+@Getter
+@Setter
+public class User {
+    private Long userId;
+
+    private String userName;
+}
+```
+
+- 账户实体
+
+```java
+@Getter
+@Setter
+public class Account {
+    private Long accountId;
+
+    private Long userId;
+
+    private BigDecimal money;
+
+    private User user;
+}
+```
+
+```xml
+<resultMap id="accountUserMap" type="com.handle.application.Account">
+    <id column="account_id" property="accountId" />
+    <result column="user_id" property="userId" />
+    <result column="money" property="money" />
+    <association column="user_id" property="user" javaType="com.handle.application.User">
+        <id column="user_id" property="userId" />
+        <result column="user_name" property="userName" />
+    </association>
+</resultMap>
+```
+
+#### 一对多
+
+主表实体包含从表实体的集合引用，一个用户有多个账户
+
+- 用户实体
+
+```java
+@Getter
+@Setter
+public class User {
+    private Long userId;
+
+    private String userName;
+
+    private List<Account> accounts;
+}
+```
+
+- 账户实体
+
+```java
+@Getter
+@Setter
+public class Account {
+    private Long accountId;
+
+    private Long userId;
+
+    private BigDecimal money;
+}
+```
+
+```xml
+<resultMap id="userAccountMap" type="com.handle.application.User">
+    <id column="user_id" property="userId" />
+    <result column="user_name" property="userName" />
+    <collection property="accounts" javaType="com.handle.application.Account">
+        <id column="account_id" property="accountId" />
+        <result column="user_id" property="userId" />
+        <result column="money" property="money" />
+    </collection>
+</resultMap>
+```
+
+#### 多对多
+
+一个角色可以赋予给多个用户，一个用户可以拥有多个角色，这里只展示前者（跟一对多一样）
+
+- 用户实体
+
+```java
+@Getter
+@Setter
+public class User {
+    private Long userId;
+
+    private String userName;
+}
+```
+
+- 角色实体
+
+```java
+@Getter
+@Setter
+public class Role {
+    private Long roleId;
+
+    private String roleName;
+
+    private List<User> users;
+}
+```
+
+```xml
+<resultMap id="someName" type="com.handle.application.Role">
+    <id column="role_id" property="roleId" />
+    <result column="role_name" property="roleName" />
+    <collection property="users" ofType="com.handle.application.User">
+        <id column="user_id" property="userId" />
+        <result column="user_name" property="userName" />
+    </collection>
+</resultMap>
+```
+
+### 主键
+
+#### 获取插入数据的主键
+
+- 自增长主键
+
+```xml
+<insert id="insertAccount" useGeneratedKeys="true" keyColumn="account_id" keyProperty="accountId">
+    <!-- insert sql -->
+</insert>
+```
+
+- 非自增长主键
+
+```xml
+<insert id="insertAccount">
+    <selectKey order="BEFORE" resultType="java.lang.Integer" keyProperty="accountId">
+        <!-- 查询下一个主键序列号的sql -->
+    </selectKey>
+    <!-- insert sql -->
+</insert>
+```
+
 ### 需要转义的符号
 
 也可以用`<![CDATA[特殊符号]]>`，无需进行转义
@@ -2810,7 +2998,9 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 | 单引号 | ' | `&apos;` |
 | 双引号 | " | `&quot;` |
 
-### `if`元素
+### 常用xml元素
+
+#### `if`元素
 
 - 字符串判空
 
@@ -2852,15 +3042,15 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 </if>
 ```
 
-### `foreach`元素
+#### `foreach`元素
 
 ```xml
 <foreach collection="集合变量名称" item="item" index="index" open="(" separator="," close=")">
- #{item}
+    #{item}
 </foreach>
 ```
 
-### `where`元素
+#### `where`元素
 
 - 只有在一个以上的`if`条件有值的情况下才去插入`where`子句
 - 自动去掉开头、末尾的`and`或`or`
@@ -2879,7 +3069,7 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 </select>
 ```
 
-### `set`元素
+#### `set`元素
 
 - 用于动态包含需要更新的列
 - 会动态前置`set`关键字
@@ -2896,7 +3086,7 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 </update>
 ```
 
-### choose元素
+#### choose元素
 
 ```xml
 <choose>  
@@ -2910,7 +3100,7 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ```
 
-### in 条件大于1000
+#### in 条件大于1000
 
 - 待验证
 
@@ -2931,137 +3121,6 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 <foreach collection="ids" item="item" index="index" open="(" separator=',' close=")">
     (1, #{item})
 </foreach>
-```
-
-### `resultMap`
-
-#### 一对一
-
-从表实体包含主表实体的对象引用，一个账号对应一个用户
-
-- 用户实体
-
-```java
-@Getter
-@Setter
-public class User {
-    private Long userId;
-
-    private String userName;
-}
-```
-
-- 账户实体
-
-```java
-@Getter
-@Setter
-public class Account {
-    private Long accountId;
-
-    private Long userId;
-
-    private BigDecimal money;
-
-    private User user;
-}
-```
-
-```xml
-<resultMap id="accountUserMap" type="com.handle.application.Account">
-    <id property="accountId" column="account_id"/>
-    <result property="userId" column="user_id"/>
-    <result property="money" column="money"/>
-    <association property="user" column="user_id" javaType="com.handle.application.User">
-        <id property="userId" column="user_id"/>
-        <result property="userName" column="user_name"/>
-    </association>
-</resultMap>
-```
-
-#### 一对多
-
-主表实体包含从表实体的集合引用，一个用户有多个账户
-
-- 用户实体
-
-```java
-@Getter
-@Setter
-public class User {
-    private Long userId;
-
-    private String userName;
-
-    private List<Account> accounts;
-}
-```
-
-- 账户实体
-
-```java
-@Getter
-@Setter
-public class Account {
-    private Long accountId;
-
-    private Long userId;
-
-    private BigDecimal money;
-}
-```
-
-```xml
-<resultMap id="userAccountMap" type="com.handle.application.User">
-    <id property="userId" column="user_id"/>
-    <result property="userName" column="user_name"/>
-    <collection property="accounts" javaType="com.handle.application.Account">
-        <id property="accountId" column="account_id"/>
-        <result property="userId" column="user_id"/>
-        <result property="money" column="money"/>
-    </collection>
-</resultMap>
-```
-
-#### 多对多
-
-一个角色可以赋予给多个用户，一个用户可以拥有多个角色，这里只展示前者（跟一对多一样）
-
-- 用户实体
-
-```java
-@Getter
-@Setter
-public class User {
-    private Long userId;
-
-    private String userName;
-}
-```
-
-- 角色实体
-
-```java
-@Getter
-@Setter
-public class Role {
-    private Long roleId;
-
-    private String roleName;
-
-    private List<User> users;
-}
-```
-
-```xml
-<resultMap id="someName" type="com.handle.application.Role">
-    <id property="roleId" column="role_id"/>
-    <result property="roleName" column="role_name"/>
-    <collection property="users" ofType="com.handle.application.User">
-        <id property="userId" column="user_id"/>
-        <result property="userName" column="user_name"/>
-    </collection>
-</resultMap>
 ```
 
 ### Mybatis中的延迟加载
