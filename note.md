@@ -2391,8 +2391,6 @@ getter为 ""时，为'';
     ![返回字符串](2021-05-22-19-20-17.png)
 - 请求处理方法返回类型为void的写法
     ![返回void](2021-05-22-19-16-31.png)
-- 请求处理方法返回字符串，使用关键字进行转发或者重定向
-    ![转发或者重定向](2021-05-22-19-29-31.png)
 - ResponseBody 响应json数据（用于ajax请求）
     ![ResponseBody](2021-05-22-20-11-24.png)
 - 返回ModelAndView，和返回字符串（页面）功能一样
@@ -4690,11 +4688,11 @@ public ModelAndView hello(HttpServletRequest request,
 }
 ```
 
-### 结果返回
+### 结果响应
 
 #### @ResponseBody
 
-- 结果直接返回前端，不要找试图解析器
+- 结果（json数据）放入响应体直接返回，不走视图解析器，转发和重定向都失效
 
 - 在类上注解
 
@@ -4711,6 +4709,64 @@ public class ApplicationController {
     @ResponseBody
     public String hello() {
         return "hello world";
+    }
+}
+```
+
+#### @RestController
+
+@RestController = @Controller + @ResponseBody
+
+#### 转发和重定向
+
+- 转发只能转发到项目下的资源
+
+- 重定向可以重定向到项目下的资源，也可以重定向到项目外的资源
+
+```java
+@Controller
+@RequestMapping("/application")
+public class ApplicationController {
+    @ResponseBody
+    @GetMapping("/destination")
+    public String destination() {
+        return "destination";
+    }
+
+    @GetMapping("/forward")
+    public String forward() {
+        // 转发到/destination
+        return "forward:/application/destination";
+    }
+
+    @GetMapping("/redirect")
+    public String redirect() {
+        // 重定向到/destination，项目内资源
+        return "redirect:/application/destination";
+        // 重定向到百度，项目外资源
+        return "redirect:http://www.baidu.com";
+    }
+}
+```
+
+#### 静态资源
+
+- MvcNamespaceHandler解析default-servlet-handler，由DefaultServletHandlerBeanDefinitionParser的parse方法处理
+    - 往IOC容器添加了DefaultServletHttpRequestHandler（可以把它当成另一个专门处理静态资源的HandlerMapping）
+        - handleRequest方法中，当没有找到handler时，对请求进行了转发，去找静态资源
+
+```java
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration implements WebMvcConfigurer{
+    /**
+     * 开启静态资源查找，同<mvc:default-servlet-handler />
+     * dispatcherServlet根据请求路径调用handlerMapping查找有没有对应的handler，如果没有，再找静态资源
+     */
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
     }
 }
 ```
@@ -4983,7 +5039,7 @@ public class JdbcConfig {
 }
 ```
 
-## SPRING CLOUD
+## Spring Cloud
 
 - 服务注册：Eureka（废弃）、Zookeeper（Eureka升级为zookeeper，不过很少用）、Consul、`Nacos`（推荐）
 - 服务调用：Ribbon、LoadBalancer、Feign（废弃）、OpenFeign
