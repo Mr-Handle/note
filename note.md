@@ -2795,6 +2795,18 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 
 ## Mybatis
 
+### 配置mapper包扫描
+
+- 1.mapper.xml的名称和mapper.java的名称必须相同
+
+- 2.mapper.xml的文件夹结构和mapper.java的包名一致
+
+```xml
+<mappers>
+    <package name="com.handle.application.dao" />
+</mappers>
+```
+
 ### 列名和属性映射
 
 #### 1.开启驼峰式映射
@@ -4435,6 +4447,273 @@ public class ApplicationTest {
 }
 ```
 
+## Spring MVC
+
+### 组件
+
+- 1.DispatcherServlet，所有请求都经过其处理分发，通过web.xml配置使其生效
+
+- 2.HandlerMapping，内部缓存handler（controller方法）和handler访问路径数据，被DispatcherServlet调用，用于查找路径对应的handler，需要加入到IOC容器
+
+- 3.HandlerAdapter，处理转换请求参数和响应数据，DispatcherServlet通过HandlerAdapter间接调用handler，HandlerAdapter是DispatcherServlet和handler之间的适配器，需要加入到IOC容器
+
+- handler，是Controller的方法，用来接收请求参数，调用业务，最终返回响应
+
+- ViewResolver，通过配置前缀和后缀，简化模板视图页面查找，对于前后端分离项目，后端只返回json数据，不返回页面，因此它不是必须的
+
+### 路径设置
+
+#### @RequestMapping
+
+- 将路径注册到HandlerMapping，最终建立请求url和处理请求的方法之间的对应关系
+
+- method，请求方式，常用RequMethod.GET/RequMethod.POST，请求方式不对报405异常
+
+```java
+// 一级请求路径
+@RequestMapping("/application")
+public class ApplicationController { 
+    // 二级请求路径
+    @RequestMapping("/hello")
+    public String hello() {
+        return "hello world";
+    }
+}
+```
+
+#### @GetMapping
+
+只能用在方法上，同@RequestMapping("/application", method=RequMethod.GET)
+
+#### @PostMapping
+
+只能用在方法上，同@RequestMapping("/application", method=RequMethod.POST)
+
+### 参数接收
+
+#### 直接接收
+
+- 形参列表参数名设置为和请求参数名一样
+
+- 使用实体对象接收时，定义一个和请求参数名称对应属性的实体类，并且定义get/set方法即可
+
+- 一个请求参数名包含多个值时，必须用集合接收，并且加注解@RequestParam
+
+- 前端不传值也不会报错
+
+```java
+@GetMapping("/getAccount")
+@ResponseBody
+// url：localhost:8080/application/getAccount?name=Jack&age=18
+public String getAccount(String name, int age) {
+    return "name = " + name + ", age = " + age;
+}
+```
+
+#### @RequestParam
+
+获取请求参数，把请求中指定名称的参数的值赋给控制器方法中的形参
+
+- name/value，设置为和请求参数名一样，如果形参名和请求参数名一样，可以不写此属性
+
+- required，前端是否必须传递此参数，为true时不传值报400异常
+
+- defaultValue，可指定默认值
+
+- 一个请求参数名包含多个值时，用集合接收即可
+
+```java
+ @GetMapping("/user/getRequestParams")
+ public Map<String, Object> getRequestParams(
+    @RequestParam("age") Integer age,
+    @RequestParam("interest") List<String> interests,
+    @RequestParam Map<String, String> allRequestParams) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("age", age);
+        map.put("interest", interests);
+        map.put("allRequestParams", allRequestParams);
+        return map;
+    }
+```
+
+请求url：`localhost:8080/application/getRequestParams?age=18&interest=basketball&interest=movie`
+
+方法返回：`{"interest": ["basketball","movie"],"allRequestParams": {"age": "18", "interest": "basketball"},"age": 18}`
+
+#### @PathVariable
+
+获取路径变量
+
+```java
+ @GetMapping("/user/{id}/{name}/getPathVariables")
+ public Map<String, Object> getPathVariables(
+    @PathVariable("id") Integer id,
+    @PathVariable("name") String name,
+    @PathVariable Map<String, String> allPathVariables) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
+        map.put("name", name);
+        map.put("allPathVariables", allPathVariables);
+        return map;
+    }
+```
+
+#### @RequestBody
+
+获取请求体
+
+- 由于java原生api只支持路径参数和param参数（request.getParameter("key")），不支持json，所以用@RequestBody接收json数据时，需要导入json处理的依赖，并且在HandlerAdapter配置json转换器
+
+```java
+// json数据处理，必须用此注解，它会加入json处理器
+// 相当于它给HandlerAdapter配置了json转换器
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration {}
+
+@PostMapping("/user/getRequestBody")
+public Map<String, Object> getRequestBody(@RequestBody String content) {
+     Map<String, Object> map = new HashMap<>();
+     map.put("content", content);
+     return map;
+}
+```
+
+#### @RequestHeader
+
+获取请求头
+
+```java
+@PostMapping("/user/getHeaders")
+public Map<String, Object> getHeaders(
+    @RequestHeader("Host") String host,
+    @RequestHeader Map<String, String> allHeaders) {
+     Map<String, Object> map = new HashMap<>();
+     map.put("host", host);
+     map.put("allHeaders", allHeaders);
+     return map;
+}
+```
+
+#### @CookieValue
+
+获取 cookie 值
+
+```java
+// 1.获取cookie
+@PostMapping("/user/getCookies")
+public Map<String, Object> getCookies(
+    @CookieValue("id") id,
+    @CookieValue Cookie cookies) {
+    Cookie cookie = new Cookie("userName", "handle");
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", id);
+    map.put("cookies", cookies);
+    return map;
+}
+
+
+// 2.设置cookie
+@PostMapping("/user/setCookies")
+public String setCookies(HttpServletResponse response) {
+    Cookie cookie = new Cookie("userName", "handle");
+     response.addCookie(cookie);
+     return "set cookie success";
+}
+```
+
+#### 结果返回
+
+#### @ResponseBody
+
+- 结果直接返回前端，不要找试图解析器
+
+- 在类上注解
+
+```Java
+@ResponseBody
+public class ApplicationController {}
+```
+
+- 在方法上加注解
+
+```java
+public class ApplicationController {
+    @GetMapping("/hello")
+    @ResponseBody
+    public String hello() {
+        return "hello world";
+    }
+}
+```
+
+### 初始化（不用web.xml）
+
+#### 注解方式手动配置
+
+- 每当web项目启动，就会自动调用WebApplicationInitializer接口的onStartup方法，因此可以在这个方法里面定义一些初始化工作，如初始化IOC容器、DispatcherServlet
+
+- AbstractAnnotationConfigDispatcherServletInitializer间接实现了WebApplicationInitializer
+
+- 因此可以定义一个初始化类，继承AbstractAnnotationConfigDispatcherServletInitializer，做一些初始化工作
+
+```java
+// 1.spring mvc核心组件配置类
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration {
+    @Bean
+    public RequestMappingHandlerMapping handlerMapping() {
+        return new RequestMappingHandlerMapping();
+    }
+    
+    @Bean
+    public RequestMappingHandlerAdapter handlerAdapter() {
+        return new RequestMappingHandlerAdapter();
+    }
+}
+
+// 2.spring mvc初始化类
+public class SpringMvcInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+    // 设置service层、mapper层的IOC容器的配置
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[0];
+    }
+
+    // 设置HandlerMapping、HandlerAdapter、Controller层的IOC容器的配置
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[] {SpringMvcConfiguration.class};
+    }
+    
+    // 配置SpringMVC内部自带servlet的访问地址，处理所有请求
+    @Override
+    protected String[] getServletMappings() {
+        return new String[] {"/"};
+    }
+}
+```
+
+#### @EnableWebMvc
+
+- 等同与xml配置中的<mvc:annotation-driven>
+
+- 最终走MvcNamespaceHandler中的AnnotationDrivenBeanDefinitionParser的parse方法
+    - 自动添加HandlerMapping
+    - 自动添加HandlerAdapter
+        - 在addRequestBodyAdvice方法中添加json处理器JsonViewRequestBodyAdvice
+        - 在addResponseBodyAdvice方法中添加json处理器JsonViewResponseBodyAdvice
+
+```java
+// 相当于添加了HandlerMapping、HandlerAdapter和json转换器
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration {}
+```
+
 ## Spring Boot
 
 - maven dependency
@@ -4530,45 +4809,6 @@ public class MySqlDataSourceConfig {
 
 - 导入spring的xml配置文件，让其生效
 - 可以标注在主启动类上
-
-#### `@RequestMapping`
-
-- 建立请求url和处理请求的方法之间的对应关系
-
-```java
-// 一级请求路径
-@RequestMapping("/application")
-public class ApplicationController { 
-    // 二级请求路径
-    @RequestMapping("/hello")
-    public String hello() {
-        return "hello world";
-    }
-}
-```
-
-#### `@ResponseBody`
-
-- 方法结果直接写回浏览器
-
-- 在类上注解
-
-```Java
-@ResponseBody
-public class ApplicationController {}
-```
-
-- 在方法上加注解
-
-```java
-public class ApplicationController {
-    @GetMapping("/hello")
-    @ResponseBody
-    public String hello() {
-        return "hello world";
-    }
-}
-```
 
 #### `@Mapper`
 
@@ -6587,98 +6827,6 @@ public class Pet {
 @EnableConfigurationProperties(Pet.class)
 public class MainConfiguration {
 
-}
-```
-
-### 请求处理常用的参数注解
-
-- @PathVariable ：获取路径变量
-
-```java
- @GetMapping("/user/{id}/{name}/getPathVariables")
- public Map<String, Object> getPathVariables(
-    @PathVariable("id") Integer id,
-    @PathVariable("name") String name,
-    @PathVariable Map<String, String> allPathVariables) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", id);
-        map.put("name", name);
-        map.put("allPathVariables", allPathVariables);
-        return map;
-    }
-```
-
-- @RequestParam : 获取请求参数，把请求中指定名称的参数的值赋给控制器中的形参
-
-```java
- @GetMapping("/user/getRequestParams")
- public Map<String, Object> getRequestParams(
-    @RequestParam("age") Integer age,
-    @RequestParam("interest") List<String> interests,
-    @RequestParam Map<String, String> allRequestParams) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("age", age);
-        map.put("interest", interests);
-        map.put("allRequestParams", allRequestParams);
-        return map;
-    }
-```
-
-请求url：`localhost:8080/application/getRequestParams?age=18&interest=basketball&interest=movie`
-
-方法返回：`{"interest": ["basketball","movie"],"allRequestParams": {"age": "18", "interest": "basketball"},"age": 18}`
-
-- @RequestBody : 获取请求体
-
-```java
-@PostMapping("/user/getRequestBody")
-public Map<String, Object> getRequestBody(@RequestBody String content) {
-     Map<String, Object> map = new HashMap<>();
-     map.put("content", content);
-     return map;
-}
-```
-
-- @RequestHeader : 获取请求头
-
-```java
-@PostMapping("/user/getHeaders")
-public Map<String, Object> getHeaders(
-    @RequestHeader("Host") String host,
-    @RequestHeader Map<String, String> allHeaders) {
-     Map<String, Object> map = new HashMap<>();
-     map.put("host", host);
-     map.put("allHeaders", allHeaders);
-     return map;
-}
-```
-
-- @CookieValue : 获取 cookie 值
-
-```java
-/**
- * 获取cookie
- */
-@PostMapping("/user/getCookies")
-public Map<String, Object> getCookies(
-    @CookieValue("id") id,
-    @CookieValue Cookie cookies) {
-    Cookie cookie = new Cookie("userName", "呆鹅大人");
-    Map<String, Object> map = new HashMap<>();
-    map.put("id", id);
-    map.put("cookies", cookies);
-    return map;
-}
-
-
-/**
- * 设置cookie
- */
-@PostMapping("/user/setCookies")
-public String setCookies(HttpServletResponse response) {
-    Cookie cookie = new Cookie("userName", "呆鹅大人");
-     response.addCookie(cookie);
-     return "set cookie success";
 }
 ```
 
