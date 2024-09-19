@@ -4459,6 +4459,91 @@ public class ApplicationTest {
 
 - ViewResolver，通过配置前缀和后缀，简化模板视图页面查找，对于前后端分离项目，后端只返回json数据，不返回页面，因此它不是必须的
 
+### 初始化
+
+#### 核心配置类
+
+```java
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration {
+    @Bean
+    public RequestMappingHandlerMapping handlerMapping() {
+        return new RequestMappingHandlerMapping();
+    }
+    
+    @Bean
+    public RequestMappingHandlerAdapter handlerAdapter() {
+        return new RequestMappingHandlerAdapter();
+    }
+}
+```
+
+#### @EnableWebMvc
+
+- 等同与xml配置中的<mvc:annotation-driven>
+
+- 相当于添加了HandlerMapping、HandlerAdapter和json转换器
+
+- 最终走MvcNamespaceHandler中的AnnotationDrivenBeanDefinitionParser的parse方法
+    - 自动添加HandlerMapping
+    - 自动添加HandlerAdapter
+        - 在addRequestBodyAdvice方法中添加json处理器JsonViewRequestBodyAdvice
+        - 在addResponseBodyAdvice方法中添加json处理器JsonViewResponseBodyAdvice
+
+```java
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration {}
+```
+
+#### WebMvcConfigurer
+
+- 除了handlerMapping、handlerAdapter、json转换器可以用@EnableWebMvc注解添加外，如果想要设置其它的mvc组件（如视图解析器），不用一个个写@Bean来添加，可以实现WebMvcConfigurer，里面提供了很多组件的默认实现方法，根据需要覆写相应方法即可添加
+
+```java
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration implements WebMvcConfigurer{
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        registry.jsp("/WEB-INF/views/", ".jsp");
+    }
+}
+```
+
+#### 初始化类
+
+- 每当web项目启动，就会自动调用WebApplicationInitializer接口的onStartup方法，因此可以在这个方法里面定义一些初始化工作，如初始化IOC容器、DispatcherServlet
+
+- AbstractAnnotationConfigDispatcherServletInitializer间接实现了WebApplicationInitializer
+
+- 因此可以定义一个初始化类，继承AbstractAnnotationConfigDispatcherServletInitializer，做一些初始化工作
+
+```java
+public class SpringMvcInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+    // 设置service层、mapper层的IOC容器的配置
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[0];
+    }
+
+    // 设置HandlerMapping、HandlerAdapter、Controller层的IOC容器的配置
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[] {SpringMvcConfiguration.class};
+    }
+    
+    // 配置SpringMVC内部自带servlet的访问地址，处理所有请求
+    @Override
+    protected String[] getServletMappings() {
+        return new String[] {"/"};
+    }
+}
+```
+
 ### 路径设置
 
 #### @RequestMapping
@@ -4767,91 +4852,6 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
-    }
-}
-```
-
-### 初始化
-
-#### 核心配置类
-
-```java
-@Configuration
-@ComponentScan("com.handle.application")
-public class SpringMvcConfiguration {
-    @Bean
-    public RequestMappingHandlerMapping handlerMapping() {
-        return new RequestMappingHandlerMapping();
-    }
-    
-    @Bean
-    public RequestMappingHandlerAdapter handlerAdapter() {
-        return new RequestMappingHandlerAdapter();
-    }
-}
-```
-
-#### @EnableWebMvc
-
-- 等同与xml配置中的<mvc:annotation-driven>
-
-- 相当于添加了HandlerMapping、HandlerAdapter和json转换器
-
-- 最终走MvcNamespaceHandler中的AnnotationDrivenBeanDefinitionParser的parse方法
-    - 自动添加HandlerMapping
-    - 自动添加HandlerAdapter
-        - 在addRequestBodyAdvice方法中添加json处理器JsonViewRequestBodyAdvice
-        - 在addResponseBodyAdvice方法中添加json处理器JsonViewResponseBodyAdvice
-
-```java
-@EnableWebMvc
-@Configuration
-@ComponentScan("com.handle.application")
-public class SpringMvcConfiguration {}
-```
-
-#### WebMvcConfigurer
-
-- 除了handlerMapping、handlerAdapter、json转换器可以用@EnableWebMvc注解添加外，如果想要设置其它的mvc组件（如视图解析器），不用一个个写@Bean来添加，可以实现WebMvcConfigurer，里面提供了很多组件的默认实现方法，根据需要覆写相应方法即可添加
-
-```java
-@EnableWebMvc
-@Configuration
-@ComponentScan("com.handle.application")
-public class SpringMvcConfiguration implements WebMvcConfigurer{
-    @Override
-    public void configureViewResolvers(ViewResolverRegistry registry) {
-        registry.jsp("/WEB-INF/views/", ".jsp");
-    }
-}
-```
-
-#### 初始化类
-
-- 每当web项目启动，就会自动调用WebApplicationInitializer接口的onStartup方法，因此可以在这个方法里面定义一些初始化工作，如初始化IOC容器、DispatcherServlet
-
-- AbstractAnnotationConfigDispatcherServletInitializer间接实现了WebApplicationInitializer
-
-- 因此可以定义一个初始化类，继承AbstractAnnotationConfigDispatcherServletInitializer，做一些初始化工作
-
-```java
-public class SpringMvcInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
-    // 设置service层、mapper层的IOC容器的配置
-    @Override
-    protected Class<?>[] getRootConfigClasses() {
-        return new Class[0];
-    }
-
-    // 设置HandlerMapping、HandlerAdapter、Controller层的IOC容器的配置
-    @Override
-    protected Class<?>[] getServletConfigClasses() {
-        return new Class[] {SpringMvcConfiguration.class};
-    }
-    
-    // 配置SpringMVC内部自带servlet的访问地址，处理所有请求
-    @Override
-    protected String[] getServletMappings() {
-        return new String[] {"/"};
     }
 }
 ```
