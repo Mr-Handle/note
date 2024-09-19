@@ -4623,7 +4623,74 @@ public String setCookies(HttpServletResponse response) {
 }
 ```
 
-#### 结果返回
+#### Spring MVC 原生对象获取
+
+- 只要在对应的控制器方法添加形参即可获取到
+
+```java
+@RequestMapping("/hello")
+public String hello(HttpServletRequest request, 
+                    HttpServletResponse response,
+                    HttpSession session,
+                    InputStream inputStream,
+                    OutputStream outputStream,
+                    Reader reader,
+                    Writer writer
+                    ) {
+    return "hello world";
+}
+```
+
+- ServletContext获取
+
+ServletContext时最大的配置文件，全局最大共享域，核心api getRealPath
+
+```java
+// 1.DI获取
+@Autowired
+private ServletContext servletContext;
+
+// 2.request和session获取
+@RequestMapping("/hello")
+public String hello(HttpServletRequest request, 
+                    HttpSession session
+                    ) {
+    ServletContext servletContext = request.getServletContext();
+    ServletContext servletContext2 = session.getServletContext();                      
+    return "hello world";
+}
+```
+
+#### 共享域对象操作
+
+- 原生共享域：request、session、servletContext
+
+- springmvc提供的request级别的共享域：model、modelMap、map、modelAndView
+
+```java
+@Autowired
+private ServletContext servletContext;
+
+@RequestMapping("/hello")
+public ModelAndView hello(HttpServletRequest request, 
+                    HttpSession session,
+                    Model model, 
+                    ModelMap modelMap,
+                    Map<String, Object> map
+                    ) {
+    request.setAttribute("key", "value");
+    model.addAttribute("key", "value");
+    modelMap.addAttribute("key", "value");
+    map.put("key", "value");
+
+    ModelAndView modelAndView = new ModelAndView();
+    modelAndView.addObject("key", "value");
+    modelAndView.setViewName("视图（页面）名称");
+    return modelAndView;
+}
+```
+
+### 结果返回
 
 #### @ResponseBody
 
