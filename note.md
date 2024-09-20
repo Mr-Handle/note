@@ -4944,6 +4944,66 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
 }
 ```
 
+### 参数校验
+
+```xml
+<dependency>
+    <groupId>org.hibernate.validator</groupId>
+    <artifactId>hibernate-validator</artifactId>
+    <version>8.0.1.Final</version>
+</dependency>
+<dependency>
+    <groupId>org.hibernate.validator</groupId>
+    <artifactId>hibernate-validator-annotation-processor</artifactId>
+    <version>8.0.1.Final</version>
+</dependency>
+```
+
+- JSR-303是Java提供，hibernate实现的，springmvc支持这套实现
+
+#### 定义实体类
+
+```java
+```java
+@Getter
+@Setter
+@ToString
+public class User {
+    private Long id;
+
+    @NotBlank
+    private String name;
+
+    @Length(min = 6, max = 16)
+    private String password;
+
+    @Min(1)
+    private int age;
+
+    @Email
+    private String email;
+
+    @Past
+    private LocateDate birthday;
+}
+```
+
+#### 定义控制器
+
+```java
+@RequestMapping("/user")
+@RestController
+public class UserController {
+    // 还可以捕捉校验错误信息，BindingResult必须紧挨着校验对象
+    @PostMapping("/updateUser")
+    public void updateUser(@Validated @RequestBody User user, BindingResult result) {
+        if (result.hasErrors()) {
+            // todo
+        }
+    }
+}
+```
+
 ## Spring Boot
 
 - maven dependency
