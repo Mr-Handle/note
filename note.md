@@ -1911,6 +1911,52 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
 <define name="LOG_HOME" class="com.handle.application.configuration.LogHomeConfiguration"/>
 ```
 
+#### Logback
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 定义变量 -->
+    <define name="LOG_HOME" class="com.lsh.config.configuration.LogHomeConfiguration" />
+
+    <!-- output to console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- 日志输出格式：时间 日志级别 线程名 打印日志的类 日志内容 换行 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{50}.%M -- %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- output to file -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{50}.%M -- %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <file>${LOG_HOME}/log/output.log</file>
+        <!-- If true, events are appended at the end of an existing file. -->
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/log/output%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>50MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <!-- 设置全局日志的级别：TRACE < DEBUG < INFO < WARN < ERROR，默认INFO -->
+    <root level="INFO">
+        <!-- 指定打印日志的appender -->
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- 根据特殊需求指定局部日志级别，可以是包名或全限定类名 -->
+    <logger name="com.handle.application.mapper" level="DEBUG"/>
+</configuration>
+```
+
 ### GUI
 
 #### JFrame
@@ -2792,6 +2838,50 @@ List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRow
 ```
 
 ## Mybatis
+
+### 完全配置类整合
+
+```java
+@Configuration
+public class MybatisConfiguration {
+    // SqlSessionFactoryBean的getObject方法会创建sqlSessionFactory，将其加入到IOC容器
+    @Bean
+    public SqlSessionFactoryBean sqlSessionFactory(DataSource dataSource) {
+        SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+
+        // 设置连接池
+        sqlSessionFactoryBean.setDataSource(dataSource);
+
+        Configuration configuration = new Configuration();
+        configuration.setMapUnderscoreToCamelCase(true);
+        configuration.setLogImpl(Slf4jImpl.class);
+        configuration.setAutoMappingBehavior(AutoMappingBehavior.FULL);
+        // 设置settings
+        sqlSessionFactoryBean.setConfiguration(configuration);
+
+        // 设置别名
+        sqlSessionFactoryBean.setTypeAliasesPackage("com.handle.pojo");
+
+        PageInterceptor pageInterceptor = new PageInterceptor();
+        Properties properties = new Properties();
+        properties.setProperty("helperDialect", "postgresql");
+        pageInterceptor.setProperties(properties);
+        // 添加插件，如PageHelper
+        sqlSessionFactoryBean.addPlugins(pageInterceptor);
+
+        return sqlSessionFactoryBean;
+    }
+    
+    // mapper代理对象加入到IOC容器
+    @Bean
+    public MapperScannerConfigurer mapperScannerConfigurer() {
+        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+        // 指定mapper.java和mapper.xml所在的共同包
+        mapperScannerConfigurer.setBasePackage("com.handle.mapper");
+        return mapperScannerConfigurer;
+    }
+}
+```
 
 ### 配置mapper包扫描
 
@@ -4518,6 +4608,9 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
 
 #### 初始化类
 
+- 初始化两个容器（所以至少两个配置类）
+    - root容器是父容器，放service、mapper、mybatis等组件
+    - web容器是子容器，放controller、web相关组件，web容器在FrameworkServlet中的createWebApplicationContext方法创建，通过setParent方法维护容器的父子关系
 - 每当web项目启动，就会自动调用WebApplicationInitializer接口的onStartup方法，因此可以在这个方法里面定义一些初始化工作，如初始化IOC容器、DispatcherServlet
 
 - AbstractAnnotationConfigDispatcherServletInitializer间接实现了WebApplicationInitializer
@@ -4526,13 +4619,13 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
 
 ```java
 public class SpringMvcInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
-    // 设置service层、mapper层的IOC容器的配置
+    // 指定Root IOC容器配置类，设置service层、mapper层的IOC容器的配置
     @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class[0];
     }
 
-    // 设置HandlerMapping、HandlerAdapter、Controller层的IOC容器的配置
+    // 指定Web IOC容器配置类，设置springmvc相关的如HandlerMapping、HandlerAdapter、Controller层的IOC容器的配置
     @Override
     protected Class<?>[] getServletConfigClasses() {
         return new Class[] {SpringMvcConfiguration.class};
@@ -4573,6 +4666,19 @@ public class ApplicationController {
 #### @PostMapping
 
 只能用在方法上，同@RequestMapping("/application", method=RequMethod.POST)
+
+#### @CrossOrigin
+
+同源策略：比较访问方和被访问方的域名（协议、IP、端口）是否一样，不一样的话浏览器会阻止访问，除非被访问方设置了允许跨域访问
+
+```java
+// 允许其它源访问这个controller，浏览器不拦截，也可加在handler上
+@CrossOrigin
+@RequestMapping("/application")
+@RestController
+public class ApplicationController { 
+}
+```
 
 ### 参数接收
 
