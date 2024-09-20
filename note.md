@@ -4500,6 +4500,8 @@ public class SpringMvcConfiguration {}
 
 #### WebMvcConfigurer
 
+Spring MVC标准化配置类
+
 - 除了handlerMapping、handlerAdapter、json转换器可以用@EnableWebMvc注解添加外，如果想要设置其它的mvc组件（如视图解析器），不用一个个写@Bean来添加，可以实现WebMvcConfigurer，里面提供了很多组件的默认实现方法，根据需要覆写相应方法即可添加
 
 ```java
@@ -4852,6 +4854,92 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
     @Override
     public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
         configurer.enable();
+    }
+}
+```
+
+### 全局异常处理
+
+- @ControllerAdvice，异常处理器，全局异常发生，会走此类的handler逻辑，可以返回视图、转发和重定向
+
+- @RestControllerAdvice = @ControllerAdvice + @ResponseBody，返回json
+
+```java
+// 1.声明全局异常处理类
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    // 2.声明异常处理方法
+    @ExceptionHandler(NullPointerException.class)
+    public Object nullPointerExceptionHandler(NullPointerException e) {
+        return null;
+    }
+
+    @ExceptionHandler(Exception.class)
+    public Object exceptionHandler(Exception e) {
+        return null;
+    }
+}
+```
+
+### 拦截器
+
+- DispatcherServlet的doDispatch方法内
+    - getHandler，获取handlerMapping
+    - getHandlerAdapter，获取handlerAdapter
+    - applyPreHandle，执行拦截器的preHandle
+        - 正序遍历拦截器集合，依次调用preHandle
+    - handle，调用handler
+    - applyPostHandle，执行拦截器的postHandle
+        - 倒序遍历拦截器集合，依次调用postHandle
+    - processDispatchResult
+        - triggerAfterCompletion，执行拦截器的afterCompletion
+            - 倒序遍历拦截器集合，依次调用afterCompletion
+- 1.定义拦截器
+
+```java
+public class LoginInterceptor implements HandlerInterceptor {
+    // 在执行控制器的handler方法前执行
+    // 形参中的handler就是控制器的handler方法
+    // 可用来编码格式设置，登录保护，权限处理
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 返回true，放行，返回false，不放行
+        return true;
+    }
+    
+    // 在控制器的handler方法执行完毕后执行
+    // preHandle返回false或handler报错不执行
+    // 可用来处理结果，敏感词检查
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+        // todo
+    }
+    
+    // 整体处理完毕后执行
+    // 可用来做响应计数
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception e) {
+        // todo
+    }
+}
+```
+
+- 2.将拦截器加入spring mvc的IOC容器
+
+```java
+@EnableWebMvc
+@Configuration
+@ComponentScan("com.handle.application")
+public class SpringMvcConfiguration implements WebMvcConfigurer{
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginInterceptor())
+                // 可设置只拦截指定地址，用通配符*表示任意一层，**表示任意多层
+                .addPathPatterns("/account/**")
+                // 可设置排除拦截地址，排除拦截地址应该在拦截地址范围内
+                .excludePathPatterns("/account/getAccountById");
+        // 可添加多个拦截器，先添加的优先级高
+        registry.addInterceptor(new LogInterceptor());
     }
 }
 ```
