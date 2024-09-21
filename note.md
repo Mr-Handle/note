@@ -3778,6 +3778,8 @@ public class DataSourceConfiguration {}
 
 ##### @PropertySource
 
+- encoding，指定配置文件编码格式，如果是`.properties`文件并且文件内容有中文需要指定编码格式
+
 - 用于加载指定的配置文件
 
 - person.yml
@@ -5127,13 +5129,25 @@ public class UserController {
         </dependency>
     </dependencies>
 </dependencyManagement>
+
 <!-- 适用于单体项目 -->
 <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.3.12.RELEASE</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <version>${spring.boot.version}</version>
 </parent>
+```
+
+### 启动类
+
+```java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        // 加载配置，创建IOC容器，启动内置web服务器
+        SpringApplication.run(Application.class, args);
+    }
+}
 ```
 
 ### 根据需要修改主启动类主函数
@@ -5156,7 +5170,15 @@ public static void main(String[] args) {
 
 ### 常用注解
 
-- 集合类型的注入只能通过XML来实现
+#### @SpringBootApplication
+
+- @SpringBootApplication = @SpringBootConfiguration + @EnableAutoConfiguration + @ComponentScan
+
+- @SpringBootConfiguration = @Configuration
+
+- @EnableAutoConfiguration 自动加载其它的配置类
+
+- @ComponentScan，默认扫描当前类所在包及其子包
 
 #### `@InitBinder`
 
@@ -9754,8 +9776,9 @@ DNS1=114.114.114.114
 
 - 设置字体和字号，General->Apperance->Colors and Fonts->Basic->Text Font，点击`Edit`进行设置
 
-- 设置自动保存，General->Editors->Autosave，勾上`Enable autosave for dirty editors`，根据需要设置自动保存间隔时间
+- 设置自动保存，General->Content Types->Text->Java Properties File，在`Default encoding` 输入`UTF-8`，然后点击`Update`
 
+- 设置properties文件编码，General->Editors->Autosave
 - General->Editors->Text Editors
     - 设置Tab键插入空格，勾上`Insert spaces for tabs`
     - 显示行号，勾上`Show line numbers`
