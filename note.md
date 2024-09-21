@@ -5349,6 +5349,45 @@ public class ApplicationTest {
 
 ```
 
+### 整合Mybatis
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+</dependency>
+```
+
+- 启动类
+
+```java
+// mapper.java所在包
+@MapperScan("com.handle.application.dao")
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+- 配置文件
+
+```properties
+# 指定mapper.xml文件位置
+mybatis.mapper-locations=classpath:mapper/*.xml
+# 设置实体别名的包位置
+mybatis.type-aliases-package=com.handle.application.pojo
+# 设置表字段名-实体属性自动映射：account_id accountId 自动映射
+mybatis.configuration.map-underscore-to-camel-case=true
+# 设置对于resultMap标签，无论有没有嵌套（association/collection）都自动映射result标签的列名和属性
+mybatis.configuration.auto-mapping-behavior=full
+# 设置日志输出实现
+mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
+```
+
 ## Spring Cloud
 
 - 服务注册：Eureka（废弃）、Zookeeper（Eureka升级为zookeeper，不过很少用）、Consul、`Nacos`（推荐）
@@ -9850,7 +9889,31 @@ DNS1=114.114.114.114
 
 - 设置缩进，XML->XML Files->Editor，选择`Indent using spaces`，`Indentation size`设置为4
 
-##### 安装Lombok插件
+- 设置xml文件头部约束资源下载，XML(Wild Web Developer)，勾选`Download external resources like referenced DTD,XSD`
+
+##### Mybatis代码提示设置
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.handle.application.pojo.AccountDo">
+
+</mapper>
+```
+
+- 1. 复制mapper.xml中的`https://mybatis.org/dtd/mybatis-3-mapper.dtd`，粘贴到浏览器地址栏下载，下载完成放到某一个目录中
+
+- 2.XML->XML Catalog，点`Add`
+
+- 3.点`File System`，选中刚刚下载的dtd文件
+
+- `Key type`填`URI`
+
+- `Key`填mapper.xml中的`-//mybatis.org//DTD Mapper 3.0//EN`
+
+#### 安装Lombok插件
 
 - 1.下载Lombok，运行如下命令
 
