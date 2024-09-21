@@ -5373,7 +5373,7 @@ public class ApplicationTest {
 
 ### 整合Spring MVC
 
-- 导入如下依赖就可以了
+- 导入如下依赖就可以了，Spring MVC组件、全局异常和拦截器和以前一样使用
 
 ```xml
 <dependency>
@@ -5432,6 +5432,35 @@ mybatis.configuration.auto-mapping-behavior=full
 # 设置日志输出实现
 mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
 ```
+
+### 打包
+
+- 依赖
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+```
+
+### 命令启动
+
+```sh
+java -jar [选项] [参数] <jar文件名>
+```
+
+- 指定系统属性-D<属性名>=<属性值>，可以通过System.getProperty()在应用程序获取该属性值
+    - 指定服务器端口：`-Dserver.port=80`
+    - 指定要激活的配置文件：`-Dspring.profiles.active=<dev/test/prod>`
+
+- 指定JVM参数`-X`
+    - 设置最大堆内存：`-Xmx1024m`
+    - 设置最小堆内存：`-Xms512m`
 
 ## Spring Cloud
 
