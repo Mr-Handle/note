@@ -5349,11 +5349,38 @@ public class ApplicationTest {
 
 ```
 
+### 整合AOP
+
+- 导入如下依赖就可以用@Aspect注解声明切面了
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+
+### 整合声明式事务
+
+- 导入如下依赖就可以用@Transactional注解声明事务了
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+```
+
 ### 整合Mybatis
 
 - 依赖
 
 ```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+</dependency>
+<!-- 其包含了spring-boot-starter-jdbc -->
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
     <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -5375,9 +5402,16 @@ public class Application {
 
 - 配置文件
 
-```properties
+```conf
+# 数据库设置，千万不要设置到hikari目录下
+spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://localhost:5432/handle
+spring.datasource.username=postgres
+spring.datasource.password=postgres123
+
 # 指定mapper.xml文件位置
-mybatis.mapper-locations=classpath:mapper/*.xml
+mybatis.mapper-locations=classpath:mapper/**/*.xml
 # 设置实体别名的包位置
 mybatis.type-aliases-package=com.handle.application.pojo
 # 设置表字段名-实体属性自动映射：account_id accountId 自动映射
