@@ -5371,6 +5371,17 @@ public class ApplicationTest {
 </dependency>
 ```
 
+### 整合Spring MVC
+
+- 导入如下依赖就可以了
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
 ### 整合Mybatis
 
 - 依赖
