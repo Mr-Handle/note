@@ -3892,10 +3892,13 @@ public class XxxController {
 
 ##### @Value
 
-- @AutoWired、@Qualifier和@Resource都只能注入其他bean类型的数据
-- 而@Value用来注入基本类型和String类型的数据
 - 此注解所在的类必须是一个组件
+
+- @AutoWired、@Qualifier和@Resource都只能注入其他bean类型的数据，而@Value用来注入基本类型和String类型的数据
+
 - 作用在字段上，可以使用Spring的spel表达式，也可以用来注入配置文件中的属性值
+
+- 只能读取单个值，不能读取集合
 
 - 假设配置文件application.yml存在配置
 
@@ -5180,16 +5183,15 @@ public static void main(String[] args) {
 
 - @ComponentScan，默认扫描当前类所在包及其子包
 
-#### `@InitBinder`
-
-为当前控制器注册一个属性编辑器，只对当前Controller有效，参数webDataBinder是用于表单到方法的数据绑定的
-
 #### `@ConfigurationProperties`
 
-- 将类中所有属性和配置文件中的相关配置进行绑定
-- 默认从application.properties(.yml)文件中获取值
-- 在类上注解
-- 此注解所在的类也必须是一个组件
+- 此注解所在的类必须是一个组件，在类上注解
+
+- 将类中所有属性和配置文件中的相关配置进行绑定，默认从application.properties(.yml)文件中获取值，不用写@Value
+
+- 可以给集合类型赋值
+
+- 文件内容有中文时需要用@PropertySource指定编码格式，并且文件名不能是application.properties
 
 假设配置文件application.yml存在配置
 
@@ -5253,6 +5255,10 @@ public class Application {
 }
 ```
 
+#### `@InitBinder`
+
+为当前控制器注册一个属性编辑器，只对当前Controller有效，参数webDataBinder是用于表单到方法的数据绑定的
+
 #### 自定义数据库连接属性并配置
 
 - /config/jdbc.properties
@@ -5313,6 +5319,34 @@ public class JdbcConfig {
     }
 
 }
+```
+
+### 测试
+
+- maven依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+- 测试类
+
+```java
+@SpringBootTest
+public class ApplicationTest {
+    @Autowired
+    private User user;
+ 
+    @Test
+    public void test() {
+    System.out.println(user);
+    }
+}
+
 ```
 
 ## Spring Cloud
@@ -9776,7 +9810,7 @@ DNS1=114.114.114.114
 
 - 设置字体和字号，General->Apperance->Colors and Fonts->Basic->Text Font，点击`Edit`进行设置
 
-- 设置自动保存，General->Content Types->Text->Java Properties File，在`Default encoding` 输入`UTF-8`，然后点击`Update`
+- 设置自动保存，General->Content Types->Text，在`Default encoding` 输入`UTF-8`，然后点击`Update`
 
 - 设置properties文件编码，General->Editors->Autosave
 - General->Editors->Text Editors
