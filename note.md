@@ -3693,6 +3693,54 @@ public class AccountPo {
 }
 ```
 
+### 逻辑删除
+
+```properties
+# 逻辑删除配置
+mybatis-plus.global-config.db-config.logic-delete-field=deleted
+mybatis-plus.global-config.db-config.logic-delete-value=true
+mybatis-plus.global-config.db-config.logic-not-delete-value=false
+```
+
+### 乐观锁
+
+- 1.配置拦截器
+
+```java
+@Bean
+public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+    interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+    return interceptor;
+}
+```
+
+- 2.配置注解
+
+```java
+public class AccountPo {
+    @Version
+    private Integer version;
+}
+```
+
+### 拦截器
+
+```java
+@Bean
+public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+    // 乐观锁插件，在更新的时候比较版本字段，并且做版本自增
+    interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+    // 防止全表删除和更新的拦截器
+    interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+    // 如果配置多个插件, 切记分页最后添加
+        // 如果有多数据源可以不配具体类型, 否则都建议配上具体的 DbType
+    interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.POSTGRE_SQL));
+    return interceptor;
+}
+```
+
 ## Spring
 
 ### IOC
@@ -8351,6 +8399,8 @@ create table account (
     modifier bigint,
     creation_time timestamptz,
     modification_time timestamptz,
+    version integer not null default 1,
+    deleted boolean not null default false,
     primary key(id)
 );
 
@@ -8362,6 +8412,8 @@ comment on column account.creator is '创建人';
 comment on column account.modifier is '修改人';
 comment on column account.creation_time is '创建时间';
 comment on column account.modification_time is '修改时间';
+comment on column account.version is '修改版本';
+comment on column account.deleted is '已逻辑删除';
 ```
 
 ### MySQL
