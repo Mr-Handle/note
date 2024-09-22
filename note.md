@@ -3567,13 +3567,15 @@ List<UserDO> users = userDAO.queryUsers(userAge);
 <dependency>
     <groupId>com.github.pagehelper</groupId>
     <artifactId>pagehelper-spring-boot-starter</artifactId>
-    <version>1.4.7</version>
+    <!-- 23年最高版本，已经好久没更新，推荐使用mybatis-plus分页 -->
+    <version>2.1.0</version>
 </dependency>
 ```
 
 ### 配置
 
 ```properties
+# 配置使用默认就行
 pagehelper.propertyName=propertyValue
 pagehelper.reasonable=false
 pagehelper.defaultCount=true
@@ -3588,6 +3590,107 @@ List<UserDO> users = userDAO.queryUsers(userAge);
 
 // 获取总数
 long total = new PageInfo<>(users).getTotal();
+```
+
+## Mybatis-Plus
+
+可以快速进行单表的CRUD
+
+- 依赖，需要参考mybatis-spring-boot-starter的版本，避免版本冲突
+
+```xml
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+    <version>3.5.5</version>
+</dependency>
+```
+
+- 配置文件
+
+```conf
+# mybatis-plus配置
+mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
+```
+
+- service写法，service层提供了批量数据的操作
+
+```java
+// IService提供了一半的方法
+public interface AccountService extends IService<AccountPo> {}
+
+// ServiceImpl提供了另一半的方法
+public class AccountServiceImpl extends ServiceImpl<AccountDao, AccountPo> implements AccountService {}
+```
+
+- mapper写法，mapper层提供了单个数据的操作
+
+```java
+// BaseMapper指定的实体名要跟表名一样，否则实体的类上要加注解@TableName指定表名
+public interface AccountDao extends BaseMapper<AccountPo> {}
+```
+
+### 分页
+
+- 1.配置分页插件
+
+```java
+@Bean
+public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+    // 如果配置多个插件, 切记分页最后添加
+    // 如果有多数据源可以不配具体类型, 否则都建议配上具体的 DbType
+    interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.POSTGRE_SQL));
+    return interceptor;
+}
+```
+
+- 2.使用mybatis-plus自带的查询方法分页
+
+```java
+// 2.1
+Page<AccountPo> page = new Page<>(1, 5);
+List<AccountPo> accounts = accountDao.selectList(page, null);
+long total = page.getTotal();
+
+// 2.1使用自定义的查询方法分页
+// 这种分页方式的page参数可以为null
+List<AccountPo> selectByGender(IPage<?> page, @Param("gender") boolean gender);
+
+IPage<AccountPo> page = new Page<>(1, 5);
+List<AccountPo> accounts = accountDao.selectByGender(page, false);
+long total = page.getTotal();
+```
+
+- 3.使用自定义的查询方法分页
+
+```java
+// 这种返回类型为list的分页方式的page参数可以为null
+List<AccountPo> selectByGender(IPage<?> page, @Param("gender") boolean gender);
+
+IPage<AccountPo> page = new Page<>(1, 5);
+List<AccountPo> accounts = accountDao.selectByGender(page, false);
+long total = page.getTotal();
+```
+
+### 注解
+
+- @TableName，指定实体类关联的表名，不加此注解的时候实体类名作为表名（忽略大小写）
+
+- @TableId，当实体类的属性名和表的主键名不一样时，添加此注解进行关联，并且可以指定插入数据时的id分配算法（默认雪花算法，可以在配置文件统一设置id分配算法）
+
+- @TableField，当实体类的属性名和表的列名不一样时，添加此注解进行关联
+    - exist，当表没有这个字段时，必须设置为false
+
+```java
+@TableName("account")
+public class AccountPo {
+    @TableId("id")
+    private Long id;
+
+    @TableField("name")
+    private String name;
+}
 ```
 
 ## Spring
@@ -10005,6 +10108,7 @@ java -jar lombok.jar
 |Shift + Tab|向左缩进|
 |Ctrl + /|注释/取消注释|
 |Ctrl + Shift + C|全局注释/取消注释|
+|Alt + Shift + A|进入/退出多行编辑|
 |Alt + Shift + R|统一修改变量名|
 |Ctrl + Shift + X|转大写|
 |Ctrl + Shift + Y|转小写|
