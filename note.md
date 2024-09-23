@@ -5613,6 +5613,126 @@ java -jar [选项] [参数] <jar文件名>
     - 设置最大堆内存：`-Xmx1024m`
     - 设置最小堆内存：`-Xms512m`
 
+## Spring Security
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+- 配置文件
+
+```properties
+# 自定义登录用户和密码
+spring.security.user.name=admin
+spring.security.user.password=123
+```
+
+- 自定义配置类
+
+```java
+// 开启SpringSecurity的自定义配置（在SpringBoot项目中可以省略此注解）
+//@EnableWebSecurity
+@Configuration
+public class WebSecurityConfiguration {
+    // 用这种方式创建的用户将会覆盖配置文件设置的用户信息
+    @Bean
+    public UserDetailsService userDetailsService() {
+        // 创建基于内存的用户信息管理器
+        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+        // 创建UserDetails对象，用于管理用户名、用户密码、用户角色、用户权限等内容
+        manager.createUser(User.withDefaultPasswordEncoder().username("user").password("123").roles("USER").build());
+        return manager;
+    }
+}
+```
+
+### 基于数据库的认证
+
+- 1.实现UserDetailsService并添加到IOC容器
+
+```java
+@Component
+public class DatabaseUserDetailsManager implements UserDetailsService {
+    @Resource
+    private AccountDao accountDao;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        LambdaQueryWrapper<AccountPo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(AccountPo::getName, username);
+        AccountPo accountPo = accountDao.selectOne(queryWrapper);
+        if (Objects.isNull(accountPo)) {
+        throw new UsernameNotFoundException(username);
+        }
+        return new User(accountPo.getName(), accountPo.getPassword(), accountPo.getEnabled(), true,
+        true, true, new ArrayList<GrantedAuthority>());
+    }
+}
+
+```
+
+### 自定义配置
+
+```java
+@Configuration
+public class WebSecurityConfiguration {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        // 开启授权保护
+        httpSecurity.authorizeHttpRequests(authorize -> 
+        // 对所有请求开启授权保护
+        authorize.anyRequest()
+        // 已认证的请求会自动授权
+        .authenticated());
+
+        // 使用表单授权方式
+        httpSecurity.formLogin(form -> 
+        form.loginPage("/login")
+        // 无需授权即可访问
+        .permitAll()
+        // 自定义登录页面表单的用户名参数名、密码参数名（默认是username、password）
+        .usernameParameter("username")
+        .passwordParameter("password")
+        // 校验失败时跳转的地址
+        .failureUrl("login?failure")
+        // 认证成功时的处理
+        .successHandler(new LoginAuthenticationSuccessHandler())
+        // 认证失败时的处理
+        .failureHandler(new LoginAuthenticationFailureHandler())
+        );
+        // 登出成功时的处理
+        httpSecurity.logout(logout -> logout.logoutSuccessHandler(new MyLogoutSuccessHandler()));
+        // 请求未认证时的处理
+        httpSecurity.exceptionHandling(exception -> exception.authenticationEntryPoint(new MyAuthenticationEntryPoint()));
+
+        // 设置一个账号最多允许同时登录的上限，并自定义超时退出
+        httpSecurity.sessionManagement(session -> session.maximumSessions(1).expiredSessionStrategy(new MySessionInformationExpiredStrategy()));
+        //  httpSecurity.cors()
+        return httpSecurity.build();
+    }
+}
+```
+
+#### 在handler中获取用户信息
+
+```java
+@GetMapping("/userInfo")
+@ResponseBody
+public void userInfo() {
+    SecurityContext context = SecurityContextHolder.getContext();
+    Authentication authentication = context.getAuthentication();
+    String username = authentication.getName();
+    Object principal = authentication.getPrincipal();
+    Object credentials = authentication.getCredentials();
+    Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+}
+```
+
 ## Spring Cloud
 
 - 服务注册：Eureka（废弃）、Zookeeper（Eureka升级为zookeeper，不过很少用）、Consul、`Nacos`（推荐）
@@ -6479,6 +6599,20 @@ seata.transport.enable-client-batch-send-request=true
 ```
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
+
+## Knife4j
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>com.github.xiaoymin</groupId>
+    <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+    <version>4.5.0</version>
+</dependency>
+```
+
+- 文档地址：`http://ip:port/doc.html`
 
 ## Zookeeper
 
@@ -8394,7 +8528,10 @@ docker run -p 5050:80 \
 create table account (
     id bigint,
     name varchar(32),
+    password varchar(32),
+    salt varchar(128),
     gender boolean,
+    enabled boolean not null,
     creator bigint,
     modifier bigint,
     creation_time timestamptz,
@@ -8408,12 +8545,13 @@ comment on table account is '账号表';
 comment on column account.id is '主键';
 comment on column account.name is '姓名';
 comment on column account.gender is '性别';
+comment on column account.enabled is '是否启用';
 comment on column account.creator is '创建人';
 comment on column account.modifier is '修改人';
 comment on column account.creation_time is '创建时间';
 comment on column account.modification_time is '修改时间';
 comment on column account.version is '修改版本';
-comment on column account.deleted is '已逻辑删除';
+comment on column account.deleted is '是否已逻辑删除';
 ```
 
 ### MySQL
