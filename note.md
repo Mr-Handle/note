@@ -6690,7 +6690,7 @@ sudo rm -rf /var/lib/containerd
 ```json
 {
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn"
+        "https://hub.docker.com"
     ]
 }
 ```
@@ -10133,24 +10133,25 @@ vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
 ```
 
 ```txt
-TYPE="Ethernet"
-PROXY_METHOD="none"
-BROWSER_ONLY="no"
-BOOTPROTO="static"
-DEFROUTE="yes"
-IPV4_FAILURE_FATAL="no"
-IPV6INIT="yes"
-IPV6_AUTOCONF="yes"
-IPV6_DEFROUTE="yes"
-IPV6_FAILURE_FATAL="no"
-IPV6_ADDR_GEN_MODE="stable-privacy"
-NAME="enp0s3"
-UUID="829eb1b0-1a34-45af-9fd5-36a3d3b12e76"
-DEVICE="enp0s3"
-ONBOOT="yes"
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=enp0s3
+UUID=5208bd48-a7df-43f5-8824-090a1d5ba7f5
+DEVICE=enp0s3
+ONBOOT=yes
 IPADDR=10.0.2.15
-NETMASK=255.255.255.0
+PREFIX=24
 GATEWAY=10.0.2.2
+IPV6_PRIVACY=no
 DNS1=223.5.5.5
 ```
 
@@ -10560,6 +10561,8 @@ createApp(App).mount('#app')
 - /selinux security-enhanced linux，是一种安全子系统，它能控制程序只能访问特定文件，有三种工作模式，可以自行设置
 
 ### 安装Linux系统
+
+- 选Basic Web Server
 
 手动设置三个分区
 
