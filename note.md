@@ -8387,7 +8387,7 @@ jdbc.password=postgres123
 #### 安装docker版本PostgreSQL
 
 ```sh
-docker pull postgres：15.2
+docker pull postgres：16.4
 ```
 
 #### 启动PostgreSQL
@@ -8400,7 +8400,7 @@ docker pull postgres：15.2
 
 ```sh
 # 启动数据库
-docker run -p 5432:5432 --name postgres01 -e POSTGRES_PASSWORD=postgres123 -v /data/postgresql:/var/lib/postgresql/data -d postgres:15.2
+docker run -p 5432:5432 --name postgres01 -e POSTGRES_PASSWORD=postgres123 -v /data/postgresql:/var/lib/postgresql/data -d postgres:16.4
 ```
 
 - 1.控制台登录Postgresql
@@ -8502,24 +8502,6 @@ select * from pg_roles;
 
 # 查询用户信息
 select * from pg_user;
-```
-
-#### pgadmin4
-
-- 获取镜像
-
-```sh
-docker pull dpage/pgadmin4:<tag name>
-```
-
-- 启动容器
-
-```sh
-docker run -p 5050:80 \
--e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
--e 'PGADMIN_DEFAULT_PASSWORD=SuperSecret' \
---name pgadmin401 \
--d dpage/pgadmin4:<tag name>
 ```
 
 #### 常用sql
@@ -9496,7 +9478,7 @@ docker run -p 6379:6379 \
 --name redis01 \
 -v /data/redis/data:/data \
 -v /data/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
--d redis:6.2.7 redis-server /usr/local/etc/redis/redis.conf
+-d redis:7.4.0 redis-server /usr/local/etc/redis/redis.conf
 ```
 
 - 4.连接redis客户端
@@ -9511,8 +9493,7 @@ docker exec -it redis01 redis-cli
 - 5.测试redis
 
 ```sh
-set k1 hello
-get k1
+ping
 ```
 
 #### `redis.conf`配置
@@ -9947,6 +9928,24 @@ lock.lock();
 ...
 // 4.释放锁
 lock.unlock();
+```
+
+### pgadmin4
+
+- 获取镜像
+
+```sh
+docker pull dpage/pgadmin4:<tag name>
+```
+
+- 启动容器
+
+```sh
+docker run -p 5050:80 \
+-e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
+-e 'PGADMIN_DEFAULT_PASSWORD=pgadmin123' \
+--name pgadmin4 \
+-d dpage/pgadmin4:<tag name>
 ```
 
 ## 分布式定时任务
