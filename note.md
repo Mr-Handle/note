@@ -6801,6 +6801,7 @@ docker rmi -f $(docker images -aq)
 - 新建容器并运行
 
 ```sh
+# 需要考虑端口映射、配置映射、数据映射、环境变量、网络名等
 # --name 自定义容器名
 # -d 后台运行容器并返回容器id，也即启动守护式容器
 # -i 以交互模式运行容器，通常与-t同时使用
@@ -7021,6 +7022,31 @@ docker pull 私服规范镜像名（私服地址:端口/镜像名:标签）
 
 docker挂载主机目录后加 `--privileged=true`，可以解决挂载目录没有权限的问题。该参数使得容器内的root拥有真正的root权限，否则，容器内的root只有普通用户权限
 
+- 创建卷
+
+```sh
+# 手动创建
+docker volume create 卷名
+
+# 删除卷
+docker volume rm 卷名1 卷名2
+
+# 自动创建，放在容器启动命令中
+-v ngconf:/etc/nginx
+
+# 查看卷信息
+docker volume inspect 卷名
+```
+
+- 对于容器卷，docker统一放在主机的`/var/lib/docker/volumes/卷名`目录下
+
+```sh
+# 目录映射目录映射带/
+-v /data/docker/registry:/tmp/registry
+# 卷映射，卷名前面不带/，卷映射对于配置文件不用提前复制一份到主机目录，目录映射要
+-v ngconf:/etc/nginx
+```
+
 - 运行带有容器卷存储功能的容器实例
 
 ```sh
@@ -7053,13 +7079,130 @@ docker inspect 容器id
 docker run -it --privileged=true --volumes-from 要继承的容器的id --name 自定义容器名 镜像名:标签
 ```
 
+### docker网络
+
+- 网络模式
+
+|网络模式|简介|命令|
+|:-|:-|:-|
+|bridge|虚拟网桥，默认模式，为每一个容器分配、设置ip等，并将容器连接到一个docker0|`--network bridge`，默认使用docker0|
+|host|容器将不会虚拟出自己的网卡，配置自己的ip等，而是使用宿主机的ip和端口|`-–network host`|
+|none|容器有独立的network namespace，但并没有对其进行任何网络设置，如分配veth pair和网桥连接，ip等|`–-network none`|
+|container|新创建的容器不会创建自己的网卡和配置自己的ip，而是和一个指定的容器共享ip、端口范围等|`-–network container:name或容器id`|
+
+- docker0网络，docker为每个容器分配唯一ip，容器之间可以使用`容器ip+容器端口`相互访问，但是这个ip在容器删了重新启动或者迁移的时候会改变，一般都会通过域名进行访问而不用ip
+
+- docker0默认不支持主机域名，需要创建自定义网络，容器名就是主机域名
+
+```sh
+# 创建自定义网络
+docker network create mynet
+
+# 指定网络名
+docker -run -d -p 5050:80 --name app1 --network mynet dpage/pgadmin4
+docker -run -d -p 5060:80 --name app2 --network mynet dpage/pgadmin4
+
+# 进入容器内
+docker exec -it app1 bash
+
+# 容器内访问app2，直接用主机域名
+curl http://app2:80
+```
+
+- 常用命令
+
+```sh
+# docker网络命令帮助
+docker network --help
+
+# 查看网络
+docker network ls
+
+# 查看网络源数据
+docker network inspect 网络名
+
+# 添加网络
+docker network create 网络名
+
+# 删除网络
+docker network rm 网络名
+
+# 查看docker容器内网络信息
+docker inspect 容器id/容器名称 | tail -n 20
+```
+
+### Docker Compose
+
+#### 编写compose.yml
+
+```yml
+# 应用名
+name: myserver
+services: 
+    # 服务名，要启动多少个就写多少个
+    mysql:
+        # 容器名，不指定则为：应用名-服务名-数字-（1-n)
+        container_name: mysql
+        # 镜像
+        image: mysql:8.0
+        # 端口 
+        ports:
+            - "3306:3306"
+        # 环境变量
+        environment:
+            MYSQL_ROOT_PASSWORD: mysql123
+        volumes:
+            # 如果是卷名要在顶级元素volumes里面声明
+            - mysql-data:/var/lib/mysql
+            - /app/myconf:/etc/mysql/conf.d
+        # 随系统启动
+        restart: always
+        # 网络，要在顶级元素networks里面声明，一个应用可以加入多个网络，
+        networks: 
+            - mynet
+        # 依赖：比如要先启动redis才能启动mysql
+        depends_on:
+            - myredis
+    myredis:
+networks: 
+    mynet: 
+        # 不指定则为：应用名-newwork名
+        name: mynetname
+volumes: 
+    mysql-data: 
+        # 不指定则为：应用名-volume名
+        name: myvolumename
+configs: 
+# 密钥
+secrets: 
+```
+
+#### 使用compose.yml启动/下线
+
+```sh
+# 指定compose文件名批量新建容器并以后台方式启动
+docker compose -f mycompose.yml up -d
+
+# 批量移除容器并删除相关资源（如果不在参数中指定不会删除自定义挂载的目录/卷）
+docker compose -f mycompose.yml down
+
+# 批量启动
+docker compose start container1 container2 container3
+
+# 批量停止
+docker compose stop container1 container2 container3
+
+# container1启动三个实例
+docker compose scale container1=3
+```
+
 ### Dockerfile
 
 Dockerfile时用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
 
 #### Dockerfile执行流程
 
-- docker从基础u镜像运行一个容器
+- docker从基础镜像运行一个容器
 
 - 执行一条指令并对容器作出修改
 
@@ -7125,7 +7268,7 @@ WORKDIR /
 
 - USER
 
-指定该镜像以什么样的用户取执行，如果不指定，默认是root
+指定该镜像以什么样的用户执行，如果不指定，默认是root
 
 - ENV
 
@@ -7246,8 +7389,8 @@ EXPOSE 8080
 - 构建镜像
 
 ```sh
-# 标签后有个空格，有个点
-docker build -t application:1.0 .
+# 标签后有个空格，有个点（./），表示构建的整个上下文目录就是当前目录
+docker build -f Dockerfile -t application:1.0 .
 ```
 
 - 运行容器
@@ -7255,42 +7398,6 @@ docker build -t application:1.0 .
 ```sh
 # 后台运行
 docker run -d -p 8080:8080 application:1.0
-```
-
-### docker网络
-
-- 常用命令
-
-```sh
-# docker网络命令帮助
-docker network --help
-
-# 查看网络
-docker network ls
-
-# 查看网络源数据
-docker network inspect 网络名
-
-# 添加网络
-docker network create 网络名
-
-# 删除网络
-docker network rm 网络名
-```
-
-- 网络模式
-
-|网络模式|简介|命令|
-|:-|:-|:-|
-|bridge|虚拟网桥，默认模式，为每一个容器分配、设置ip等，并将容器连接到一个docker0|`--network bridge`，默认使用docker0|
-|host|容器将不会虚拟出自己的网卡，配置自己的ip等，而是使用宿主机的ip和端口|`-–network host`|
-|none|容器有独立的network namespace，但并没有对其进行任何网络设置，如分配veth pair和网桥连接，ip等|`–-network none`|
-|container|新创建的容器不会创建自己的网卡和配置自己的ip，而是和一个指定的容器共享ip、端口范围等|`-–network container:name或容器id`|
-
-- 查看docker容器内网络信息
-
-```sh
-docker inspect 容器id/容器名称 | tail -n 20
 ```
 
 ## 消息队列
