@@ -6949,7 +6949,7 @@ cat 文件名.tar | docker import - 镜像用户/镜像名:标签
 docker commit -m="描述信息" -a="作者" 容器id 要创建的目标镜像名:标签
 ```
 
-#### 搭建私服
+### 搭建私服
 
 - 拉取仓库镜像
 
@@ -7346,19 +7346,23 @@ CMD ["/etc/nginx/nginx.conf"]
 docker build -t 新镜像名:标签 .
 ```
 
-### 虚悬镜像
+#### 构建带Java环境的Ubuntu镜像
 
-仓库名、标签都是`<none>`的镜像，虚悬镜像一级失去存在价值，可以删除
-
-```sh
-# 查看所有的虚悬镜像
-docker image ls -f dangling=true
-
-# 删除虚悬镜像
-docker image prune
+```Dockerfile
+FROM ubuntu:24.04
+LABEL author=handle
+# 登进容器后进入/usr/local
+WORKDIR /usr/local
+RUN mkdir /usr/local/jdk
+# 把jdk添加到容器中，并且指定解压到容器中的具体位置
+ADD bellsoft-jre21.0.4+9-linux-amd64-full.tar.gz /usr/local/jdk/
+# 配置JAVA环境变量
+ENV JAVA_HOME /usr/local/jdk/jre-21.0.4-full
+ENV PATH $JAVA_HOME/bin:$PATH
+CMD /bin/bash
 ```
 
-### Dockerfile发布微服务部署到docker容器
+#### 构建微服务镜像
 
 Dockerfile和jar包要在同一目录下
 
@@ -7398,6 +7402,18 @@ docker build -f Dockerfile -t application:1.0 .
 ```sh
 # 后台运行
 docker run -d -p 8080:8080 application:1.0
+```
+
+### 虚悬镜像
+
+仓库名、标签都是`<none>`的镜像，虚悬镜像一级失去存在价值，可以删除
+
+```sh
+# 查看所有的虚悬镜像
+docker image ls -f dangling=true
+
+# 删除虚悬镜像
+docker image prune
 ```
 
 ## 消息队列
@@ -11327,6 +11343,14 @@ vim就是vi的增强版
 - 隐藏行号，`:set nonu`
 
 - 查找，`/关键字`，按回车开始查找，按`n`查找下一个
+
+## Ubuntu
+
+- 查看系统版本信息
+
+```sh
+lsb_release -a
+```
 
 ## Windows篇
 
