@@ -7292,7 +7292,7 @@ WORKDIR $APP_HOME
 
 - COPY
 
-拷贝文件和目录到镜像中，将从构建上下文目录中<源路径>的文件/目录复制到新的一层的镜像内的<目标路径>位置
+拷贝文件/目录到镜像中，将从构建上下文目录中<源路径>的文件/目录复制到新的一层的镜像内的<目标路径>位置
 
 ```Dockerfile
 # src为源文件或目录，dest为容器内的指定路径，该路径不用事先建好，不存在会自动创建
@@ -7369,24 +7369,14 @@ Dockerfile和jar包要在同一目录下
 - 创建Dockerfile
 
 ```Dockerfile
-# 基础镜像使用java
-FROM java:8
-
-# 作者
-MAINTAINER handle
-
-# VOLUME 指定临时文件目录为/tmp，在主机/var/lib/docker目录下创建了一个临时文件并链接到容器的/tmp
-VOLUME /tmp
-
-# 将jar包添加到容器中并更名为application.jar
-ADD source.jar application.jar
-
-# 运行jar包
-RUN bash -c 'touch /application.jar'
-
-ENTRYPOINT ["java", "- jar", "/application.jar"]
-
-# 暴露端口8080作为微服务
+FROM bellsoft/liberica-fulljre-ubuntu:21.0.4-9
+# 作者信息
+LABEL author=handle
+# 把jar包添加到容器中的根目录下
+COPY file-server-1.0.0-SNAPSHOT.jar /file-server.jar
+# 容器启动时运行jar包
+ENTRYPOINT ["java", "-jar", "-Dbook.absolutePath=/handle/book", "/file-server.jar"]
+# 暴露端口8080
 EXPOSE 8080
 ```
 
