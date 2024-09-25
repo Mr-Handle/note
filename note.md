@@ -7351,6 +7351,9 @@ docker build -t 新镜像名:标签 .
 ```Dockerfile
 FROM ubuntu:24.04
 LABEL author=handle
+# 设置环境变量，指定系统编码
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
 # 登进容器后进入/usr/local
 WORKDIR /usr/local
 RUN mkdir /usr/local/jdk
