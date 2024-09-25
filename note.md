@@ -7231,9 +7231,9 @@ Dockerfile时用来构建Docker镜像的文本文件，是由一条条构建镜�
 FROM 基础镜像（镜像名:标签）
 ```
 
-- MAINTAINER
+- LABEL
 
-镜像维护者的姓名和邮箱地址
+LABEL key=value key2=value2 ...
 
 - RUN
 
@@ -7359,6 +7359,7 @@ ADD bellsoft-jre21.0.4+9-linux-amd64-full.tar.gz /usr/local/jdk/
 # 配置JAVA环境变量
 ENV JAVA_HOME /usr/local/jdk/jre-21.0.4-full
 ENV PATH $JAVA_HOME/bin:$PATH
+# 容器启动后打开bash
 CMD /bin/bash
 ```
 
@@ -7372,12 +7373,14 @@ Dockerfile和jar包要在同一目录下
 FROM bellsoft/liberica-fulljre-ubuntu:21.0.4-9
 # 作者信息
 LABEL author=handle
+# 在容器中创建目录
+RUN mkdir -p /handle/book
 # 把jar包添加到容器中的根目录下
 COPY file-server-1.0.0-SNAPSHOT.jar /file-server.jar
 # 容器启动时运行jar包
 ENTRYPOINT ["java", "-jar", "-Dbook.absolutePath=/handle/book", "/file-server.jar"]
-# 暴露端口8080
-EXPOSE 8080
+# 暴露端口
+EXPOSE 2121
 ```
 
 - 构建镜像
