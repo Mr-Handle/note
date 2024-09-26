@@ -10613,69 +10613,145 @@ npm get registry
 
 ### vue
 
-- 创建vue3项目
+#### 创建vue3项目
 
 ```sh
 npm create vue@latest
 ```
 
-- 安装所有的依赖
+#### 安装所有的依赖
 
 ```sh
 npm i
 ```
 
-- 运行项目
+#### 运行项目
 
 ```sh
 npm run dev
 ```
 
-- main.ts
+#### main.ts
 
 ```ts
-// 引入createApp用于创建应用
+// 1.引入createApp用于创建应用
 import { createApp } from "vue";
 
-// 引入App根组件(src目录下的App.vue)
+// 2.引入App根组件(src目录下的App.vue)
 import App from "./App.vue";
 
-// 调用createApp，传入App，并且挂载到index.html中id为app的标签中
+// 3.调用createApp，传入App，并且挂载到index.html中id为app的标签中
 createApp(App).mount('#app')
 ```
 
-- App.vue
+#### vue文件
+
+vue文件里面可以写三种标签
 
 ```vue
-<!-- .vue文件里面可以写三种标签 -->
+<!-- 1.template标签写html，以及显示组件 -->
 <template>
-    <!-- 写html -->
     <div class="app">
         <h1>hello vue3</h1>
-        // 显示组件
+        <!-- 显示组件 -->
         <Person/>
     </div>
 </template>
-
+<!-- 2.script写各种脚本 -->
 <script lang="ts">
-    // 导入其它组件
+    // 2.1导入其它组件
     import Person from './components/Person.vue';
-    // 写ts(js)
+    // 2.2写ts(js)
     export default {
-        name: 'App', //组件名
-        components: {Person} // 注册组件
+        name: 'App', //组件名，将APP.vue导出，其它地方就可以导入这个组件
+        components: {Person} // 注册组件，这些组件是另一些vue文件
     }
 </script>
 
+<!-- 3.写样式 -->
 <style>
-/* 写样式 */
 .app {
     background-color: #ddd;
-    box-shadow: 0 0 10px;
-    border-radius: 10px;
-    padding: 20px;
 }
 </style>
+```
+
+### vue文件中的script写法
+
+#### 写法1
+
+```vue
+<script lang="ts">
+    export default {
+        name: 'SomeVueName',
+        setup() {
+            let name = 'handle'
+            function updateName() {}
+            // 缺点：通过return指定返回的数据、方法，template标签中才能使用
+            return {name,updateName}
+        }
+    }
+</script>
+```
+
+#### 写法2
+
+```vue
+<script lang="ts">
+    export default {
+        name: 'SomeVueName'
+    }
+</script>
+
+<!-- 相当于写了一个setup() {}，并且返回所有数据、方法 -->
+<script lang="ts" setup>
+    // 缺点：要写两个script标签
+    let name = 'handle'
+    function updateName() {}
+</script>
+```
+
+#### 写法3
+
+```vue
+<script lang="ts" setup>
+    // 缺点：此文件名是什么组件名就是什么，不能改变此组件的名字
+    let name = 'handle'
+    function updateName() {}
+</script>
+```
+
+#### 写法4
+
+通过安装插件支持通过name属性定义组件名
+
+- 1.安装插件
+
+```sh
+npm i vite-plugin-vue-setup-extend -D
+```
+
+- 2.修改项目根目录下的vite.config.ts文件
+
+```ts
+// 2.1导入插件
+import VueSetupExtend from 'vite-plugin-vue-setup-extend'
+
+export default defineConfig({
+    plugins: [
+        // 2.2调用插件
+        VueSetupExtend()
+    ]
+})
+```
+
+- 3.通过name属性定义组件名
+
+```vue
+<script lang="ts" setup name="SomeVueName">
+    let name = 'handle'
+    function updateName() {}
+</script>
 ```
 
 ## Linux篇
