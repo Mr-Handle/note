@@ -10754,6 +10754,73 @@ export default defineConfig({
 </script>
 ```
 
+### 变量定义及使用的写法
+
+```vue
+<template>
+    <h2>姓名：{{name}}</h2>
+</template>
+<script lang="ts" setup>
+    let name = 'handle'
+</script>
+```
+
+### ref写法
+
+#### 基本类型写法
+
+```vue
+<template>
+    <h2>姓名：{{ name }}</h2>
+    <button @click="updateName">更新姓名</button>
+</template>
+<script lang="ts" setup>
+    import { ref } from 'vue';
+
+    let name = ref('handle')
+    function updateName() {
+        name.value = 'zhangsan'
+    }
+</script>
+```
+
+#### 对象类型写法
+
+```vue
+<template>
+    <h2>姓名：{{ user.name }}</h2>
+    <h2>年龄：{{ user.age }}</h2>
+    <button @click="updateName">更新姓名</button>
+    <button @click="updateAge">更新年龄</button>
+</template>
+<script lang="ts" setup>
+    import { ref } from 'vue';
+
+    //对象写法
+    let user = ref({ name: 'handle', age: 18 })
+    function updateName() {
+        user.value.name = 'zhangsan'
+    }
+    // 数组写法
+    let users = ref([user])
+    function updateAge() {
+        users.value[0].value.age += 1
+    }
+</script>
+```
+
+### 方法定义及调用的写法
+
+```vue
+<template>
+    <button @click="updateName">更新名字</button>
+</template>
+
+<script lang="ts" setup name="SomeVueName">
+    function updateName() {}
+</script>
+```
+
 ## Linux篇
 
 ### Linux目录结构
