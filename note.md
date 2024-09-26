@@ -5735,14 +5735,27 @@ public void userInfo() {
 
 ## Spring Cloud
 
-- 服务注册：Eureka（废弃）、Zookeeper（Eureka升级为zookeeper，不过很少用）、Consul、`Nacos`（推荐）
-- 服务调用：Ribbon、LoadBalancer、Feign（废弃）、OpenFeign
-- 服务降级：Hystrix（废弃）、resilience4j、sentinel
-- 服务网关：Zuul（废弃）、Zuul2（还没出完整）、`gateway`
-- 服务配置：Config（废弃）、`Nacos`
-- 服务总线：Bus（废弃）、`Nacos`
-- 综上：Nacos=Eureka+Config+Bus
-- CAP：C-一致性；A-高可用；P-分区容错性
+### Spring Cloud 组件
+
+- 1.服务注册与发现，Etcd、Consul、Nacos
+
+- 2.服务调用，LoadBalancer、OpenFeign
+
+- 3.分布式事务，LCN、Hmily、Seata
+
+- 4.服务熔断和降级，resilience4j、sentinel
+
+- 5.服务链路追踪，Micrometer Tracing
+
+- 6.服务网关：Gateway
+
+- 7.服务配置：Consul、Nacos
+
+### CAP
+
+- C，一致性
+- A，高可用
+- P，分区容错性
 
 ### Eureka
 
@@ -10564,6 +10577,39 @@ calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）�
 | 值            | 描述                       |
 |:------------ |:------------------------ |
 | *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
+
+### nodejs
+
+官网：<https://nodejs.org/zh-cn>
+
+#### 安装nodejs
+
+- 1.下载免安装版本，解压
+
+- 2.进入nodejs根目录，新建两个文件夹：`node_global`、`node_cache`
+
+- 3.新建系统变量`NODE_HOME`，设置为nodejs根目录
+
+- 4.编辑环境变量Path，新增：`%NODE_HOME%`、`%NODE_HOME%\node_global`
+
+- 5.用管理员权限打开cmd运行如下命令
+
+```sh
+# 查看环境变量是否设置成功
+node -v
+
+# 配置npm相关路径
+npm config set prefix "G:\handle\application\node-v20.17.0-win-x64\node_global"
+npm config set cache "G:\handle\application\node-v20.17.0-win-x64\node_cache"
+
+# 设置国内镜像源，官方的是：https://registry.npmjs.org/
+npm config set registry https://registry.npmmirror.com/
+
+# 查看镜像源是否设置成功
+npm get registry
+```
+
+- 6.执行完毕后，可在系统盘的当前用户文件夹看到`.npmrc`文件，可以打开查看配置的信息
 
 ### vue
 
