@@ -10652,27 +10652,21 @@ vue文件里面可以写三种标签
 <!-- 1.template标签写html，以及显示组件 -->
 <template>
     <div class="app">
-        <h1>hello vue3</h1>
         <!-- 显示组件 -->
-        <Person/>
+        <Person />
     </div>
 </template>
-<!-- 2.script写各种脚本 -->
-<script lang="ts">
-    // 2.1导入其它组件
+<!-- 2.script写各种脚本，如导入组件 -->
+<script lang="ts" setup>
+    // 导入其它组件
     import Person from './components/Person.vue';
-    // 2.2写ts(js)
-    export default {
-        name: 'App', //组件名，将APP.vue导出，其它地方就可以导入这个组件
-        components: {Person} // 注册组件，这些组件是另一些vue文件
-    }
 </script>
 
-<!-- 3.写样式 -->
-<style>
-.app {
-    background-color: #ddd;
-}
+<!-- 3.写样式，scoped表示局部样式，只对当前vue的template有效 -->
+<style scoped>
+    .app {
+        background-color: #ddd;
+    }
 </style>
 ```
 
@@ -11183,6 +11177,56 @@ export default defineConfig({
             console.log(age.value, counter.value)
         }
     })
+</script>
+```
+
+### 标签的ref属性
+
+- 子vue
+
+```vue
+<template>
+    <div>
+        <!-- 在html标签上，拿到的是dom元素 -->
+        <p ref="ageRef">年龄：{{ age }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { ref } from 'vue';
+
+    let ageRef = ref()
+
+    let age = ref(18)
+
+    function updateAge() {
+        age.value += 1
+        console.log(ageRef.value)
+    }
+
+    // 最后声明可以给父vue看的属性
+    defineExpose({ age })
+</script>
+```
+
+- 父vue
+
+```vue
+<template>
+    <!-- 在组件上，拿到的是组件实例 -->
+    <User ref="user" />
+    <button type="button" @click="showUser">显示组件ref</button>
+</template>
+
+<script setup lang="ts">
+    import User from './components/User.vue';
+    import { ref } from 'vue';
+
+    let user = ref()
+
+    function showUser() {
+        console.log(user.value)
+    }
 </script>
 ```
 
