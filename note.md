@@ -10876,6 +10876,8 @@ export default defineConfig({
 
 ### 方法定义及调用的写法
 
+- 定义及调用
+
 ```vue
 <template>
     <button @click="updateName">更新名字</button>
@@ -10883,6 +10885,52 @@ export default defineConfig({
 
 <script lang="ts" setup name="SomeVueName">
     function updateName() {}
+</script>
+```
+
+- 显示方法的结果
+
+```vue
+<template>
+    <div>
+        <p>{{ getName() }}</p>
+    </div>
+</template>
+<script lang="ts" setup>
+    function getName() {
+        return 'handle'
+    }
+</script>
+```
+
+### computed写法
+
+```vue
+<template>
+    <div>
+        <p>name：{{ name }}</p>
+        <p>upperName：{{ upperName }}</p>
+        <button type="button" @click="updateUpperName">更新upperName</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { computed, ref } from 'vue';
+
+    let name = ref('handle')
+
+    let upperName = computed({
+        get() {
+            return name.value.toUpperCase()
+        },
+        // upperName改变的时候调用set方法
+        set(newUpperName) {
+            name.value = newUpperName.toLocaleLowerCase()
+        }
+    })
+
+    function updateUpperName() {
+        upperName.value = 'LISI'
+    }
 </script>
 ```
 
