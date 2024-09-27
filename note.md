@@ -10765,7 +10765,7 @@ export default defineConfig({
 </script>
 ```
 
-### ref写法
+### 响应式数据写法
 
 #### 基本类型写法
 
@@ -10785,6 +10785,8 @@ export default defineConfig({
 ```
 
 #### 对象类型写法
+
+##### ref写法
 
 ```vue
 <template>
@@ -10806,6 +10808,69 @@ export default defineConfig({
     function updateAge() {
         users.value[0].value.age += 1
     }
+    // 重新分配对象写法
+    user.value = { name: 'lisi', age: 20 }
+</script>
+```
+
+##### reactive写法
+
+```vue
+<template>
+    <div>
+        <h2>姓名：{{ user.name }}</h2>
+        <h2>年龄：{{ user.age }}</h2>
+        <button @click="updateName">更新姓名</button>
+        <button @click="updateAge">更新年龄</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { reactive } from 'vue';
+
+    //对象写法
+    let user = reactive({ name: 'handle', age: 18 })
+    function updateName() {
+        user.name = 'zhangsan'
+    }
+    // 数组写法
+    let users = reactive([user])
+    function updateAge() {
+        users[0].age += 1
+    }
+    // 重新分配对象写法
+    Object.assign(user, { name: 'lisi', age: 20 })
+</script>
+```
+
+### toRef和toRefs写法
+
+```vue
+<template>
+    <div>
+        <h2>姓名：{{ user.id }}</h2>
+        <h2>姓名：{{ user.name }}</h2>
+        <h2>年龄：{{ user.age }}</h2>
+        <button @click="updateUser">更新用户</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { reactive, toRef, toRefs } from 'vue';
+
+    let user = reactive({ id: 1, name: 'handle', age: 18 })
+
+    // 将user的id赋值给id
+    // 并且id也是响应式的，其值改变user的属性跟着改变
+    let id = toRef(user, 'id')
+
+    // 将user的name和age（所有属性一次）赋值给name和age
+    // 并且name和age也是响应式的，其值改变user的属性跟着改变
+    let { name, age } = toRefs(user)
+
+    function updateUser() {
+        name.value += 1
+        age.value += 1
+        id.value += 1
+    }
 </script>
 ```
 
@@ -10818,6 +10883,22 @@ export default defineConfig({
 
 <script lang="ts" setup name="SomeVueName">
     function updateName() {}
+</script>
+```
+
+### 遍历写法
+
+```vue
+<template>
+    <div>
+        <ul>
+            <!-- v-bind:key简写为:key -->
+            <li v-for="item in users" :key="item.id">姓名：{{ item.name }}</li>
+        </ul>
+    </div>
+</template>
+<script lang="ts" setup>
+    let users = [{ id: 1, name: 'handle' }, { id: 2, name: 'zhangsan' }]
 </script>
 ```
 
