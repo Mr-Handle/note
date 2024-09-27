@@ -10808,7 +10808,7 @@ export default defineConfig({
     function updateAge() {
         users.value[0].value.age += 1
     }
-    // 重新分配对象写法
+    // 重新分配对象写法，对象地址改变
     user.value = { name: 'lisi', age: 20 }
 </script>
 ```
@@ -10837,7 +10837,7 @@ export default defineConfig({
     function updateAge() {
         users[0].age += 1
     }
-    // 重新分配对象写法
+    // 重新分配对象写法，对象地址不变
     Object.assign(user, { name: 'lisi', age: 20 })
 </script>
 ```
@@ -11056,6 +11056,62 @@ export default defineConfig({
 
     // 默认开启深度监视，并且无法用deep:false关闭
     watch(user, (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+    })
+</script>
+```
+
+#### 监视ref或reactive定义的对象类型数据中的某个属性
+
+- 若该属性不是对象类型，需要写成函数形式
+- 若该属性是对象类型，建议写成函数形式
+
+```vue
+<template>
+    <div>
+        <p>年龄：{{ user.age }}</p>
+        <p>年龄：{{ user.pet.name }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+        <button type="button" @click="updatePetName">更新宠物名</button>
+        <button type="button" @click="updatePet">更新宠物</button>
+        <button type="button" @click="updateUser">更新user</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { reactive, watch } from 'vue';
+
+    let user = reactive({
+        age: 18,
+        pet: {
+            name: 'dog'
+        }
+    })
+
+    function updateAge() {
+        user.age += 1
+    }
+
+    function updatePetName() {
+        user.pet.name = 'cat'
+    }
+
+    function updatePet() {
+        user.pet = { name: 'rabbit' }
+    }
+
+    function updateUser() {
+        Object.assign(user, { age: 30 })
+    }
+
+    // 监视属性是基本类型，写成匿名函数形式
+    watch(() => user.age, (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+    })
+
+    // 监视属性是对象类型，直接写:（监视里面的属性变化）
+    // 写成匿名函数形式（监视对象地址的变化）
+    // 写成匿名函数形式，并且加deep:true（都监视）
+    watch(user.pet, (newValue, oldValue) => {
         console.log(newValue, oldValue)
     })
 </script>
