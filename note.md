@@ -11117,6 +11117,75 @@ export default defineConfig({
 </script>
 ```
 
+#### 监视上述的多个数据
+
+```vue
+<template>
+    <div>
+        <p>年龄：{{ user.age }}</p>
+        <p>年龄：{{ user.pet.name }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+        <button type="button" @click="updatePetName">更新宠物名</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { reactive, watch } from 'vue';
+
+    let user = reactive({
+        age: 18,
+        pet: {
+            name: 'dog'
+        }
+    })
+
+    function updateAge() {
+        user.age += 1
+    }
+
+    function updatePetName() {
+        user.pet.name = 'cat'
+    }
+
+    watch([() => user.age, () => user.pet.name], (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+    })
+</script>
+```
+
+### watchEffect写法
+
+```vue
+<template>
+    <div>
+        <p>年龄：{{ age }}</p>
+        <p>计数：{{ counter }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+        <button type="button" @click="updateCounter">更新counter</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { ref, watchEffect } from 'vue';
+
+    let age = ref(18)
+    let counter = ref(0)
+
+    function updateAge() {
+        age.value += 1
+    }
+
+    function updateCounter() {
+        counter.value += 1
+    }
+
+    watchEffect(() => {
+        // 不用显示指定age和counter
+        if (age.value > 25 || counter.value > 5) {
+            console.log(age.value, counter.value)
+        }
+    })
+</script>
+```
+
 ## Linux篇
 
 ### Linux目录结构
