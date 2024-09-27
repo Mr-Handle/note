@@ -11230,6 +11230,45 @@ export default defineConfig({
 </script>
 ```
 
+### 自定义类型
+
+- 1.定义
+
+```ts
+// 定义一个接口，用于限制User对象的具体属性
+export interface IUser {
+    id: number,
+    name: string,
+    age: number
+}
+
+// 定义IUser数组，两种方式
+export type IUsers = IUser[]
+// export type IUsers = Array<IUser>
+```
+
+- 2.使用
+
+```vue
+<script lang="ts" setup>
+    import type { IUser, IUsers } from '@/types/User';
+
+    // 根据接口创建对象
+    let user: IUser = { id: 1, name: "handle", age: 18 }
+
+    // 根据接口创建数组两种方式
+    let users1: IUsers = [
+        { id: 1, name: "handle", age: 18 },
+        { id: 2, name: "lisi", age: 30 }
+    ]
+
+    let users2: Array<IUser> = [
+        { id: 1, name: "handle", age: 18 },
+        { id: 2, name: "lisi", age: 30 }
+    ]
+</script>
+```
+
 ## Linux篇
 
 ### Linux目录结构
