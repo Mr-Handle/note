@@ -11031,6 +11031,36 @@ export default defineConfig({
 </script>
 ```
 
+#### 监视reactive定义的对象类型数据
+
+```vue
+<template>
+    <div>
+        <p>年龄：{{ user.age }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+        <button type="button" @click="updateUser">更新user</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { reactive, watch } from 'vue';
+
+    let user = reactive({ age: 18 })
+
+    function updateAge() {
+        user.age += 1
+    }
+
+    function updateUser() {
+        Object.assign(user, { age: 30 })
+    }
+
+    // 默认开启深度监视，并且无法用deep:false关闭
+    watch(user, (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+    })
+</script>
+```
+
 ## Linux篇
 
 ### Linux目录结构
