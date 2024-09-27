@@ -11001,6 +11001,8 @@ export default defineConfig({
 
 - 若修改的是对象的属性，newValue和oldValue的值都是新值，因为它们是同一个对象
 - 若修改的是对象，newValue是新值，oldValue旧值，因为它们不是同一个对象
+
+```vue
 <template>
     <div>
         <p>年龄：{{ user.age }}</p>
@@ -11027,6 +11029,8 @@ export default defineConfig({
         console.log(newValue, oldValue)
     }, { deep: true })
 </script>
+```
+
 ## Linux篇
 
 ### Linux目录结构
