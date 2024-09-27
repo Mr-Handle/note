@@ -10966,6 +10966,67 @@ export default defineConfig({
 </script>
 ```
 
+### watch监视写法
+
+#### 监视ref定义的基本类型数据
+
+```vue
+<template>
+    <div>
+        <p>计数：{{ counter }}</p>
+        <button type="button" @click="updateCounter">更新计数</button>
+    </div>
+</template>
+<script lang="ts" setup>
+    import { ref, watch } from 'vue';
+
+    let counter = ref(0)
+
+    function updateCounter() {
+        counter.value += 1
+    }
+
+    // 监视，counter的值变化时触发，按需定义和调用stopWatch来停止监视
+    const stopWatch = watch(counter, (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+        if (newValue > 10) {
+            // 停止监视
+            stopWatch()
+        }
+    })
+</script>
+```
+
+#### 监视ref定义的对象类型数据
+
+- 若修改的是对象的属性，newValue和oldValue的值都是新值，因为它们是同一个对象
+- 若修改的是对象，newValue是新值，oldValue旧值，因为它们不是同一个对象
+<template>
+    <div>
+        <p>年龄：{{ user.age }}</p>
+        <button type="button" @click="updateAge">更新年龄</button>
+        <button type="button" @click="updateUser">更新user</button>
+    </div>
+
+</template>
+<script lang="ts" setup>
+    import { ref, watch } from 'vue';
+
+    let user = ref({ age: 18 })
+
+    function updateAge() {
+        user.value.age += 1
+    }
+
+    function updateUser() {
+        user.value = { age: 30 }
+    }
+
+    // 监视的是对象的地址，若想监视对象内部属性变化，需要手动开启deep监视
+    watch(user, (newValue, oldValue) => {
+        console.log(newValue, oldValue)
+    }, { deep: true })
+</script>
 ## Linux篇
 
 ### Linux目录结构
