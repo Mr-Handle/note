@@ -10847,7 +10847,7 @@ export default defineConfig({
 ```vue
 <template>
     <div>
-        <h2>姓名：{{ user.id }}</h2>
+        <h2>id：{{ user.id }}</h2>
         <h2>姓名：{{ user.name }}</h2>
         <h2>年龄：{{ user.age }}</h2>
         <button @click="updateUser">更新用户</button>
@@ -10883,6 +10883,22 @@ export default defineConfig({
 
 <script lang="ts" setup name="SomeVueName">
     function updateName() {}
+</script>
+```
+
+### v-module写法
+
+```vue
+<template>
+    <div>
+        <!-- 将输入框的值和变量name双向绑定，v-model:value简写为v-model -->
+        <input type="text" v-model="name" />
+    </div>
+</template>
+<script lang="ts" setup>
+    import { ref } from 'vue';
+
+    let name = ref('handle')
 </script>
 ```
 
