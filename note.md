@@ -6698,6 +6698,73 @@ seata.transport.enable-client-batch-send-request=true
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
 
+## swagger
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.6.0</version>
+</dependency>
+```
+
+- 配置文件
+
+```java
+@Configuration
+public class SwaggerConfiguration {
+    // 分组配置，请求路径是/pay/**都归为支付模块
+    @Bean
+    public GroupedOpenApi payApi() {
+        return GroupedOpenApi.builder().group("支付模块").pathsToMatch("/pay/**").build();
+    }
+
+    @Bean
+    public GroupedOpenApi otherApi() {
+        return GroupedOpenApi.builder().group("其它模块").pathsToMatch("/other/**").build();
+    }
+
+    // 其它描述信息
+    @Bean
+    public OpenAPI openApi() {
+        return new OpenAPI()
+        .info(new Info().title("projectName")
+            .description("projectName api")
+            .version("1.0.0"))
+        .externalDocs(new ExternalDocumentation()
+            .description("handle studio")
+            .url("https://www.handle.com"));
+    }
+}
+```
+
+- 实体类
+
+```java
+@Schema(title = "支付模块入参")
+public class PayInputVo {
+    @Schema(title = "支付流水号")
+    private String payNumber;
+}
+```
+
+- 控制器
+
+```java
+@Tag(name = "支付模块", description = "支付增删改查")
+public class PayController {
+    @Operation(summary = "新增", description = "新增支付记录") 
+    @GetMapping("/add")
+    public String add(@RequestBody PayInputVo payInputVo) {
+    return "add success";
+    }
+}
+```
+
+- 访问页面：<http://ip:port/swagger-ui/index.html>
+
 ## Knife4j
 
 - 依赖
