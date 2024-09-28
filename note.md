@@ -3741,6 +3741,91 @@ public MybatisPlusInterceptor mybatisPlusInterceptor() {
 }
 ```
 
+### 代码生成器
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus</artifactId>
+    <version>3.5.8</version>
+    <scope>compile</scope>
+</dependency>
+<dependency>
+    <groupId>org.freemarker</groupId>
+    <artifactId>freemarker</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-generator</artifactId>
+    <version>3.5.8</version>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+</dependency>
+```
+
+- 生成代码
+
+```java
+String projectPath = "..\\mybatis-plus-generator";
+
+FastAutoGenerator.create("jdbc:postgresql://localhost:5432/databaseName", "username", "password")
+    // 全局配置
+    .globalConfig(builder -> {
+    // 设置作者
+    builder.author("handle")
+    // 指定java文件输出目录
+    .outputDir(projectPath + "/src/main/java")
+    .disableOpenDir()
+    ;
+    })
+    // 包配置
+    .packageConfig(builder ->
+    // 设置父包名
+    builder.parent("com.handle.mybatisPlusGenerator")
+    // 设置实体类包名
+    .entity("pojo.po")
+    // 设置Service接口包名
+    .service("service")
+    // 设置Service实现类包名
+    .serviceImpl("service.impl")
+    // 设置Mapper接口包名
+    .mapper("dao")
+    // xml文件输出目录
+    .pathInfo(Collections.singletonMap(OutputFile.xml, projectPath + "/src/main/resources/mapper/com/handle/mybatisPlusGenerator/dao")) 
+    )
+    // 策略配置
+    .strategyConfig(builder ->
+    // 设置需要生成的表名，多张表用英文逗号隔开
+    builder.addInclude("tableName")
+        .entityBuilder()
+        .disableSerialVersionUID()
+        // 启用Lombok
+        .enableLombok()
+        // 启用字段注解
+        .enableTableFieldAnnotation()
+        .convertFileName(entityName -> entityName + "Po")
+        .controllerBuilder()
+        .disable()
+        .serviceBuilder()
+        .convertServiceFileName(entityName -> entityName + "Service")
+        .mapperBuilder()
+        .convertMapperFileName(entityName -> entityName + "Dao")
+        .convertXmlFileName(entityName -> entityName + "Dao")
+    )
+    // 使用Freemarker引擎模板，默认的是Velocity引擎模板
+    .templateEngine(new FreemarkerTemplateEngine())
+    // 执行生成
+    .execute();
+```
+
 ## Spring
 
 ### IOC
@@ -7909,7 +7994,9 @@ public Map<String, Object> getMatrixVariables(
 ### 安装Maven
 
 - 1.添加环境变量：MAVEN_HOME=`“maven根目录”`
+
 - 2.环境变量Path追加：`%MAVEN_HOME%\bin`
+
 - 3.修改`“MAVEN_HOME”\conf\settings.xml` 配置文件
   
 ```xml
@@ -8001,7 +8088,7 @@ public Map<String, Object> getMatrixVariables(
     <!-- 2.填写子工程名称 -->
     <artifactId>子工程名称</artifactId>
 
-    <!-- 3.填写依赖，继承自父工程的依赖不用写版本信息 -->
+    <!-- 3.填写依赖，继承自父工程的依赖不用写version和scope -->
     <dependencies>
         <dependency>
             <groupId>...</groupId>
