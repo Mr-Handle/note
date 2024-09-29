@@ -2131,99 +2131,6 @@ JSON作为数据传输的格式，有几个显着的优点：
 - 布尔值：`true`或`false`
 - 空值：`null`
 
-#### Jackson
-
-- gradle依赖
-
-```kotlin
-implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-
-// 要把JSON的某些值解析为特定的Java对象，例如LocalDate，需要引入标准的JSR 310关于JavaTime的数据格式定义
-implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
-```
-
-- 使用
-
-```java
-@Getter
-@Setter
-@ToString
-public class User {
-    private Long id;
-
-    private String name;
-
-    // 也可以不用@JsonSerialize和@JsonDeserialize注解，在创建ObjectMapper时，注册一个新的JavaTimeModule，
-    // ObjectMapper mapper = new ObjectMapper().registerModule(new
-    // JavaTimeModule());
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    // @JsonSerialize(using = LocalDateSerializer.class)
-    // @JsonDeserialize(using = LocalDateDeserializer.class)
-    private LocalDate birthday;
-}
-
-/**
- * 每个测试方法执行前执行一次
- */
-@BeforeEach
-public void init() {
-    user = new User();
-    user.setId(1L);
-    user.setName("张三");
-}
-
-@Test
-public void testJavaObjectToJson() throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    // 反序列化时忽略不存在的JavaBean属性:
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-    // javabean转json
-    String jsoString = objectMapper.writeValueAsString(user);
-    System.out.println("user:" + jsoString);
-
-    // json转javabean
-    User user2 = objectMapper.readValue(jsoString, User.class);
-    System.out.println("user2:" + user2.toString());
-
-    List<User> list = new ArrayList<>();
-    list.add(user);
-    // java集合转json
-    String jsonListString = objectMapper.writeValueAsString(list);
-    System.out.println("list:" + jsonListString);
-
-    // json转java集合
-    List<User> list2 = objectMapper.readValue(jsonListString, new TypeReference<List<User>>() {});
-    System.out.println("list2:" + list2.toString());
-}
-```
-
-- 自定义JsonSerializer和JsonDeserializer来定制序列化和反序列化
-
-```java
-@Getter
-@Setter
-@ToString
-public class User {
-    // ...
-
-    // 指定使用自定义的反序列化类
-    @JsonDeserialize(using = UuidDeserializer.class)
-    private String uuid;
-}
-
-public class UuidDeserializer extends JsonDeserializer<String> {
-    @Override
-    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-        String property = p.getValueAsString();
-        if (Objects.isNull(property)) {
-            return null;
-        }
-        return property.replace("-", "");
-    }
-}
-```
-
 ### Servlet
 
 #### 1. Servlet 组件
@@ -6698,6 +6605,291 @@ seata.transport.enable-client-batch-send-request=true
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
 
+## Jackson
+
+### 常规使用
+
+- gradle依赖
+
+```kotlin
+implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+
+// 要把JSON的某些值解析为特定的Java对象，例如LocalDate，需要引入标准的JSR 310关于JavaTime的数据格式定义
+implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+```
+
+- 使用
+
+```java
+@Getter
+@Setter
+@ToString
+public class User {
+    private Long id;
+
+    private String name;
+
+    // 也可以不用@JsonSerialize和@JsonDeserialize注解，在创建ObjectMapper时，注册一个新的JavaTimeModule，
+    // ObjectMapper mapper = new ObjectMapper().registerModule(new
+    // JavaTimeModule());
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    // @JsonSerialize(using = LocalDateSerializer.class)
+    // @JsonDeserialize(using = LocalDateDeserializer.class)
+    private LocalDate birthday;
+}
+
+/**
+ * 每个测试方法执行前执行一次
+ */
+@BeforeEach
+public void init() {
+    user = new User();
+    user.setId(1L);
+    user.setName("张三");
+}
+
+@Test
+public void testJavaObjectToJson() throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    // 反序列化时忽略不存在的JavaBean属性:
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    // javabean转json
+    String jsoString = objectMapper.writeValueAsString(user);
+    System.out.println("user:" + jsoString);
+
+    // json转javabean
+    User user2 = objectMapper.readValue(jsoString, User.class);
+    System.out.println("user2:" + user2.toString());
+
+    List<User> list = new ArrayList<>();
+    list.add(user);
+    // java集合转json
+    String jsonListString = objectMapper.writeValueAsString(list);
+    System.out.println("list:" + jsonListString);
+
+    // json转java集合
+    List<User> list2 = objectMapper.readValue(jsonListString, new TypeReference<List<User>>() {});
+    System.out.println("list2:" + list2.toString());
+}
+```
+
+- 自定义JsonSerializer和JsonDeserializer来定制序列化和反序列化
+
+```java
+@Getter
+@Setter
+@ToString
+public class User {
+    // ...
+
+    // 指定使用自定义的反序列化类
+    @JsonDeserialize(using = UuidDeserializer.class)
+    private String uuid;
+}
+
+public class UuidDeserializer extends JsonDeserializer<String> {
+    @Override
+    public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+        String property = p.getValueAsString();
+        if (Objects.isNull(property)) {
+            return null;
+        }
+        return property.replace("-", "");
+    }
+}
+```
+
+### Spring Boot中使用
+
+- 只要导入了web启动器，不用导入Jackson依赖
+
+- 配置文件
+
+```properties
+spring.jackson.time-zone=GMT+8
+# 设置Date类型的日期格式
+spring.jackson.date-format=yyyy-MM-dd HH:mm:ss
+# 返回时间戳给前端，只对Date类型生效
+spring.jackson.serialization.write-dates-as-timestamps=true
+```
+
+- 自定义Jackson配置类
+
+```java
+@Configuration
+public class JacksonConfiguration {
+    /**
+     * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
+     */
+    @Bean
+    public Converter<String, LocalDateTime> localDateTimeConverter() {
+        return new Converter<String, LocalDateTime>() {
+            @Override
+            public LocalDateTime convert(String value) {
+                Instant instant = Instant.ofEpochMilli(Long.parseLong(value));
+                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+        };
+    }
+
+    /**
+     * 自定义一些类型的序列化器和反序列化器
+     */
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+        return builder -> {
+            // js的精度为17位，当Long类型的数值位数超过17位时，序列化为字符串，保证数据准确性
+            builder.serializerByType(Long.class, new LongSerializer());
+            builder.deserializerByType(Long.class, new LongDeserializer());
+
+            builder.serializerByType(LocalDate.class, new LocalDateSerializer());
+            builder.deserializerByType(LocalDate.class, new LocalDateDeserializer());
+
+            builder.serializerByType(LocalDateTime.class, new LocalDateTimeSerializer());
+            builder.deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer());
+
+            builder.serializerByType(OffsetDateTime.class, new OffsetDateTimeSerializer());
+            builder.deserializerByType(OffsetDateTime.class, new OffsetDateTimeDeserializer());
+        };
+    }
+
+    public static class LongSerializer extends JsonSerializer<Long> {
+        @Override
+        public void serialize(Long value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            if (Objects.nonNull(value)) {
+                String stringValue = String.valueOf(value);
+                if (stringValue.length() > 17) {
+                    gen.writeString(stringValue);
+                } else {
+                    gen.writeNumber(value);
+                }
+            }
+        }
+    }
+ 
+    public static class LongDeserializer extends JsonDeserializer<Long> {
+        @Override
+        public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+            return p.getValueAsLong();
+        }
+    }
+ 
+    public static class LocalDateSerializer extends JsonSerializer<LocalDate> {
+        @Override
+        public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            if (Objects.nonNull(value)) {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                gen.writeString(dateTimeFormatter.format(value));
+            }
+        }
+    }
+
+    public static class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
+        @Override
+        public LocalDate deserialize(JsonParser p, DeserializationContext ctxt)
+        throws IOException, JacksonException {
+            String value = p.getValueAsString();
+            if (StringUtils.isNotBlank(value)) {
+                if (value.trim().matches("^\\d{4}/\\d{1,2}/\\d{1,2}$")) {
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+                    return LocalDate.parse(value, dateTimeFormatter);
+                } else if (value.trim().matches("^\\d{4}\\-\\d{1,2}\\-\\d{1,2}$")) {
+                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    return LocalDate.parse(value, dateTimeFormatter);
+                } 
+            }
+            return null;
+        }
+    }
+
+    public static class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
+        @Override
+        public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+            if (Objects.nonNull(value)) {
+                long timestamp = value.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                gen.writeNumber(timestamp);
+            }
+        }
+    }
+
+    public static class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
+        @Override
+        public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt)
+        throws IOException, JacksonException {
+            long timestamp = p.getValueAsLong();
+            if (timestamp > 0) {
+                Instant instant = Instant.ofEpochMilli(timestamp);
+                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+            return null;
+        }
+    }
+
+    public static class OffsetDateTimeSerializer extends JsonSerializer<OffsetDateTime> {
+        @Override
+        public void serialize(OffsetDateTime value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+            if (Objects.nonNull(value)) {
+                long timestamp = value.toInstant().toEpochMilli();
+                gen.writeNumber(timestamp);
+            }
+        }
+    }
+
+    public static class OffsetDateTimeDeserializer extends JsonDeserializer<OffsetDateTime> {
+        @Override
+        public OffsetDateTime deserialize(JsonParser p, DeserializationContext ctxt)
+        throws IOException, JacksonException {
+            long timestamp = p.getValueAsLong();
+            if (timestamp > 0) {
+                Instant instant = Instant.ofEpochMilli(timestamp);
+                return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+            return null;
+        }
+    }
+}
+```
+
+- ObjectMapper是线程安全的，因此可以定义一个Jackson工具类，避免每次注入Jackson
+
+```java
+// 1.定义工具类
+public final class JacksonUtil {
+    private static ObjectMapper objectMapper;
+
+    public static String writeValueAsString(Object value) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(value);
+    }
+
+    public static <T> T readValue(String content, Class<T> valueType)
+    throws JsonProcessingException, JsonMappingException {
+        return objectMapper.readValue(content, valueType);
+    }
+
+    public <T> T readValue(String content, TypeReference<T> valueTypeRef)
+            throws JsonProcessingException, JsonMappingException {
+        return objectMapper.readValue(content, valueTypeRef);
+    }
+}
+
+// 2.初始化工具类的objectMapper
+@Component
+public class JacksonUtilInitializer {
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @PostConstruct
+    public void init() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        Field field = JacksonUtil.class.getDeclaredField("objectMapper");
+        field.setAccessible(true);
+        field.set(null, objectMapper);
+    }
+}
+```
+
 ## swagger
 
 - 依赖
@@ -6766,6 +6958,8 @@ public class PayController {
 - 访问页面：<http://ip:port/swagger-ui/index.html>
 
 ## Knife4j
+
+集成了swagger功能，更加强大
 
 - 依赖
 
@@ -8802,6 +8996,7 @@ create table account (
     enabled boolean not null,
     creator bigint,
     modifier bigint,
+    -- timestamptz在Java8中用OffsetDateTime对应
     creation_time timestamptz,
     modification_time timestamptz,
     version integer not null default 1,
