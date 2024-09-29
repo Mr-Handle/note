@@ -5123,33 +5123,37 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     // 2.声明异常处理方法
-    @ExceptionHandler(NullPointerException.class)
-    public Object nullPointerExceptionHandler(NullPointerException e) {
-        return null;
-    }
-
-    @ExceptionHandler(Exception.class)
-    public Object exceptionHandler(Exception e) {
-        return null;
-    }
-}
-```
-
-- 获取异常信息
-
-```java
-public static String getErrorMessage(Throwable throwable) {
-    String errorMessage = throwable.getLocalizedMessage();
-    if (StringUtils.isBlank(errorMessage)) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
-        throwable.printStackTrace(printWriter);
-        errorMessage = stringWriter.toString();
-        if (errorMessage.length() > 500) {
-            errorMessage = errorMessage.substring(0, 500);
+    @ExceptionHandler(RuntimeException.class)
+    public ResultVo<String> runtimeExceptionHandler(RuntimeException exception) {
+        String errorMessage = exception.getLocalizedMessage();
+        if (StringUtils.isBlank(errorMessage)) {
+            errorMessage = getErrorMessage(exception);
         }
+        return ResultVo.failure(ResultCodeEnum.FAILURE.getCode(), errorMessage);
     }
-    return errorMessage;
+ 
+    @ExceptionHandler(Exception.class)
+    public ResultVo<String> runtimeExceptionHandler(Exception exception) {
+        String errorMessage = exception.getLocalizedMessage();
+        if (StringUtils.isBlank(errorMessage)) {
+            errorMessage = getErrorMessage(exception);
+        }
+        return ResultVo.failure(ResultCodeEnum.BAD_REQUEST.getCode(), errorMessage);
+    }
+ 
+    public static String getErrorMessage(Exception exception){
+        String errorMessage = exception.getLocalizedMessage();
+        if (StringUtils.isBlank(errorMessage)) {
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            exception.printStackTrace(printWriter);
+            errorMessage = stringWriter.toString();
+            if (errorMessage.length() > 500) {
+                errorMessage = errorMessage.substring(0, 500);
+            }
+        }
+        return errorMessage;
+    }
 }
 ```
 
