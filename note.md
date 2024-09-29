@@ -5135,6 +5135,24 @@ public class GlobalExceptionHandler {
 }
 ```
 
+- 获取异常信息
+
+```java
+public static String getErrorMessage(Throwable throwable) {
+    String errorMessage = throwable.getLocalizedMessage();
+    if (StringUtils.isBlank(errorMessage)) {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        throwable.printStackTrace(printWriter);
+        errorMessage = stringWriter.toString();
+        if (errorMessage.length() > 500) {
+            errorMessage = errorMessage.substring(0, 500);
+        }
+    }
+    return errorMessage;
+}
+```
+
 ### 拦截器
 
 - DispatcherServlet的doDispatch方法内
