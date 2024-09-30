@@ -6995,6 +6995,141 @@ public class PayController {
 
 - 文档地址：`http://ip:port/doc.html`
 
+## 分布式id
+
+### tinyid
+
+- 官网：<https://github.com/didi/tinyid>
+
+- 下载源码后用IDE打开
+
+- 将tinyid/tinyid-server/db.sql改成postgresql数据库支持的sql，然后创建表
+
+```sql
+create table tiny_id_info (
+    id bigserial not null,
+    biz_type varchar(63) not null default '',
+    begin_id bigint not null default '0',
+    max_id bigint not null default '0',
+    step integer default '0',
+    delta integer not null default '1',
+    remainder integer not null default '0',
+    create_time timestamptz not null default '2024-01-01 00:00:00',
+    update_time timestamptz not null default '2024-01-01 00:00:00',
+    version bigint not null default '0',
+    primary key (id),
+    constraint uniq_biz_type unique (biz_type)
+);
+
+comment on table  tiny_id_info is '账号表'; 
+comment on column tiny_id_info.id is '自增主键';
+comment on column tiny_id_info.biz_type is '业务类型，唯一';
+comment on column tiny_id_info.begin_id is '开始id，仅记录初始值，无其他含义。初始化时begin_id和max_id应相同';
+comment on column tiny_id_info.max_id is '当前最大id';
+comment on column tiny_id_info.step is '步长';
+comment on column tiny_id_info.delta is '每次id增量';
+comment on column tiny_id_info.remainder is '余数';
+comment on column tiny_id_info.create_time is '创建时间';
+comment on column tiny_id_info.update_time is '更新时间';
+comment on column tiny_id_info.version is '版本号';
+
+create table tiny_id_token (
+    id bigserial not null,
+    token varchar(255) not null default '',
+    biz_type varchar(63) not null default '',
+    remark varchar(255) not null default '',
+    create_time timestamptz not null default '2024-01-01 00:00:00',
+    update_time timestamptz not null default '2024-01-01 00:00:00',
+    primary key (id)
+);
+
+comment on table  tiny_id_token is 'token信息表'; 
+comment on column tiny_id_token.id is '自增主键';
+comment on column tiny_id_token.token is 'token';
+comment on column tiny_id_token.biz_type is '此token可访问的业务类型标识';
+comment on column tiny_id_token.remark is '备注';
+comment on column tiny_id_token.create_time is '创建时间';
+comment on column tiny_id_token.update_time is '更新时间';
+
+insert into tiny_id_info (id, biz_type, begin_id, max_id, step, delta, remainder, create_time, update_time, version)
+values
+ (1, 'test', 1, 1, 100000, 1, 0, '2024-09-30 14:30:06', '2024-09-30 14:30:06', 1);
+
+insert into tiny_id_info (id, biz_type, begin_id, max_id, step, delta, remainder, create_time, update_time, version)
+values
+ (2, 'test_odd', 1, 1, 100000, 2, 1, '2024-09-30 14:30:06', '2024-09-30 14:30:06', 3);
+
+insert into tiny_id_token (id, token, biz_type, remark, create_time, update_time)
+values
+ (1, '0f673adf80504e2eaa552f5d791b644c', 'test', '1', '2024-09-30 16:36:46', '2024-09-30 16:36:48');
+
+insert into tiny_id_token (id, token, biz_type, remark, create_time, update_time)
+values
+ (2, '0f673adf80504e2eaa552f5d791b644c', 'test_odd', '1', '2024-09-30 16:36:46', '2024-09-30 16:36:48');
+```
+
+- 修改pom，添加postgresql驱动依赖（mysql的可以删了）
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.6.0</version>
+</dependency>
+```
+
+- 修改配置文件，tinyid-server/src/main/resources/offline下的application.properties
+
+```properties
+datasource.tinyid.primary.driver-class-name=org.postgresql.Driver
+datasource.tinyid.primary.url=jdbc:postgresql://localhost:5432/tinyid
+datasource.tinyid.primary.username=postgres
+datasource.tinyid.primary.password=postgres123
+```
+
+- 其它地方根据运行的Java环境和依赖版本做调整
+
+### idgenerator
+
+- 官网：<https://github.com/yitter/IdGenerator>
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>com.github.yitter</groupId>
+    <artifactId>yitter-idgenerator</artifactId>
+    <version>1.0.6</version>
+</dependency>
+```
+
+- 使用
+
+```java
+public class ApplicationTest {
+    @BeforeEach
+    public void init() {
+        // 创建 IdGeneratorOptions 对象，可在构造函数中输入 WorkerId：
+        IdGeneratorOptions options = new IdGeneratorOptions((short)1);
+        // options.WorkerIdBitLength = 10; // 默认值6，限定 WorkerId 最大值为2^6-1，即默认最多支持64个节点。
+        // options.SeqBitLength = 6; // 默认值6，限制每毫秒生成的ID个数。若生成速度超过5万个/秒，建议加大 SeqBitLength 到 10。
+        // options.BaseTime = Your_Base_Time; // 如果要兼容老系统的雪花算法，此处应设置为老系统的BaseTime。
+        // ...... 其它参数参考 IdGeneratorOptions 定义。
+
+        // 保存参数（务必调用，否则参数设置不生效）：
+        YitIdHelper.setIdGenerator(options);
+
+        // 以上过程只需全局一次，且应在生成ID之前完成。
+    }
+    @Test
+    public void test() {
+        // 初始化后，在任何需要生成ID的地方，调用以下方法：
+        long newId = YitIdHelper.nextId();
+        System.out.println(newId);
+    }
+}
+```
+
 ## Zookeeper
 
 ### 启动zookeeper
