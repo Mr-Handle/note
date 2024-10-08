@@ -5925,6 +5925,138 @@ public Object discovery() {
 }
 ```
 
+### OpenFeign
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
+
+- 调用方主启动类
+
+```java
+@SpringBootApplication
+// 开启OpenFeign功能
+@EnableFeignClients
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+- 接口
+
+```java
+@FeignClient(name = "服务名")
+public interface AccountClient {
+    @GetMapping("/account/getAccount")
+    ResultVo<Account> getAccount(Long id);
+}
+```
+
+- 调用方handler
+
+```java
+@RestController
+public class ApplicationController {
+    @Resource
+    private AccountClient accountClient;
+
+    @GetMapping("/consumer/account/getAccount")
+    public ResultVo<Account> getAccount(Long id) {
+        return accountClient.getAccount(id);
+    }
+}
+```
+
+#### 超时配置
+
+- 全局配置
+
+```properties
+
+# 连接超时
+spring.cloud.openfeign.client.config.default.connectTimeout=5000
+# 处理超时
+spring.cloud.openfeign.client.config.default.readTimeout=5000
+```
+
+- 指定配置（会覆盖全局配置）
+
+```properties
+
+# 连接超时
+spring.cloud.openfeign.client.config.服务名.connectTimeout=5000
+# 处理超时
+spring.cloud.openfeign.client.config.服务名.readTimeout=5000
+```
+
+#### 重试配置
+
+```java
+@Configuration
+public class OpenFeignConfiguration {
+    @Bean
+    public Retryer retryer() {
+        // 默认Retryer.NEVER_RETRY，这里设置为1000ms后，每隔1s，最多请求3次
+        return new Retryer.Default(1000, 1, 3);
+    }
+}
+```
+
+#### 使用 Apache HttpClient 5
+
+- 添加依赖
+
+```xml
+<dependency>
+    <groupId>org.apache.httpcomponents.client5</groupId>
+    <artifactId>httpclient5</artifactId>
+    <version>5.4</version>
+</dependency>
+<dependency>
+    <groupId>io.github.openfeign</groupId>
+    <artifactId>feign-hc5</artifactId>
+    <version>13.4</version>
+</dependency>
+```
+
+- 修改配置文件
+
+```properties
+spring.cloud.openfeign.httpclient.hc5.enabled=true
+```
+
+#### 请求/响应压缩
+
+```properties
+# 开启GZIP压缩
+spring.cloud.openfeign.compression.request.enabled=true
+spring.cloud.openfeign.compression.response.enabled=true
+
+# 触发压缩的数据类型
+spring.cloud.openfeign.compression.request.mime-types=text/xml,application/xml,application/json
+# 触发压缩的最小值
+spring.cloud.openfeign.compression.request.min-request-size=2048
+```
+
+#### 日志打印
+
+```java
+@Configuration
+public class OpenFeignConfiguration {
+    @Bean
+    public Logger.Level openFeignLoggerLevel() {
+        return new Logger.Level.BASIC;
+    }
+}
+```
+
 ### BUS 消息总线
 
 - maven dependency
