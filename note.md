@@ -5927,7 +5927,7 @@ public Object discovery() {
 
 ### OpenFeign
 
-- 依赖
+- 依赖（@FeignClient接口所在项目和调用方项目都要添加）
 
 ```xml
 <dependency>
@@ -5935,6 +5935,18 @@ public Object discovery() {
     <artifactId>spring-cloud-starter-openfeign</artifactId>
 </dependency>
 ```
+
+#### 接口
+
+```java
+@FeignClient(name = "服务名")
+public interface AccountClient {
+    @GetMapping("/account/getAccount")
+    ResultVo<Account> getAccount(Long id);
+}
+```
+
+#### 调用
 
 - 调用方主启动类
 
@@ -5946,16 +5958,6 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-}
-```
-
-- 接口
-
-```java
-@FeignClient(name = "服务名")
-public interface AccountClient {
-    @GetMapping("/account/getAccount")
-    ResultVo<Account> getAccount(Long id);
 }
 ```
 
@@ -6190,11 +6192,9 @@ sh startup.sh -m standalone
 
 - 4）分别启动n个nacos服务
 
-#### Nacos注册中心客户端
+#### 注册中心
 
-微服务注册到Nacos注册中心
-
-- maven dependency
+- 依赖
 
 ```xml
 <dependency>
@@ -6203,31 +6203,19 @@ sh startup.sh -m standalone
 </dependency>
 ```
 
-- 应用配置
+- 配置
 
 ```properties
-server.port=9001
-
-spring.application.name=nacos-payment-provider
-
-# nacos服务器地址，不用加http://
-spring.cloud.nacos.discovery.server-addr=www.laodeli.top:8848
-
-# 设置注册中心的命名空间id
-spring.cloud.nacos.discovery.namespace=6643e6b9-6ca9-4d8f-86bd-34fbb893a976
-
-# 设置注册中心的分组名称
-spring.cloud.nacos.discovery.group=DEFAULT_GROUP
-
-# 全部暴露监控端点
-management.endpoints.web.exposure.include=*
+spring.application.name=nacos-discovery-service
+server.port=8080
+spring.cloud.nacos.discovery.server-addr=localhost:8848
 ```
 
 - 主启动类
 
 ```java
-@SpringBootApplication
 @EnableDiscoveryClient
+@SpringBootApplication
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -6241,18 +6229,20 @@ public class Application {
 
 ```java
 @Configuration
-public class ApplicationContextConfiguration {
-    @Bean
+public class ApplicationConfiguration {
     @LoadBalanced
+    @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
 }
 ```
 
-#### Nacos配置中心客户端
+- 做好9848、9849端口的映射
 
-- Data ID命名规则：${spring-application-name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+#### 配置中心
+
+- Data ID命名规则：${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
 
 - maven dependency
 
@@ -6405,11 +6395,17 @@ github:<https://github.com/alibaba/Sentinel/>
 bash seata-server.sh
 ```
 
-- 查看nacos服务列表中是否有seata，查看<http://localhost:7091/是否能够正常访问>
+- 查看nacos服务列表中是否有seata，查看<http://localhost:7091/>是否能够正常访问
 
 #### seata-client
 
 - 与seata事务相关的数据库添加表（AT专用）：[postgresql.sql](/sql/seata-client-postgresql.sql)
+
+- 创建测试用账户表[account.sql](/sql/account-postgresql.sql)
+
+- 创建测试用订单表[order.sql](/sql/order-postgresql.sql)
+
+- 创建测试用库存表[inventory.sql](/sql/inventory-postgresql.sql)
 
 - maven dependency
 
