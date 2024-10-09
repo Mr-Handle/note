@@ -6127,17 +6127,15 @@ spring.sleuth.sampler.probability=1
 </dependencyManagement>
 ```
 
-### Nacos
+#### Nacos
 
 - 官网：<https://nacos.io/zh-cn/index.html>
 
 - github：<https://github.com/alibaba/nacos>
 
-Nacos Client/Server Version `2.0.3`
+##### Nacos Server
 
-#### Nacos Server
-
-##### 数据持久化
+###### 数据持久化
 
 - 1）创建数据库
 
@@ -6175,7 +6173,7 @@ sh startup.sh
 sh startup.sh -m standalone
 ```
 
-##### nacos集群
+###### nacos集群
 
 - 1）nacos解压缩后复制成n份
 
@@ -6192,7 +6190,7 @@ sh startup.sh -m standalone
 
 - 4）分别启动n个nacos服务
 
-#### Nacos注册中心客户端
+##### Nacos注册中心客户端
 
 微服务注册到Nacos注册中心
 
@@ -6252,7 +6250,7 @@ public class ApplicationContextConfiguration {
 }
 ```
 
-#### Nacos配置中心客户端
+##### Nacos配置中心客户端
 
 - maven dependency
 
@@ -6334,12 +6332,12 @@ public class ApplicationController {
 }
 ```
 
-### Spring Cloud Alibaba Sentinel
+#### Sentinel
 
 github:<https://github.com/alibaba/Sentinel/>
 官网：<https://sentinelguard.io/zh-cn/>
 
-#### Sentinel 服务器
+##### Sentinel 服务器
 
 - 下载sentinel-dashboard-1.8.1.jar
 
@@ -6387,11 +6385,11 @@ github:<https://github.com/alibaba/Sentinel/>
 - 忽略异常处理
 ![忽略异常](2022-04-20-22-29-37.png)
 
-### SEATA
+#### SEATA
 
 Seata Client/Server Version `1.3.0`
 
-#### seata-server
+##### seata-server
 
 - 创建seata数据库并添加表
 
@@ -6637,7 +6635,7 @@ sh nacos-config.sh -h nacos地址 -p nacos端口 -g 分组名称 -t 命名空间
 sh seata-server.sh -p 8091 -h 127.0.0.1 -m db
 ```
 
-#### seata-client
+##### seata-client
 
 - 在客户端与seata事务相关的数据库添加表
 
@@ -7748,7 +7746,6 @@ docker network create mynet
 
 # 指定网络名
 docker -run -d -p 5050:80 --name app1 --network mynet dpage/pgadmin4
-docker -run -d -p 5060:80 --name app2 --network mynet dpage/pgadmin4
 
 # 进入容器内
 docker exec -it app1 bash
@@ -8006,9 +8003,9 @@ ENV LC_ALL C.UTF-8
 WORKDIR /usr/local
 RUN mkdir /usr/local/jdk
 # 把jdk添加到容器中，并且指定解压到容器中的具体位置
-ADD bellsoft-jre21.0.4+9-linux-amd64-full.tar.gz /usr/local/jdk/
+ADD bellsoft-jre21.0.4+9-linux-amd64.tar.gz /usr/local/jdk/
 # 配置JAVA环境变量
-ENV JAVA_HOME /usr/local/jdk/jre-21.0.4-full
+ENV JAVA_HOME /usr/local/jdk/jre-21.0.4
 ENV PATH $JAVA_HOME/bin:$PATH
 # 容器启动后打开bash
 CMD /bin/bash
@@ -8021,7 +8018,7 @@ Dockerfile和jar包要在同一目录下
 - 创建Dockerfile
 
 ```Dockerfile
-FROM bellsoft/liberica-fulljre-ubuntu:21.0.4-9
+FROM bellsoft/liberica-jre-ubuntu:21.0.4-9
 # 作者信息
 LABEL author=handle
 # 在容器中创建目录
@@ -9304,6 +9301,24 @@ comment on column account.creation_time is '创建时间';
 comment on column account.modification_time is '修改时间';
 comment on column account.version is '修改版本';
 comment on column account.deleted is '是否已逻辑删除';
+```
+
+#### pgadmin4
+
+- 获取镜像
+
+```sh
+docker pull dpage/pgadmin4:<tag name>
+```
+
+- 启动容器
+
+```sh
+docker run -p 5050:80 \
+-e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
+-e 'PGADMIN_DEFAULT_PASSWORD=pgadmin123' \
+--name pgadmin4 \
+-d dpage/pgadmin4:<tag name>
 ```
 
 ### MySQL
@@ -10698,24 +10713,6 @@ lock.lock();
 ...
 // 4.释放锁
 lock.unlock();
-```
-
-### pgadmin4
-
-- 获取镜像
-
-```sh
-docker pull dpage/pgadmin4:<tag name>
-```
-
-- 启动容器
-
-```sh
-docker run -p 5050:80 \
--e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
--e 'PGADMIN_DEFAULT_PASSWORD=pgadmin123' \
---name pgadmin4 \
--d dpage/pgadmin4:<tag name>
 ```
 
 ## 分布式定时任务
