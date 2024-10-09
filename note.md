@@ -5927,7 +5927,9 @@ public Object discovery() {
 
 ### OpenFeign
 
-- 依赖（@FeignClient接口所在项目和调用方项目都要添加）
+#### 接口项目
+
+- 依赖
 
 ```xml
 <dependency>
@@ -5936,24 +5938,50 @@ public Object discovery() {
 </dependency>
 ```
 
-#### 接口
-
 ```java
-@FeignClient(name = "服务名")
-public interface AccountClient {
+@FeignClient(name = "account-service")
+public interface AccountApi {
+    // 不能在接口上写@RequestMapping了，请求路径要写全（本体handler类上@RequestMapping注解的路径要加上来）
     @GetMapping("/account/getAccount")
-    ResultVo<Account> getAccount(Long id);
+    ResultVo<AccountPo> getAccount(@RequestParam("userId") Long userId);
 }
 ```
 
-#### 调用
+#### 消费项目
 
-- 调用方主启动类
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+<!-- loadbalancer不加启动会报错 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+```
+
+- 配置
+
+```properties
+spring.application.name=openFeign-consumer-service
+server.port=8080
+spring.cloud.nacos.discovery.server-addr=localhost:8848
+```
+
+- 主启动类
 
 ```java
+// 开启OpenFeign功能，并指定openFeign接口所在包
+@EnableFeignClients(basePackages = "com.handle.open.feign.api")
+@EnableDiscoveryClient
 @SpringBootApplication
-// 开启OpenFeign功能
-@EnableFeignClients
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -5961,17 +5989,17 @@ public class Application {
 }
 ```
 
-- 调用方handler
+- 使用openFeign的接口
 
 ```java
-@RestController
-public class ApplicationController {
+@Service
+public class AccountServiceImpl implements AccountService{
     @Resource
-    private AccountClient accountClient;
+    private AccountApi accountApi;
 
-    @GetMapping("/consumer/account/getAccount")
-    public ResultVo<Account> getAccount(Long id) {
-        return accountClient.getAccount(id);
+    @Override
+    public ResultVo<AccountPo> getAccount(Long userId) {
+        return accountApi.getAccount(userId);
     }
 }
 ```
@@ -6238,7 +6266,7 @@ public class ApplicationConfiguration {
 }
 ```
 
-- 做好9848、9849端口的映射
+- （对于虚拟机的NAT和docker版本的nacos）做好9848、9849端口的映射
 
 #### 配置中心
 
