@@ -6109,7 +6109,7 @@ spring.sleuth.sampler.probability=1
 
 请求链路追踪：一条链路通过 trace id 唯一标识， span表示发起的请求信息，各span通过parent id 关联起来
 
-### Spring Cloud Alibaba
+## Spring Cloud Alibaba
 
 - maven dependency
 
@@ -6127,15 +6127,15 @@ spring.sleuth.sampler.probability=1
 </dependencyManagement>
 ```
 
-#### Nacos
+### Nacos
 
 - 官网：<https://nacos.io/zh-cn/index.html>
 
 - github：<https://github.com/alibaba/nacos>
 
-##### Nacos Server
+#### Nacos Server
 
-###### 数据持久化
+##### 数据持久化
 
 - 1）创建数据库
 
@@ -6173,7 +6173,7 @@ sh startup.sh
 sh startup.sh -m standalone
 ```
 
-###### nacos集群
+##### nacos集群
 
 - 1）nacos解压缩后复制成n份
 
@@ -6190,7 +6190,7 @@ sh startup.sh -m standalone
 
 - 4）分别启动n个nacos服务
 
-##### Nacos注册中心客户端
+#### Nacos注册中心客户端
 
 微服务注册到Nacos注册中心
 
@@ -6250,7 +6250,9 @@ public class ApplicationContextConfiguration {
 }
 ```
 
-##### Nacos配置中心客户端
+#### Nacos配置中心客户端
+
+- Data ID命名规则：${spring-application-name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
 
 - maven dependency
 
@@ -6332,12 +6334,12 @@ public class ApplicationController {
 }
 ```
 
-#### Sentinel
+### Sentinel
 
 github:<https://github.com/alibaba/Sentinel/>
 官网：<https://sentinelguard.io/zh-cn/>
 
-##### Sentinel 服务器
+#### Sentinel 服务器
 
 - 下载sentinel-dashboard-1.8.1.jar
 
@@ -6385,276 +6387,29 @@ github:<https://github.com/alibaba/Sentinel/>
 - 忽略异常处理
 ![忽略异常](2022-04-20-22-29-37.png)
 
-#### SEATA
+### SEATA
 
-Seata Client/Server Version `1.3.0`
+#### seata-server
 
-##### seata-server
+- 创建seata数据库
 
-- 创建seata数据库并添加表
+- 建表：[postgresql.sql](/sql/seata-server-postgresql.sql)
 
-```sql
-create database if not exists `seata` default character set utf8mb4 collate utf8mb4_unicode_ci;
+- 解压seata，进入conf文件夹下，参考application.example.yml，修改application.yml
 
-use seata;
-
--- -------------------------------- The script used when storeMode is 'db' --------------------------------
--- the table to store GlobalSession data
-CREATE TABLE IF NOT EXISTS `global_table`
-(
-    `xid`                       VARCHAR(128) NOT NULL,
-    `transaction_id`            BIGINT,
-    `status`                    TINYINT      NOT NULL,
-    `application_id`            VARCHAR(32),
-    `transaction_service_group` VARCHAR(32),
-    `transaction_name`          VARCHAR(128),
-    `timeout`                   INT,
-    `begin_time`                BIGINT,
-    `application_data`          VARCHAR(2000),
-    `gmt_create`                DATETIME,
-    `gmt_modified`              DATETIME,
-    PRIMARY KEY (`xid`),
-    KEY `idx_gmt_modified_status` (`gmt_modified`, `status`),
-    KEY `idx_transaction_id` (`transaction_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
-
--- the table to store BranchSession data
-CREATE TABLE IF NOT EXISTS `branch_table`
-(
-    `branch_id`         BIGINT       NOT NULL,
-    `xid`               VARCHAR(128) NOT NULL,
-    `transaction_id`    BIGINT,
-    `resource_group_id` VARCHAR(32),
-    `resource_id`       VARCHAR(256),
-    `branch_type`       VARCHAR(8),
-    `status`            TINYINT,
-    `client_id`         VARCHAR(64),
-    `application_data`  VARCHAR(2000),
-    `gmt_create`        DATETIME,
-    `gmt_modified`      DATETIME,
-    PRIMARY KEY (`branch_id`),
-    KEY `idx_xid` (`xid`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
-
--- the table to store lock data
-CREATE TABLE IF NOT EXISTS `lock_table`
-(
-    `row_key`        VARCHAR(128) NOT NULL,
-    `xid`            VARCHAR(96),
-    `transaction_id` BIGINT,
-    `branch_id`      BIGINT       NOT NULL,
-    `resource_id`    VARCHAR(256),
-    `table_name`     VARCHAR(32),
-    `pk`             VARCHAR(36),
-    `gmt_create`     DATETIME,
-    `gmt_modified`   DATETIME,
-    PRIMARY KEY (`row_key`),
-    KEY `idx_branch_id` (`branch_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
-```
-
-- 配置registry.conf
-
-```conf
-registry {
-  type = "nacos"
-
-  # 要确保seata服务器和客户端的nacos命名空间和分组名称一致
-  nacos {
-    application = "seata-server"
-    serverAddr = "127.0.0.1:8848"
-    # nacos 命名空间id
-    namespace = "6643e6b9-6ca9-4d8f-86bd-34fbb893a976"
-    # nacos 分组名称
-    group = "SEATA_GROUP"
-    # nacos 集群
-    cluster = "default"
-    username = "nacos"
-    password = "nacos"
-  }
-}
-
-config {
-  type = "nacos"
-
-  nacos {
-    serverAddr = "127.0.0.1:8848"
-    # nacos 命名空间id
-    namespace = "6643e6b9-6ca9-4d8f-86bd-34fbb893a976"
-    # nacos 分组名称
-    group = "SEATA_GROUP"
-    username = "nacos"
-    password = "nacos"
-    dataId = "seataServer.properties"
-  }
-}
-```
-
-- 配置file.conf(file.conf是注册、配置都为file的时候读的文件，如果注册为nacos可以直接删除该文件不用理会)
-
-```conf
-## transaction log store, only used in seata-server
-store {
-  ## store mode: file、db、redis
-  mode = "db"
-
-  ## database store property
-  db {
-    ## the implement of javax.sql.DataSource, such as DruidDataSource(druid)/BasicDataSource(dbcp)/HikariDataSource(hikari) etc.
-    datasource = "druid"
-    ## mysql/oracle/postgresql/h2/oceanbase etc.
-    dbType = "mysql"
-    driverClassName = "com.mysql.cj.jdbc.Driver"
-    url = "jdbc:mysql://127.0.0.1:3306/seata?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8"
-    user = "root"
-    password = "mysql123"
-    minConn = 5
-    maxConn = 30
-    globalTable = "global_table"
-    branchTable = "branch_table"
-    lockTable = "lock_table"
-    queryLimit = 100
-    maxWait = 5000
-  }
-}
-```
-
-- 修改源文件配置/seata-1.3.0/script/config-center/config.txt然后复制到seata-server根目录
-
-```properties
-transport.type=TCP
-transport.server=NIO
-transport.heartbeat=true
-transport.enableClientBatchSendRequest=false
-transport.threadFactory.bossThreadPrefix=NettyBoss
-transport.threadFactory.workerThreadPrefix=NettyServerNIOWorker
-transport.threadFactory.serverExecutorThreadPrefix=NettyServerBizHandler
-transport.threadFactory.shareBossWorker=false
-transport.threadFactory.clientSelectorThreadPrefix=NettyClientSelector
-transport.threadFactory.clientSelectorThreadSize=1
-transport.threadFactory.clientWorkerThreadPrefix=NettyClientWorkerThread
-transport.threadFactory.bossThreadSize=1
-transport.threadFactory.workerThreadSize=default
-transport.shutdown.wait=3
-# 事务分组，guangxi-tx-group可以定义为其他名称，但必须和客户端一样
-# default也可以定义为其他名称，但必须等于registry.conf中nacos注册中心的cluster的值一样
-service.vgroupMapping.guangxi-tx-group=default
-# 集群，default 必须跟service.vgroupMapping.my_test_tx_group的值一样
-service.default.grouplist=127.0.0.1:8091
-service.enableDegrade=false
-service.disableGlobalTransaction=false
-client.rm.asyncCommitBufferLimit=10000
-client.rm.lock.retryInterval=10
-client.rm.lock.retryTimes=30
-client.rm.lock.retryPolicyBranchRollbackOnConflict=true
-client.rm.reportRetryCount=5
-client.rm.tableMetaCheckEnable=false
-client.rm.sqlParserType=druid
-client.rm.reportSuccessEnable=false
-client.rm.sagaBranchRegisterEnable=false
-client.tm.commitRetryCount=5
-client.tm.rollbackRetryCount=5
-client.tm.degradeCheck=false
-client.tm.degradeCheckAllowTimes=10
-client.tm.degradeCheckPeriod=2000
-# 数据存储模式
-store.mode=db
-store.file.dir=file_store/data
-store.file.maxBranchSessionSize=16384
-store.file.maxGlobalSessionSize=512
-store.file.fileWriteBufferCacheSize=16384
-store.file.flushDiskMode=async
-store.file.sessionReloadReadSize=100
-store.db.datasource=druid
-store.db.dbType=mysql
-store.db.driverClassName=com.mysql.cj.jdbc.Driver
-store.db.url=jdbc:mysql://127.0.0.1:3306/seata?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
-store.db.user=root
-store.db.password=mysql123
-store.db.minConn=5
-store.db.maxConn=30
-store.db.globalTable=global_table
-store.db.branchTable=branch_table
-store.db.queryLimit=100
-store.db.lockTable=lock_table
-store.db.maxWait=5000
-store.redis.host=127.0.0.1
-store.redis.port=6379
-store.redis.maxConn=10
-store.redis.minConn=1
-store.redis.database=0
-store.redis.password=null
-store.redis.queryLimit=100
-server.recovery.committingRetryPeriod=1000
-server.recovery.asynCommittingRetryPeriod=1000
-server.recovery.rollbackingRetryPeriod=1000
-server.recovery.timeoutRetryPeriod=1000
-server.maxCommitRetryTimeout=-1
-server.maxRollbackRetryTimeout=-1
-server.rollbackRetryTimeoutUnlockEnable=false
-client.undo.dataValidation=true
-client.undo.logSerialization=jackson
-client.undo.onlyCareUpdateColumns=true
-server.undo.logSaveDays=7
-server.undo.logDeletePeriod=86400000
-client.undo.logTable=undo_log
-client.log.exceptionRate=100
-transport.serialization=seata
-transport.compressor=none
-metrics.enabled=false
-metrics.registryType=compact
-metrics.exporterList=prometheus
-metrics.exporterPrometheusPort=9898
-```
-
-- 修改源文件/seata-1.3.0/script/config-center/nacos/nacos-config.sh然后复制到seata-server根目录
-
-```sh
-$(dirname "$PWD")/config.txt 改为 ./config.txt
-```
-
-- config.txt上传到nacos配置中心
-
-```sh
-sh nacos-config.sh -h nacos地址 -p nacos端口 -g 分组名称 -t 命名空间id -u nacos用户 -w nacos密码
-```
+[application.yml](/yml/application.yml)
 
 - 启动seata-server
 
--h --host 指定在注册中心注册的 IP 不指定时获取当前的 IP，外部访问部署在云环境和容器中的 server 建议指定
--p --port 指定 server 启动的端口 默认为 8091
--m --storeMode 事务日志存储方式 支持file,db,redis，默认为 file 注:redis需seata-server 1.3版本及以上
--n --serverNode 用于指定seata-server节点ID 如 1,2,3..., 默认为 1
--e --seataEnv 指定 seata-server 运行环境 如 dev, test 等, 服务启动时会使用 registry-dev.conf 这样的配置
-
 ```sh
-# 启动多个seata-server，注册到注册中心，即可实现其高可用
-sh seata-server.sh -p 8091 -h 127.0.0.1 -m db
+bash seata-server.sh
 ```
 
-##### seata-client
+- 查看nacos服务列表中是否有seata，查看<http://localhost:7091/是否能够正常访问>
 
-- 在客户端与seata事务相关的数据库添加表
+#### seata-client
 
-```sql
--- for AT mode you must to init this sql for you business database. the seata server not need it.
-CREATE TABLE IF NOT EXISTS `undo_log`
-(
-    `branch_id`     BIGINT   NOT NULL COMMENT 'branch transaction id',
-    `xid`           VARCHAR(100) NOT NULL COMMENT 'global transaction id',
-    `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
-    `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
-    `log_status`    INT      NOT NULL COMMENT '0:normal status,1:defense status',
-    `log_created`   DATETIME  NOT NULL COMMENT 'create datetime',
-    `log_modified`  DATETIME  NOT NULL COMMENT 'modify datetime',
-    UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8mb4 COMMENT ='AT transaction mode undo table';
-```
+- 与seata事务相关的数据库添加表（AT专用）：[postgresql.sql](/sql/seata-client-postgresql.sql)
 
 - maven dependency
 
@@ -9156,7 +8911,7 @@ jdbc.password=postgres123
 docker pull postgres：16.4
 ```
 
-#### 启动PostgreSQL
+##### 启动PostgreSQL
 
 - docker版本的pgsql启动成功后无需配置监听地址、端口（postgresql.conf）和ip（pg_hba.conf）
 
@@ -9270,7 +9025,15 @@ select * from pg_roles;
 select * from pg_user;
 ```
 
-#### 常用sql
+#### 创建数据库
+
+```sql
+-- 当自定义的名字和关键字冲突时需加上英文双引号
+create database "order";
+comment on database "order" is '订单数据库'; 
+```
+
+#### 创建表
 
 ```sql
 create table account (
@@ -10888,7 +10651,7 @@ WantedBy=multi-user.target
 
 ![选择NAT模式](/images/%E9%80%89%E6%8B%A9NAT%E6%A8%A1%E5%BC%8F.png)
 
-- 配置宿主机和虚拟机的映射
+- 配置宿主机和虚拟机的映射（不用重启虚拟机系统）
 
 ![配置宿主机和虚拟机的映射](/images/%E9%85%8D%E7%BD%AE%E5%AE%BF%E4%B8%BB%E6%9C%BA%E5%92%8C%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E6%98%A0%E5%B0%84.png)
 
@@ -10970,6 +10733,7 @@ DNS1=114.114.114.114
 ```
 
 - 用127.0.0.1:2222连接虚拟机操作系统
+修改
 
 ## IDE
 

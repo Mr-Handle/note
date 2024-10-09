@@ -1,0 +1,63 @@
+server:
+    port: 7091
+
+spring:
+    application:
+        name: seata-server
+
+logging:
+    config: classpath:logback-spring.xml
+    file:
+        path: ${log.home:${user.home}/logs/seata}
+    extend:
+        logstash-appender:
+            destination: 127.0.0.1:4560
+        kafka-appender:
+            bootstrap-servers: 127.0.0.1:9092
+            topic: logback_to_logstash
+
+console:
+    user:
+        username: seata
+        password: seata
+seata:
+    config:
+        type: nacos
+        nacos:
+            server-addr: 10.0.2.15:8848
+            namespace:
+            group: DEFAULT_GROUP
+            username: nacos
+            password: nacos
+    registry:
+        type: nacos
+        nacos:
+            application: seata-server
+            server-addr: 10.0.2.15:8848
+            group: DEFAULT_GROUP
+            namespace:
+            cluster: default
+            username: nacos
+            password: nacos
+    store:
+        mode: db
+        db:
+            datasource: druid
+            db-type: postgresql
+            driver-class-name: org.postgresql.Driver
+            url: jdbc:postgresql://localhost:5432/seata
+            user: postgres
+            password: postgres123
+            min-conn: 10
+            max-conn: 100
+            global-table: global_table
+            branch-table: branch_table
+            lock-table: lock_table
+            distributed-lock-table: distributed_lock
+            query-limit: 1000
+            max-wait: 5000
+    security:
+        secretKey: SeataSecretKey0c382ef121d778043159209298fd40bf3850a017
+        tokenValidityInMilliseconds: 1800000
+        ignore:
+            urls: /,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.jpeg,/**/*.ico,/api/v1/auth/login,/version.json,/health,/error
