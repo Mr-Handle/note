@@ -6044,15 +6044,10 @@ public class OpenFeignConfiguration {
 - 添加依赖
 
 ```xml
-<dependency>
-    <groupId>org.apache.httpcomponents.client5</groupId>
-    <artifactId>httpclient5</artifactId>
-    <version>5.4</version>
-</dependency>
+<!-- 包含了httpclient5 -->
 <dependency>
     <groupId>io.github.openfeign</groupId>
     <artifactId>feign-hc5</artifactId>
-    <version>13.4</version>
 </dependency>
 ```
 
@@ -6163,45 +6158,39 @@ spring.sleuth.sampler.probability=1
 
 - github：<https://github.com/alibaba/nacos>
 
-#### Nacos Server
+#### Nacos部署
 
 ##### 数据持久化
 
-- 1）创建数据库
+- 1.创建nacos数据库
 
 ```sql
-create database if not exists `nacos_config` default character set utf8mb4 collate utf8mb4_unicode_ci;
+create database if not exists `nacos` default character set utf8mb4 collate utf8mb4_unicode_ci;
 ```
 
-- 2）选择刚刚创建的数据库
+- 2.执行[nacos-mysql.sql](/sql/nacos-mysql.sql)脚本
 
-```sql
-use nacos_config;
-```
-
-- 3）执行nacos-mysql.sql脚本
-
-- 4）执行脚本前，选择刚刚创建的数据库
-
-- 5）修改conf/application.properties配置
+- 3.修改conf/application.properties配置
 
 ```properties
-spring.datasource.platform=mysql
+spring.sql.init.platform=mysql
 db.num=1
-db.url.0=jdbc:mysql://127.0.0.1:3306/nacos_config?useUnicode=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
-db.user=root
-db.password=mysql123
+db.url.0=jdbc:mysql://localhost:3306/nacos?useUnicode=true&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
+db.user.0=root
+db.password.0=mysql123
 ```
 
-- 6）运行nacos服务
+- 4.运行nacos服务
 
 ```sh
-# 集群启动
-sh startup.sh
-
 # 单机启动
 sh startup.sh -m standalone
+
+# 集群启动
+sh startup.sh
 ```
+
+- 访问nacos页面：<http://localhost:8848/nacos>
 
 ##### nacos集群
 
@@ -6237,6 +6226,10 @@ sh startup.sh -m standalone
 spring.application.name=nacos-discovery-service
 server.port=8080
 spring.cloud.nacos.discovery.server-addr=localhost:8848
+# nacos注册中心命名空间id
+spring.cloud.nacos.discovery.namespace=6643e6b9-6ca9-4d8f-86bd-34fbb893a976
+# nacos注册中心分组名称
+spring.cloud.nacos.discovery.group=DEV_GROUP
 ```
 
 - 主启动类
@@ -6272,9 +6265,13 @@ public class ApplicationConfiguration {
 
 - Data ID命名规则：${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
 
-- maven dependency
+- 依赖
 
 ```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-bootstrap</artifactId>
+</dependency>
 <dependency>
     <groupId>com.alibaba.cloud</groupId>
     <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
@@ -6285,15 +6282,7 @@ public class ApplicationConfiguration {
 </dependency>
 ```
 
-- application.properties作为应用配置
-
-```properties
-# 读配置中心${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}文件
-# dev、test、pro
-spring.profiles.active=dev
-```
-
-- bootstrap.properties作为全局配置
+- 新建文件bootstrap.properties作为全局配置
 
 ```properties
 server.port=3377
@@ -6322,12 +6311,19 @@ spring.cloud.nacos.config.group=DEV_GROUP
 spring.cloud.nacos.config.file-extension=properties
 ```
 
+- 新建文件application.properties作为应用配置
+
+```properties
+# 读配置中心${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}文件
+# dev、test、pro
+spring.profiles.active=dev
+```
+
 - 主启动类
 
 ```java
-@SpringBootApplication
-// 注册到服务注册中心
 @EnableDiscoveryClient
+@SpringBootApplication
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -6339,15 +6335,17 @@ public class Application {
 
 ```java
 @RestController
-// 支持nacos的配置自动更新
+// 使当前类下的配置支持动态刷新
 @RefreshScope
+@RestController
+@RequestMapping("/nacos/config")
 public class ApplicationController {
-    @Value("${config.info}")
-    private String configInfo;
+    @Value("${application.info}")
+    private String info;
 
-    @GetMapping("/config/info")
-    public String getConfigInfo() {
-        return configInfo;
+    @GetMapping("/getInfo")
+    public String getInfo() {
+        return info;
     }
 }
 ```
