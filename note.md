@@ -2341,13 +2341,13 @@ getter为 null时，为null;
 getter为 ""时，为'';
 
 - 请求处理方法返回字符串（页面）的写法
-    ![返回字符串](2021-05-22-19-20-17.png)
+    ![返回字符串](/images/2021-05-22-19-20-17.png)
 - 请求处理方法返回类型为void的写法
-    ![返回void](2021-05-22-19-16-31.png)
+    ![返回void](/images/2021-05-22-19-16-31.png)
 - ResponseBody 响应json数据（用于ajax请求）
-    ![ResponseBody](2021-05-22-20-11-24.png)
+    ![ResponseBody](/images/2021-05-22-20-11-24.png)
 - 返回ModelAndView，和返回字符串（页面）功能一样
-    ![返回ModelAndView](2021-05-22-19-45-01.png)
+    ![返回ModelAndView](/images/2021-05-22-19-45-01.png)
 
 Servlet就是一个能处理HTTP请求，发送HTTP响应的小进程，而发送响应无非就是获取`PrintWriter`，然后输出HTML。
 
@@ -6386,22 +6386,22 @@ github:<https://github.com/alibaba/Sentinel/>
 
 - 控制器类
 
-![SentinelResource](2022-04-20-21-19-26.png)
+![SentinelResource](/images/2022-04-20-21-19-26.png)
 
 - 自定义全局兜底异常
-![自定义全局兜底异常](2022-04-20-21-36-51.png)
-![自定义全局兜底异常](2022-04-20-21-36-09.png)
-![自定义全局兜底异常](2022-04-20-21-39-58.png)
+![自定义全局兜底异常](/images/2022-04-20-21-36-51.png)
+![自定义全局兜底异常](/images/2022-04-20-21-36-09.png)
+![自定义全局兜底异常](/images/2022-04-20-21-39-58.png)
 
 - fallback管理运行时异常
-![fallback管理运行时异常](2022-04-20-22-03-09.png)
+![fallback管理运行时异常](/images/2022-04-20-22-03-09.png)
 - blockHandler只处理配置异常
-![blockHandler只处理配置异常](2022-04-20-22-22-47.png)
+![blockHandler只处理配置异常](/images/2022-04-20-22-22-47.png)
 - fallback 和 blockHandler 都配置，则blockHandler处理
-![fallback](2022-04-20-22-27-43.png)
+![fallback](/images/2022-04-20-22-27-43.png)
 
 - 忽略异常处理
-![忽略异常](2022-04-20-22-29-37.png)
+![忽略异常](/images/2022-04-20-22-29-37.png)
 
 ### SEATA
 
