@@ -6403,7 +6403,7 @@ github:<https://github.com/alibaba/Sentinel/>
 - 忽略异常处理
 ![忽略异常](/images/2022-04-20-22-29-37.png)
 
-### SEATA
+### Seata
 
 #### seata-server
 
@@ -12295,9 +12295,12 @@ sudo yum update
 cat /var/log/messages | grep nginx
 ```
 
-- 解压文件
+#### 压缩/解压文件
 
 ```sh
+# 将目标文件夹压缩
+tar -zcvf tar.gz文件名 目标文件夹
+
 # tar.gz文件解压到当前目录
 tar -zxvf tar.gz文件名
 
