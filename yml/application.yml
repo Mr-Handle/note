@@ -24,18 +24,18 @@ seata:
     config:
         type: nacos
         nacos:
-            server-addr: 10.0.2.15:8848
-            namespace:
-            group: DEFAULT_GROUP
+            server-addr: http://nacos01:8848
+            namespace: 59ec6563-6292-4f6c-9e68-e2fb3b653823
+            group: SEATA_GROUP
             username: nacos
             password: nacos
     registry:
         type: nacos
         nacos:
             application: seata-server
-            server-addr: 10.0.2.15:8848
-            group: DEFAULT_GROUP
-            namespace:
+            server-addr: http://nacos01:8848
+            group: SEATA_GROUP
+            namespace: 59ec6563-6292-4f6c-9e68-e2fb3b653823
             cluster: default
             username: nacos
             password: nacos
@@ -45,7 +45,7 @@ seata:
             datasource: druid
             db-type: postgresql
             driver-class-name: org.postgresql.Driver
-            url: jdbc:postgresql://localhost:5432/seata
+            url: jdbc:postgresql://postgres01:5432/seata
             user: postgres
             password: postgres123
             min-conn: 10

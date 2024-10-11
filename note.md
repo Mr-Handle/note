@@ -6459,77 +6459,26 @@ bash seata-server.sh
 ```properties
 # seata 配置中心
 seata.config.type=nacos
-seata.config.nacos.namespace=6643e6b9-6ca9-4d8f-86bd-34fbb893a976
-seata.config.nacos.server-addr=www.laodeli.top:8848
+seata.config.nacos.server-addr=localhost:8848
+seata.config.nacos.namespace=59ec6563-6292-4f6c-9e68-e2fb3b653823
 seata.config.nacos.group=SEATA_GROUP
 seata.config.nacos.username=nacos
 seata.config.nacos.password=nacos
-
-# seata 注册中心
+# seata注册中心
 seata.registry.type=nacos
 seata.registry.nacos.application=seata-server
-seata.registry.nacos.server-addr=www.laodeli.top:8848
+seata.registry.nacos.server-addr=localhost:8848
+seata.registry.nacos.namespace=59ec6563-6292-4f6c-9e68-e2fb3b653823
 seata.registry.nacos.group=SEATA_GROUP
-seata.registry.nacos.namespace=6643e6b9-6ca9-4d8f-86bd-34fbb893a976
 seata.registry.nacos.username=nacos
 seata.registry.nacos.password=nacos
 
-# 与seata服务器的service.vgroupMapping.guangxi-tx-group=default事务组名称名称一致，事务组的命名不要用下划线’_‘
-seata.tx-service-group=guangxi-tx-group
-# 与seata服务器的service.vgroupMapping.guangxi-tx-group=default事务组名称和集群名称一致
-seata.service.vgroup-mapping.guangxi-tx-group=default
-
-seata.enabled=true
-# 是否开启数据源自动代理
-seata.enableAutoDataSourceProxy=true
-seata.enable-auto-data-source-proxy=true
-seata.use-jdk-proxy=true
-seata.client.rm.async-commit-buffer-limit=10000
-seata.client.rm.report-retry-count=5
-seata.client.rm.table-meta-check-enable=false
-seata.client.rm.report-success-enable=false
-seata.client.rm.saga-branch-register-enable=false
-seata.client.rm.saga-json-parser=fastjson
-seata.client.rm.saga-retry-persist-mode-update=false
-seata.client.rm.saga-compensate-persist-mode-update=false
-seata.client.rm.lock.retry-interval=10
-seata.client.rm.lock.retry-times=30
-seata.client.rm.lock.retry-policy-branch-rollback-on-conflict=true
-seata.client.tm.commit-retry-count=5
-seata.client.tm.rollback-retry-count=5
-seata.client.tm.default-global-transaction-timeout=60000
-seata.client.tm.degrade-check=false
-seata.client.tm.degrade-check-allow-times=10
-seata.client.tm.degrade-check-period=2000
-seata.client.undo.data-validation=true
-seata.client.undo.log-serialization=jackson
-seata.client.undo.only-care-update-columns=true
-seata.client.undo.log-table=undo_log
-seata.client.undo.compress.enable=true
-seata.client.undo.compress.type=zip
-seata.client.undo.compress.threshold=64k
-seata.client.load-balance.type=RandomLoadBalance
-seata.client.load-balance.virtual-nodes=10
-seata.log.exception-rate=100
-seata.service.grouplist.default=www.laodeli.top:8091
-seata.service.enable-degrade=false
-seata.service.disable-global-transaction=false
-seata.transport.shutdown.wait=3
-seata.transport.thread-factory.boss-thread-prefix=NettyBoss
-seata.transport.thread-factory.worker-thread-prefix=NettyServerNIOWorker
-seata.transport.thread-factory.server-executor-thread-prefix=NettyServerBizHandler
-seata.transport.thread-factory.share-boss-worker=false
-seata.transport.thread-factory.client-selector-thread-prefix=NettyClientSelector
-seata.transport.thread-factory.client-selector-thread-size=1
-seata.transport.thread-factory.client-worker-thread-prefix=NettyClientWorkerThread
-seata.transport.thread-factory.worker-thread-size=default
-seata.transport.thread-factory.boss-thread-size=1
-seata.transport.type=TCP
-seata.transport.server=NIO
-seata.transport.heartbeat=true
-seata.transport.serialization=seata
-seata.transport.compressor=none
-seata.transport.enable-client-batch-send-request=true
+# 事务组名称，由它获得TC服务的集群名称
+seata.tx-service-group=default_tx_group
+# 事务组与TC服务集群的映射关系：事务组名称-TC服务集群名称
+# seata.service.vgroup-mapping后面的事务组名称与seata.tx-service-group定义的事务组名称一致
+seata.service.vgroup-mapping.default_tx_group=default
+seata.data-source-proxy-mode=AT
 ```
 
 - 在需要全局事务处理的控制器类、业务类实现方法上加@GlobalTransactional注解
@@ -10755,7 +10704,20 @@ DNS1=114.114.114.114
 ```
 
 - 用127.0.0.1:2222连接虚拟机操作系统
-修改
+
+#### host-only宿主机静态IP
+
+当docker容器要映射主机的IP时，由于主机的公网IP是动态的，每次启动都要更新这个IP，很不方便
+<br/>
+因此可以通过创建一个虚拟网卡，设置静态IP，当虚拟机要用到主机IP时，就用这个IP来进行通讯
+
+- 创建虚拟网卡
+
+![创建虚拟网卡](/images/tools-network.png)
+
+- 配置静态IP
+
+![配置静态IP](/images/host-only-network.png)
 
 ## IDE
 
