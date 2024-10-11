@@ -7692,6 +7692,9 @@ CMD ["参数1", "参数2"...]
 
 ```Dockerfile
 ENTRYPOINT ["命令", "参数1", "参数2"...]
+
+# 容器启动时执行.sh文件，并且不退出容器的写法
+ENTRYPOINT ["bash", "-c", "/../*.sh && tail -f /dev/null"]
 ```
 
 ENTRYPOINT可以和CMD一起使用，一般时变参才会使用CMD，这里的CMD等于是在给ENTRYPOINT传参。当指定了ENTRYPOINT后，CMD的含义旧发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOING指令，二者组合变成`<ENTRYPOINT> "<CMD>"`
