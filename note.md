@@ -6353,9 +6353,10 @@ public class ApplicationController {
 ### Sentinel
 
 github:<https://github.com/alibaba/Sentinel/>
+<br/>
 官网：<https://sentinelguard.io/zh-cn/>
 
-#### Sentinel 服务器
+#### 控制台
 
 - 下载sentinel-dashboard-1.8.1.jar
 
@@ -6364,6 +6365,151 @@ github:<https://github.com/alibaba/Sentinel/>
 - 页面：<http://localhost:8080>
 
 - 用户名/密码：sentinel
+
+- 采用的时懒加载，要手动请求一次接口才会在控制台刷新接口信息
+
+#### 流控规则
+
+##### 阈值类型
+
+- QPS，每秒请求数
+
+- 并发线程数，涉及线程上下文切换和线程回收，精确度不如QPS
+
+##### 流控模式
+
+- 直接，当资源（接口）的访问达到阈值后，限流自己
+
+- 关联，当与资源A关联的资源B访问达到阈值后，限流资源A
+
+- 链路，来自不同链路的请求对某一个资源进行访问，实施不同的限流措施
+
+##### 流控效果
+
+- 快速失败，直接抛出异常
+
+- Warm Up，预热，使得系统从空闲状态，经过预期时间后到达最大请求阈值，而不是流量突然增大
+
+    - 访问量阈值从阈值除以冷却因子（默认3）的结果值开始，经过预热时长逐渐提升到设定的阈值
+
+    - 主要用于启动需要额外开销的场景，如建立数据库连接等
+
+- 排队等待，访问达到阈值时，过了间隔时间才允许通过下一个请求
+
+    - 主要用于处理间隔性突发的流量：系统某一时刻突然要处理大量请求，接下来的几秒却处于空闲状态的场景
+
+    - 匀速排队模式暂不支持QPS大于1000的场景
+
+#### 熔断规则
+
+- 熔断策略
+    - 慢调用比例
+        - 请求的响应时间>最大RT(最大响应时间)，则统计为慢调用
+        - 当单位统计时长内请求数目大于设置的最小请求数，且慢调用比例大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求响应时间小于设置的最大RT则结束熔断，否则再次被熔断
+    - 异常比例
+        - 当单位统计时长内请求数目大于设置的最小请求数，且异常比例大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过
+    - 异常数
+        - 当单位统计时长内请求数目大于设置的最小请求数，且异常数大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求正常完成则结束熔断，否则再次被熔断
+
+#### 热点规则
+
+- 对请求接口的入参进行监控限流
+- 参数例外项，当参数是某一个值时，它的阈值可以达到设置的限流阈值才限流
+    - 填写完后记得点击添加按钮
+
+#### 授权规则
+
+- 需要先在客户端代码里面实现RequestOriginParser接口
+
+```java
+@Component
+public class SentinelRequestOriginParser implements RequestOriginParser {
+    @Override
+    public String parseOrigin(HttpServletRequest request) {
+        return request.getParameter("serverName");
+    }
+}
+```
+
+- handler
+
+```java
+@GetMapping("/blackList")
+public ResultVo<String> blackList() {
+    return ResultVo.success("test blackList");
+}
+```
+
+- 控制台设置授权规则
+
+![授权规则](/images/授权规则.png)
+
+- 测试
+    - url：<http://localhost:8080/sentinel/blackList?serverName=test>
+    - 当请求参数serverName=test时，结果：Blocked by Sentinel (flow limiting)
+
+#### 规则持久化
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-datasource-nacos</artifactId>
+</dependency>
+```
+
+- 配置
+
+```properties
+# 配置规则持久化到nacos的json配置文件，rule1为自定义key，可以当作规则名，可以定义多个，分别配置不同的限流类型
+spring.cloud.sentinel.datasource.rule1.nacos.server-addr=localhost:8848
+spring.cloud.sentinel.datasource.rule1.nacos.namespace=b70655ab-8c47-4dbb-b6b0-589f8eda9441
+spring.cloud.sentinel.datasource.rule1.nacos.data-id=${spring.application.name}
+spring.cloud.sentinel.datasource.rule1.nacos.group-id=DEFAULT_GROUP
+# 定义规则配置文件为json格式
+spring.cloud.sentinel.datasource.rule1.nacos.data-type=json
+# 流控规则，参考com.alibaba.cloud.sentinel.datasource.RuleType设置
+spring.cloud.sentinel.datasource.rule1.nacos.rule-type=flow
+
+#spring.cloud.sentinel.datasource.rule2.nacos.server-addr=localhost:8848
+#spring.cloud.sentinel.datasource.rule1.nacos.namespace=b70655ab-8c47-4dbb-b6b0-589f8eda9441
+#spring.cloud.sentinel.datasource.rule2.nacos.data-id=${spring.application.name}
+#spring.cloud.sentinel.datasource.rule2.nacos.group-id=DEFAULT_GROUP
+#spring.cloud.sentinel.datasource.rule2.nacos.data-type=json
+## 熔断规则，参考com.alibaba.cloud.sentinel.datasource.RuleType设置
+#spring.cloud.sentinel.datasource.rule2.nacos.rule-type=degrade
+```
+
+- 在nacos中相应的位置新增规则配置文件并发布
+
+```json
+[
+    {
+        // 资源名称
+        "resource": "getInfo",
+        // 来源应用
+        "limitApp": "default",
+        // 阈值类型：0-线程数，1-QPS
+        "grade": 1,
+        // 单机阈值
+        "count": 1,
+        // 流控模式：0-直接，1-关联，2-链路
+        "strategy": 0,
+        // 流控效果：0-快速失败，1-Warm UP，2-排队等待
+        "controlBehavior": 0,
+        // 是否集群
+        "clusterMode": false
+    }
+]
+```
+
+#### 客户端
+
+- 依赖
 
 ```xml
 <dependency>
@@ -6375,33 +6521,125 @@ github:<https://github.com/alibaba/Sentinel/>
 - 应用配置
 
 ```properties
+# sentinel控制台地址
+spring.cloud.sentinel.transport.dashboard=localhost:6060
+# 默认8179，如果端口被占用会依次自增直到找到未被占有的端口
+spring.cloud.sentinel.transport.port=8719
+```
 
+- 控制器类
+
+```java
+@RestController
+@RequestMapping("/sentinel")
+public class SentinelController {
+    @SentinelResource(
+    // 资源名称，对应sentinel控制台定义规则时的资源名，可以自定义或用请求路径
+    value = "getInfo", 
+    blockHandlerClass = SentinelBlockHandler.class, 
+    // blockHandlerClass指定的类中的方法名称
+    blockHandler = "getInfoBlockHandler",
+    fallbackClass = SentinelFallback.class,
+    // fallbackClass指定的类中的方法名称
+    fallback = "getInfoFallback")
+    @GetMapping("/getInfo")
+    public ResultVo<String> getInfo() {
+        return ResultVo.success("hello sentinel");
+    }
+}
+```
+
+- 自定义全局BlockHandler，负责sentinel配置的规则违规场景，自定义信息返回
+
+```java
+public class SentinelBlockHandler {
+    // 必须为static，@SentinelResource注解的方法的形参怎么定义，此方法也怎么定义，最后再加上异常形参
+    public static ResultVo<Object> getInfoBlockHandler(BlockException blockException) {
+        return ResultVo.failure(ResultCodeEnum.FAILURE.getCode(), "自定义sentinel返回提示信息"); 
+    }
+}
+```
+
+- 自定义全局Fallback，负责业务异常，自定义异常信息返回
+
+```java
+public class SentinelFallback {
+    // 必须为static，@SentinelResource注解的方法的形参怎么定义，此方法也怎么定义，最后再加上异常形参
+    public static ResultVo<Object> getInfoFallback(Throwable throwable) {
+        return ResultVo.failure(ResultCodeEnum.FAILURE.getCode(), "自定义异常返回提示信息"); 
+    }
+}
+```
+
+- fallback 和 blockHandler 都配置，则blockHandler处理
+
+#### OpenFeign和Sentinel整合
+
+目的：当接口对外提供服务时，可以将服务提供方的@SentinelResource的fallback放到FeignApi里面的fallback
+
+##### 服务提供方
+
+参考前面写的Sentinel客户端写法
+
+##### FeignApi
+
+- 接口，@FeignClient注解增加fallback属性
+
+```java
+@FeignClient(name = "account-service", fallback = AccountApiFallback.class)
+public interface AccountApi {
+    // 不能在接口上写@RequestMapping了，请求路径要写全（本体handler类上@RequestMapping注解的路径要加上来）
+    @GetMapping("/account/getAccount")
+    ResultVo<AccountOutputVo> getAccount(@RequestParam("userId") Long userId);
+}
+```
+
+- fallback，实现接口并覆写方法，调用服务提供方异常时将会走此逻辑
+
+```java
+@Component
+public class AccountApiFallback implements AccountApi {
+    @Override
+    public ResultVo<AccountOutputVo> getAccount(Long userId) {
+        return ResultVo.failure(ResultCodeEnum.FAILURE.getCode(), "调用account-service失败");
+    }
+}
+```
+
+##### 服务调用方
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+</dependency>
+```
+
+- 配置
+
+```properties
+# 如果有通过openFeign调用外部接口，需激活sentinel对feign的支持
+feign.sentinel.enabled=true
 ```
 
 - 主启动类
 
 ```java
+// 指定openFeign接口所在包
+@EnableFeignClients(basePackages = "com.handle.open.feign.api")
+// 扫描fallback类所在包
+@ComponentScan("com.handle.open.feign.api")
+@EnableDiscoveryClient
+@SpringBootApplication
 
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
 ```
-
-- 控制器类
-
-![SentinelResource](/images/2022-04-20-21-19-26.png)
-
-- 自定义全局兜底异常
-![自定义全局兜底异常](/images/2022-04-20-21-36-51.png)
-![自定义全局兜底异常](/images/2022-04-20-21-36-09.png)
-![自定义全局兜底异常](/images/2022-04-20-21-39-58.png)
-
-- fallback管理运行时异常
-![fallback管理运行时异常](/images/2022-04-20-22-03-09.png)
-- blockHandler只处理配置异常
-![blockHandler只处理配置异常](/images/2022-04-20-22-22-47.png)
-- fallback 和 blockHandler 都配置，则blockHandler处理
-![fallback](/images/2022-04-20-22-27-43.png)
-
-- 忽略异常处理
-![忽略异常](/images/2022-04-20-22-29-37.png)
 
 ### Seata
 
