@@ -6110,29 +6110,60 @@ rebbitmq.password=guest
 management.endpoints.web.exposure.include=bus-refresh
 ```
 
-### sleuth
+### 链路追踪
 
-- maven dependency
+#### 收集用micrometer
+
+- 依赖
 
 ```xml
-<!-- sluth + zipkin -->
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-zipkin</artifactId>
-</dependency>
+<dependences>
+    <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-bridge-brave</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-observation</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-micrometer</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.zipkin.reporter2</groupId>
+        <artifactId>zipkin-reporter-brave</artifactId>
+    </dependency>
+    <!-- 要依赖actuator的自动配置（配置文件里面management的配置） -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+</dependences>
 ```
 
-- properties
+- 配置
 
 ```properties
-# zipkin 服务器
-spring.zipkin.base-url=http://192.168.31.8:9411
-
-# 采样率介于0到1,1表示全部采集
-spring.sleuth.sampler.probability=1
+# 数据发给zipkin展示，指定其地址信息，http://不要漏掉
+management.zipkin.tracing.endpoint=http://localhost:9411/api/v2/spans
+# 采样频率，默认0.1（10次记录一次），值越大收集越及时
+management.tracing.sampling.probability:1.0
 ```
 
-请求链路追踪：一条链路通过 trace id 唯一标识， span表示发起的请求信息，各span通过parent id 关联起来
+### 展示用zipkin
+
+- 官网：<https://zipkin.io/>
+
+- 安装运行后访问页面：<http://localhost:9411/>
+
+- 需要手动点`RUN QUERY`，刷新页面不会更新数据
+
+- 请求链路追踪：一条链路通过trace id唯一标识， span表示发起的请求信息，各span通过parent id 关联起来
 
 ## Spring Cloud Alibaba
 
@@ -6168,7 +6199,7 @@ spring.sleuth.sampler.probability=1
 create database if not exists `nacos` default character set utf8mb4 collate utf8mb4_unicode_ci;
 ```
 
-- 2.执行[nacos-mysql.sql](/sql/nacos-mysql.sql)脚本
+- 2.执行[nacos-mysql.sql](/sql/nacos-mysql-schema.sql)脚本
 
 - 3.修改conf/application.properties配置
 
