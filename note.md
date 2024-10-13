@@ -6155,7 +6155,7 @@ management.zipkin.tracing.endpoint=http://localhost:9411/api/v2/spans
 management.tracing.sampling.probability:1.0
 ```
 
-### 展示用zipkin
+#### 展示用zipkin
 
 - 官网：<https://zipkin.io/>
 
@@ -6164,6 +6164,72 @@ management.tracing.sampling.probability:1.0
 - 需要手动点`RUN QUERY`，刷新页面不会更新数据
 
 - 请求链路追踪：一条链路通过trace id唯一标识， span表示发起的请求信息，各span通过parent id 关联起来
+
+### Spring Cloud Gateway
+
+#### 三大核心
+
+- Route，路由，它由id，目标url，一系列断言和过滤器组成，断言为true则匹配该路由
+
+- Predicate，断言，匹配条件，用来匹配请求中的所有内容（如请求头、请求参数等），如果请求和断言匹配，则进行路由
+
+- Filter，过滤器，GatewayFilter的实例，可在请求被路由前或者之后对请求进行增强
+
+#### Gateway微服务
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-gateway</artifactId>
+</dependency>
+<!-- 需要入驻注册中心 -->
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+<!-- 不需要spring-boot-starter-web -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+- 配置
+
+```properties
+spring.application.name=gateway-service
+server.port=6000
+
+# 注册到nacos
+spring.cloud.nacos.discovery.server-addr=localhost:8848
+spring.cloud.nacos.discovery.namespace=b70655ab-8c47-4dbb-b6b0-589f8eda9441
+
+# 网关配置，根据需要进行配置
+# 路由id，自定义key
+spring.cloud.gateway.routes[0].id=account-service-route
+# 匹配后提供服务的路由
+spring.cloud.gateway.routes[0].uri=http://localhost:3000
+# 与此路径相匹配的进行路由
+spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/account/**
+
+spring.cloud.gateway.routes[1].id=account-service-route2
+spring.cloud.gateway.routes[1].uri=http://localhost:3000
+spring.cloud.gateway.routes[1].predicates[0]=Path=/account/getAccount/**
+```
+
+- 主启动类
+
+```java
+@EnableDiscoveryClient
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
 
 ## Spring Cloud Alibaba
 
