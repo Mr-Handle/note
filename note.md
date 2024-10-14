@@ -601,6 +601,32 @@ Map safeMap = Collections.synchronizedMap(unsafeMap);
 
 但是它实际上是用一个包装类包装了非线程安全的`Map`，然后对所有读写方法都用`synchronized`加锁，这样获得的线程安全集合的性能比`java.util.concurrent`集合要低很多，所以不推荐使用。
 
+#### 日期/时间
+
+##### Timestamp
+
+- 创建Timestamp
+
+```java
+Timestamp timestamp = Timestamp.from(Instant.now());
+```
+
+##### OffsetDateTime
+
+- 创建OffsetDateTime
+
+```java
+ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
+```
+
+##### ZonedDateTime
+
+- 创建ZonedDateTime
+
+```java
+ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
+```
+
 ### 多线程
 
 #### CountDownLatch
@@ -5938,14 +5964,24 @@ public Object discovery() {
 </dependency>
 ```
 
+- 接口
+
 ```java
-@FeignClient(name = "account-service")
+@FeignClient(name = "account-service", contextId = "account-service1")
 public interface AccountApi {
     // 不能在接口上写@RequestMapping了，请求路径要写全（本体handler类上@RequestMapping注解的路径要加上来）
     @GetMapping("/account/getAccount")
     ResultVo<AccountPo> getAccount(@RequestParam("userId") Long userId);
 }
 ```
+
+##### @FeignClient
+
+- 用来定义OpenFeign接口
+
+- name，填接口实现方在注册中心的服务名，如果需要网关路由，则填网关在注册中心的服务名
+
+- contextId，当定义了多个name一样的OpenFeign接口时，用contextId为bean起别名
 
 #### 消费项目
 
@@ -6072,6 +6108,17 @@ spring.cloud.openfeign.compression.request.min-request-size=2048
 
 #### 日志打印
 
+- 配置方式（openfeign日志级别和接口日志级别都要设置）
+
+```properties
+# openfeign日志
+spring.cloud.openfeign.client.config.default.logger-level=full
+# 指定openfeign接口日志等级
+logging.level.com.handle.base.api.GatewayAccountApi=debug
+```
+
+- IOC方式（还没测试过接口日志等级不写会不会打印）
+
 ```java
 @Configuration
 public class OpenFeignConfiguration {
@@ -6165,15 +6212,67 @@ management.tracing.sampling.probability:1.0
 
 - 请求链路追踪：一条链路通过trace id唯一标识， span表示发起的请求信息，各span通过parent id 关联起来
 
-### Spring Cloud Gateway
+### Gateway
 
 #### 三大核心
 
-- Route，路由，它由id，目标url，一系列断言和过滤器组成，断言为true则匹配该路由
+- Route，路由，它由id，目标url，一系列断言和过滤器组成，断言为true则匹配该路由，解决找不找得到的问题
 
-- Predicate，断言，匹配条件，用来匹配请求中的所有内容（如请求头、请求参数等），如果请求和断言匹配，则进行路由
+- Predicate，断言，匹配条件，用来匹配请求中的所有内容（如请求头、请求参数等），如果请求和断言匹配，则进行路由，解决找到后能不能访问的问题
 
 - Filter，过滤器，GatewayFilter的实例，可在请求被路由前或者之后对请求进行增强
+
+##### id
+
+```properties
+# 路由id，自定义key
+spring.cloud.gateway.routes[0].id=gateway-test-service-route
+```
+
+##### uri
+
+```properties
+# 匹配后提供服务的路由
+# 服务地址不要写死http://localhost:8080
+# 要写成lb://服务在注册中心的名称，这样要是服务端口变化了就不用做改动，也可实现负载均衡
+spring.cloud.gateway.routes[0].uri=lb://gateway-test-service
+```
+
+##### predicates
+
+官方提供的predicate工厂（RoutePredicateFactory）有：
+    - After，指定一个Java ZonedDateTime，在这个时间点之后才能访问
+        - 可通过`System.out.println(ZonedDateTime.now(ZoneId.systemDefault()).toString());`得到ZonedDateTime
+    - Before，指定一个Java ZonedDateTime，在这个时间点之前才能访问
+    - Between，指定一个Java ZonedDateTime，在这个时间段内才能访问
+    - Cookie，指定请求头包含某个Cookie（key和value都要匹配）才能访问
+    - Header，指定请求头要有某个属性，并且属性值符合某个正则表达式才能访问
+    - Host，指定请求头的Host值符合某个匹配规则才能访问
+    - Method，指定请求方式（例如GET），符合才能访问
+    - Path，指定请求符合某个某个路径规则才能访问
+    - Query，指定请求参数，请求参数的值可以是正则表达式，符合才能访问
+    - ReadBody
+    - RemoteAddr，远程地址路由，符合的地址才能访问
+    - XForwardedRemoteAddr
+    - Weight
+    - CloudFoundryRouteService
+
+```properties
+# predicate格式：predicate工厂名=值
+# 使用Path，与此路径相匹配的才进行路由，多个Path用英文逗号隔开
+spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/getInfo/**,/gateway/feign/getAccount/**
+spring.cloud.gateway.routes[0].predicates[1]=After=2024-10-14T16:35:09.008501600+08:00[Asia/Shanghai]
+spring.cloud.gateway.routes[0].predicates[2]=Between=2024-10-14T16:50:09.008501600+08:00[Asia/Shanghai],2024-10-14T16:51:09.008501600+08:00[Asia/Shanghai]
+spring.cloud.gateway.routes[0].predicates[3]=Cookie=username,handle
+# 指定请求头要有X-Request-Id属性并且其值为至少一个数字
+spring.cloud.gateway.routes[0].predicates[4]=Header=X-Request-Id,\\d+
+# 比如Host的值为www.handle.com才能访问
+spring.cloud.gateway.routes[0].predicates[5]=Host=**.handle.org,**.handle.com
+spring.cloud.gateway.routes[0].predicates[6]=Method=GET
+spring.cloud.gateway.routes[0].predicates[7]=Query=userId,\\d+
+# IP地址表示方法（CIDR），24表示ip地址前缀的位数，最大不能超过32，约束其前缀必须为192.168.1，最后一个字节是0-255任意，其它IP不允许访问
+spring.cloud.gateway.routes[0].predicates[8]=RemoteAddr=192.168.1.1/24
+```
 
 #### Gateway微服务
 
@@ -6188,6 +6287,11 @@ management.tracing.sampling.probability:1.0
 <dependency>
     <groupId>com.alibaba.cloud</groupId>
     <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+<!-- 填写uri:lb://gateway-test-service的时候需要依赖负载均衡 -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
 </dependency>
 <!-- 不需要spring-boot-starter-web -->
 <dependency>
@@ -6208,15 +6312,20 @@ spring.cloud.nacos.discovery.namespace=b70655ab-8c47-4dbb-b6b0-589f8eda9441
 
 # 网关配置，根据需要进行配置
 # 路由id，自定义key
-spring.cloud.gateway.routes[0].id=account-service-route
+spring.cloud.gateway.routes[0].id=gateway-test-service-route
 # 匹配后提供服务的路由
-spring.cloud.gateway.routes[0].uri=http://localhost:3000
+# 服务地址不要写死http://localhost:8080，要写成lb://服务在注册中心的名称，这样要是服务端口变化了就不用做改动，也可实现负载均衡
+spring.cloud.gateway.routes[0].uri=lb://gateway-test-service
 # 与此路径相匹配的进行路由
-spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/account/**
+spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/getInfo/**
 
-spring.cloud.gateway.routes[1].id=account-service-route2
-spring.cloud.gateway.routes[1].uri=http://localhost:3000
-spring.cloud.gateway.routes[1].predicates[0]=Path=/account/getAccount/**
+spring.cloud.gateway.routes[1].id=gateway-test-service-route2
+spring.cloud.gateway.routes[1].uri=lb://gateway-test-service
+spring.cloud.gateway.routes[1].predicates[0]=Path=/gateway/feign/getAccount/**
+
+spring.cloud.gateway.routes[2].id=account-service-route
+spring.cloud.gateway.routes[2].uri=lb://account-service
+spring.cloud.gateway.routes[2].predicates[0]=Path=/account/getAccount/**
 ```
 
 - 主启动类
@@ -6327,6 +6436,8 @@ spring.cloud.nacos.discovery.server-addr=localhost:8848
 spring.cloud.nacos.discovery.namespace=6643e6b9-6ca9-4d8f-86bd-34fbb893a976
 # nacos注册中心分组名称
 spring.cloud.nacos.discovery.group=DEV_GROUP
+# spring.cloud.nacos.discovery.username=nacos
+# spring.cloud.nacos.discovery.password=nacos
 ```
 
 - 主启动类
@@ -12719,6 +12830,9 @@ netstat -ano|findstr 端口号
 
 # 根据进程id查看进程信息
 tasklist|findstr 进程id
+
+# 关闭进程
+taskkill /F /PID 进程id
 ```
 
 ### host文件
