@@ -6222,57 +6222,170 @@ management.tracing.sampling.probability:1.0
 
 - Filter，过滤器，GatewayFilter的实例，可在请求被路由前或者之后对请求进行增强
 
+#### Route
+
 ##### id
 
-```properties
-# 路由id，自定义key
-spring.cloud.gateway.routes[0].id=gateway-test-service-route
+```yaml
+spring:
+    cloud:
+        gateway:
+            routes:
+                -   # 路由id，自定义key
+                    id: gateway-test-service-route
 ```
 
 ##### uri
 
-```properties
-# 匹配后提供服务的路由
-# 服务地址不要写死http://localhost:8080
-# 要写成lb://服务在注册中心的名称，这样要是服务端口变化了就不用做改动，也可实现负载均衡
-spring.cloud.gateway.routes[0].uri=lb://gateway-test-service
+```yaml
+spring:
+    cloud:
+        gateway:
+            routes:
+                - 
+                    # 匹配后提供服务的路由
+                    # 服务地址不要写死http://localhost:8080
+                    # 要写成lb://服务在注册中心的名称，这样要是服务端口变化了就不用做改动，也可实现负载均衡
+                    uri: lb://gateway-test-service
 ```
 
-##### predicates
+#### Predicate
 
-官方提供的predicate工厂（RoutePredicateFactory）有：
-    - After，指定一个Java ZonedDateTime，在这个时间点之后才能访问
-        - 可通过`System.out.println(ZonedDateTime.now(ZoneId.systemDefault()).toString());`得到ZonedDateTime
-    - Before，指定一个Java ZonedDateTime，在这个时间点之前才能访问
-    - Between，指定一个Java ZonedDateTime，在这个时间段内才能访问
-    - Cookie，指定请求头包含某个Cookie（key和value都要匹配）才能访问
-    - Header，指定请求头要有某个属性，并且属性值符合某个正则表达式才能访问
-    - Host，指定请求头的Host值符合某个匹配规则才能访问
-    - Method，指定请求方式（例如GET），符合才能访问
-    - Path，指定请求符合某个某个路径规则才能访问
-    - Query，指定请求参数，请求参数的值可以是正则表达式，符合才能访问
-    - ReadBody
-    - RemoteAddr，远程地址路由，符合的地址才能访问
-    - XForwardedRemoteAddr
-    - Weight
-    - CloudFoundryRouteService
+##### 官方提供的断言
 
-```properties
-# predicate格式：predicate工厂名=值
-# 使用Path，与此路径相匹配的才进行路由，多个Path用英文逗号隔开
-spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/getInfo/**,/gateway/feign/getAccount/**
-spring.cloud.gateway.routes[0].predicates[1]=After=2024-10-14T16:35:09.008501600+08:00[Asia/Shanghai]
-spring.cloud.gateway.routes[0].predicates[2]=Between=2024-10-14T16:50:09.008501600+08:00[Asia/Shanghai],2024-10-14T16:51:09.008501600+08:00[Asia/Shanghai]
-spring.cloud.gateway.routes[0].predicates[3]=Cookie=username,handle
-# 指定请求头要有X-Request-Id属性并且其值为至少一个数字
-spring.cloud.gateway.routes[0].predicates[4]=Header=X-Request-Id,\\d+
-# 比如Host的值为www.handle.com才能访问
-spring.cloud.gateway.routes[0].predicates[5]=Host=**.handle.org,**.handle.com
-spring.cloud.gateway.routes[0].predicates[6]=Method=GET
-spring.cloud.gateway.routes[0].predicates[7]=Query=userId,\\d+
-# IP地址表示方法（CIDR），24表示ip地址前缀的位数，最大不能超过32，约束其前缀必须为192.168.1，最后一个字节是0-255任意，其它IP不允许访问
-spring.cloud.gateway.routes[0].predicates[8]=RemoteAddr=192.168.1.1/24
+```yaml
+spring:
+    cloud:
+        gateway:
+            routes:
+                - 
+                    predicates:
+                        # predicate格式：predicate名称=值
+                        # 使用Path，与此路径相匹配的才进行路由
+                        - Path=/gateway/getInfo/**
+                        # 时间断言，指定一个Java ZonedDateTime，在这个时间点之前/后/之间才能访问，格式可通过ZonedDateTime.now(ZoneId.systemDefault()).toString()得到
+                        - After=2024-10-14T16:42:09.008501600+08:00[Asia/Shanghai]
+                        - Before=2099-10-14T16:42:09.008501600+08:00[Asia/Shanghai]
+                        - Between=2024-10-14T16:50:09.008501600+08:00[Asia/Shanghai],2099-10-14T16:51:09.008501600+08:00[Asia/Shanghai]
+                        # 指定请求头包含某个Cookie（key和value都要匹配）才能访问
+                        - Cookie=username,handle
+                        # 指定请求头要有某个属性，并且属性值符合某个正则表达式才能访问
+                        - Header=X-Request-Id,\d+
+                        # 指定请求头的Host值符合某个匹配规则才能访问
+                        - Host=**.handle.org,**.handle.com
+                        # 指定请求方式（例如GET），符合才能访问
+                        - Method=GET
+                        # 指定请求参数名，以及参数值符合某个正则表达式才能访问
+                        - Query=userId,\d+
+                        # IP地址表示方法（CIDR），24表示ip地址前缀的位数，最大不能超过32，约束其前缀必须为192.168.56，最后一个字节是0-255任意，其它IP不允许访问
+                        - RemoteAddr=192.168.56.1/24
+                        # - Weight=group1, 2
+                        # - XForwardedRemoteAddr=192.168.1.1/24
 ```
+
+##### 自定义断言
+
+- 仿照官方的过滤器实现，命名必须为XxxRoutePredicateFactory
+
+#### Filter
+
+##### Global Filters
+
+- 作用于所有路由
+
+```yaml
+spring:
+    cloud:
+        gateway:
+            default-filters:
+                - PrefixPath=/gateway
+```
+
+##### GatewayFilter
+
+- 作用于单一路由，官方提供了大量的GatewayFilter
+
+```yaml
+spring:
+    cloud:
+        gateway:
+            routes:
+                -
+                    id: add_request_header_route
+                    uri: https://example.org
+                    filters:
+                        # 请求头过滤器
+                        - AddRequestHeader=X-Request-Red, red
+                        # 多个AddRequestHeader另写一行
+                        - AddRequestHeader=X-Request-Green, green
+                        - SetRequestHeader=X-Request-Green, GREEN
+                        - RemoveRequestHeader=X-Request-Yellow
+
+                        # 请求参数过滤器
+                        # 如果请求参数里面有red=RED，会覆盖AddRequestParameter设置的red=red
+                        - AddRequestParameter=red, red
+                        # 前端传red为任何值，后端获取red的值，都为null
+                        - RemoveRequestParameter=red
+
+                        # 响应头过滤器
+                        - AddResponseHeader=X-Response-Red, red
+                        - SetResponseHeader=X-Response-Red, RED
+                        - RemoveResponseHeader=X-Response-Yellow
+
+                        # 路径过滤器
+                        # 添加路径前缀，加了前缀的请求地址和断言配置的Path路径做比对
+                        - PrefixPath=/gateway
+
+                        # 假设断言配置的Path=/abc/{placeholder}，Path除了{placeholder}的内容，其它的内容会被SetPath取代
+                        # 比如真实地址是：http:/localhost/gateway/getInfo
+                        # 只配置了Path=/abc/{placeholder}和SetPath=/gateway/{placeholder}
+                        # 然后请求地址变成：http:/localhost/abc/getInfo依然能够正确访问
+                        - SetPath=/gateway/{placeholder}
+
+                        # 符合断言Path配置的请求都跳转到百度
+                        - RedirectTo=302, https://www.baidu.com
+                        # 符合断言Path配置的请求都跳转到百度，并且带上原来的请求参数
+                        - RedirectTo=302, https://acme.org, true
+
+```
+
+##### 自定义Filter
+
+##### 自定义全局Filter
+
+```java
+// 加入IOC
+@Component
+public class ProcessTimeGlobalFilter implements GlobalFilter, Ordered {
+    private static final String BEGIN_TIME = "BEGIN_TIME";
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        exchange.getAttributes().put(BEGIN_TIME, Instant.now().toEpochMilli());
+        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+            Long beginTime = exchange.getAttribute(BEGIN_TIME);
+            if (Objects.nonNull(beginTime)) {
+                String host = exchange.getRequest().getURI().getHost();
+                int port = exchange.getRequest().getURI().getPort();
+                String path = exchange.getRequest().getURI().getPath();
+                String rawQuery = exchange.getRequest().getURI().getRawQuery();
+                long processTime = Instant.now().toEpochMilli() - beginTime;
+                System.out.println(host + ": " + port + path + "parameter" + rawQuery + " 接口调用时长：" + processTime);
+            }
+        }));
+    }
+
+    // 越小优先级越高
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+}
+```
+
+##### 自定义单一Filter
+
+- 仿照官方的过滤器实现，类名必须是XxxGatewayFilterFactory
 
 #### Gateway微服务
 
@@ -6302,30 +6415,26 @@ spring.cloud.gateway.routes[0].predicates[8]=RemoteAddr=192.168.1.1/24
 
 - 配置
 
-```properties
-spring.application.name=gateway-service
-server.port=6000
-
-# 注册到nacos
-spring.cloud.nacos.discovery.server-addr=localhost:8848
-spring.cloud.nacos.discovery.namespace=b70655ab-8c47-4dbb-b6b0-589f8eda9441
-
-# 网关配置，根据需要进行配置
-# 路由id，自定义key
-spring.cloud.gateway.routes[0].id=gateway-test-service-route
-# 匹配后提供服务的路由
-# 服务地址不要写死http://localhost:8080，要写成lb://服务在注册中心的名称，这样要是服务端口变化了就不用做改动，也可实现负载均衡
-spring.cloud.gateway.routes[0].uri=lb://gateway-test-service
-# 与此路径相匹配的进行路由
-spring.cloud.gateway.routes[0].predicates[0]=Path=/gateway/getInfo/**
-
-spring.cloud.gateway.routes[1].id=gateway-test-service-route2
-spring.cloud.gateway.routes[1].uri=lb://gateway-test-service
-spring.cloud.gateway.routes[1].predicates[0]=Path=/gateway/feign/getAccount/**
-
-spring.cloud.gateway.routes[2].id=account-service-route
-spring.cloud.gateway.routes[2].uri=lb://account-service
-spring.cloud.gateway.routes[2].predicates[0]=Path=/account/getAccount/**
+```yaml
+server:
+    port: 8000
+spring:
+    application:
+        name: gateway-service
+    cloud:
+        nacos:
+            discovery:
+                server-addr: localhost:8848
+                namespace: b70655ab-8c47-4dbb-b6b0-589f8eda9441
+                username: nacos
+                password: nacos
+        gateway:
+            routes:
+                -
+                    id: gateway-test-service-route
+                    uri: lb://gateway-test-service
+                    predicates:
+                        - Path=/gateway/getInfo/**
 ```
 
 - 主启动类
@@ -6336,6 +6445,122 @@ spring.cloud.gateway.routes[2].predicates[0]=Path=/account/getAccount/**
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+#### gateway + sentinel
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-transport-simple-http</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-spring-cloud-gateway-adapter</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-gateway</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+- 配置
+
+```yaml
+server:
+    port: 8000
+spring:
+    application:
+        name: gateway-sentinel-service
+    cloud:
+        nacos:
+            discovery:
+                server-addr: localhost:8848
+                namespace: b70655ab-8c47-4dbb-b6b0-589f8eda9441
+                username: nacos
+                password: nacos
+        gateway:
+            routes:
+                -
+                    id: gateway-test-service-route
+                    uri: lb://gateway-test-service
+                    predicates:
+                        - Path=/gateway/getInfo/**
+```
+
+- 配置文件
+
+```java
+@Configuration
+public class GatewayConfiguration {
+    private final List<ViewResolver> viewResolvers;
+
+    private final ServerCodecConfigurer serverCodecConfigurer;
+
+    // 构造方法
+    public GatewayConfiguration(ObjectProvider<List<ViewResolver>> viewResolversProvider,
+            ServerCodecConfigurer serverCodecConfigurer) {
+        this.viewResolvers = viewResolversProvider.getIfAvailable(Collections::emptyList);
+        this.serverCodecConfigurer = serverCodecConfigurer;
+    }
+
+    // 注入SentinelGatewayBlockExceptionHandler
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SentinelGatewayBlockExceptionHandler sentinelGatewayBlockExceptionHandler() {
+        // Register the block exception handler for Spring Cloud Gateway.
+        return new SentinelGatewayBlockExceptionHandler(viewResolvers, serverCodecConfigurer);
+    }
+
+    // 注入SentinelGatewayFilter
+    @Bean
+    @Order(-1)
+    public GlobalFilter sentinelGatewayFilter() {
+        return new SentinelGatewayFilter();
+    }
+
+
+    // 官方代码里面这个注解还是javax.annotation-api的
+    // 但是@PostConstruct已经是jakarta.annotation.PostConstruct的了，测试了没问题
+    @PostConstruct
+    public void init() {
+        initGatewayRules();
+    }
+
+    // 初始化
+    private void initGatewayRules() {
+        Set<GatewayFlowRule> rules = new HashSet<>();
+        // 定义限流规则，一秒钟QPS超过2个进行限流
+        rules.add(new GatewayFlowRule("gateway-test-service-route").setCount(2)
+                                                                   .setIntervalSec(1));
+        GatewayRuleManager.loadRules(rules);
+
+        // 定义触发限流返回的信息内容
+        BlockRequestHandler blockHandler = (serverWebExchange, throwable) -> {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("code", HttpStatus.TOO_MANY_REQUESTS.value());
+            map.put("message", "触发限流，请不要频繁请求");
+            return ServerResponse.status(HttpStatus.TOO_MANY_REQUESTS)
+                                 .contentType(MediaType.APPLICATION_JSON)
+                                 .body(BodyInserters.fromValue(map));
+        };
+        GatewayCallbackManager.setBlockHandler(blockHandler);
     }
 }
 ```
@@ -11274,6 +11499,7 @@ java -jar lombok.jar
 |Tab|向右缩进|
 |Shift + Tab|向左缩进|
 |Ctrl + /|注释/取消注释|
+|Shift + F6|重命名，要注意可能跟输入法按键冲突|
 |按两下Shift|类搜索|
 |Ctrl + Shift + F|全局搜索|
 |Ctrl + Shift + R|全局替换|
