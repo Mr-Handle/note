@@ -8459,6 +8459,130 @@ docker image prune
 
 ## 消息队列
 
+### Pulsar
+
+#### 安装Pulsar
+
+- docker images
+
+```sh
+docker pull apachepulsar/pulsar:3.3.2
+```
+
+- compose.yaml
+
+```yaml
+name: my-docker-server
+    services: 
+        pulsar:
+            container_name: pulsar01
+            image: apachepulsar/pulsar:3.3.2
+            ports:
+                - "6650:6650"
+                - "3080:8080"
+            volumes:
+                # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
+                # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data，pulsar否则会提示权限不够
+                - /lsh/data/pulsar/data:/pulsar/data
+                - /lsh/data/pulsar/conf:/pulsar/conf
+            entrypoint: ["bash", "-c", "bin/pulsar standalone"]
+            networks: 
+                - my-docker-net
+            restart: always
+```
+
+- 测试
+
+```sh
+# 1.打开两个虚拟机终端，分别进入容器交互式终端，都进入/pulsar/bin目录
+# 2.在一个容器交互式终端中执行消费者命令
+./pulsar-client consume topic-test -s 'sub-test'
+# 3.在另一个容器交互式终端中执行生产者命令
+./pulsar-client produce topic-test --messages 'hello pulsar'
+# 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
+```
+
+#### java client
+
+- 依赖
+
+```xml
+<dependency>
+    <groupId>org.apache.pulsar</groupId>
+    <artifactId>pulsar-client</artifactId>
+    <version>${pulsar.version}</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-client-api</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.apache.pulsar</groupId>
+            <artifactId>pulsar-client-admin-api</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.apache.pulsar</groupId>
+    <artifactId>pulsar-client-api</artifactId>
+    <version>${pulsar.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.pulsar</groupId>
+    <artifactId>pulsar-client-admin-api</artifactId>
+    <version>${pulsar.version}</version>
+</dependency>
+<dependency>
+    <groupId>io.opentelemetry</groupId>
+    <artifactId>opentelemetry-api</artifactId>
+    <version>1.43.0</version>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+</dependency>
+```
+
+- 发送和接收消息
+
+```java
+PulsarClient client = PulsarClient.builder()
+                                    .serviceUrl("pulsar://localhost:6650")
+                                    .build();
+// 创建生产者并指定消息类型（默认字节数组）、主题
+Producer<String> producer = client.newProducer(Schema.STRING)
+                                    .topic("topic-test")
+                                    .create();
+producer.send("hello pulsar");
+producer.close();
+
+TimeUnit.SECONDS.sleep(2);
+
+// 创建消息监听器
+MessageListener messageListener = (consumer, message) -> {
+    try {
+        System.out.println("receive message: " + new String(message.getData()));
+
+        // 消费确认
+        consumer.acknowledge(message);
+    } catch (Exception e) {
+        // 消息处理失败，稍后重新发送
+        consumer.negativeAcknowledge(message);
+        throw new RuntimeException(e);
+    }
+};
+
+// 创建消费者并指定主题、订阅
+Consumer consumer = client.newConsumer()
+                            .topic("topic-test")
+                            .subscriptionName("subscription-test")
+                            .messageListener(messageListener)
+                            .subscribe();
+TimeUnit.SECONDS.sleep(2);
+consumer.close();
+client.close();
+```
+
 ### RocketMQ
 
 中文官网：<https://rocketmq.apache.org/zh/>
@@ -8730,7 +8854,7 @@ public class AmqpApplicationTests {
   
     作用：导入Spring配置文件
   
-    用法：==@Configuration + @ImportResource("classpath:xxx.xml")== 一起用
+    用法：@Configuration + @ImportResource("classpath:xxx.xml") 一起用
 
 例子：读取spring.xml文件中的Pet
 
