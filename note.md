@@ -613,6 +613,12 @@ Timestamp timestamp = Timestamp.from(Instant.now());
 
 ##### OffsetDateTime
 
+- 某一时刻的值，具有不变性，用来做持久化和网络传输
+
+- 简单理解为OffsetDateTime = LocalDateTime + ZoneOffset
+
+- ZoneOffset可以看作偏移量，正负18
+
 - 创建OffsetDateTime
 
 ```java
@@ -621,10 +627,19 @@ ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
 
 ##### ZonedDateTime
 
+- 用来做显示
+
+- 简单理解为ZonedDateTime = LocalDateTime + ZoneId
+
+- ZoneId确定了偏移量如何改变的规则（比如由于夏令时的存在，同一个地点（ZoneOffset），同一个时间，在不同日期的显示的结果是不一样的，用OffsetDateTime来显示是不对的）
+
 - 创建ZonedDateTime
 
 ```java
 ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
+
+// 显示为中国北京时间
+zonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Shanghai"));
 ```
 
 ### 多线程
@@ -1979,8 +1994,8 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
         <appender-ref ref="FILE" />
     </root>
 
-    <!-- 根据特殊需求指定局部日志级别，可以是包名或全限定类名 -->
-    <logger name="com.handle.application.mapper" level="DEBUG"/>
+    <!-- 根据特殊需求指定局部日志级别，可以是包名或全限定类名，日志级别不分大小写 -->
+    <logger name="com.handle.application.mapper" level="debug"/>
 </configuration>
 ```
 
