@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.web.servlet.HandlerAdapter;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -38,7 +40,11 @@ public class JacksonConfiguration {
 
     /**
      * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
+     * 需要等
      */
+
+    // 如果用lambda表达式取代Converter内部类的写法，需要等HandlerAdapter初始化后再注入，不然会报类型匹配问题
+    @ConditionalOnBean(HandlerAdapter.class)
     @Bean
     public Converter<String, LocalDateTime> localDateTimeConverter() {
         return value -> {
@@ -50,6 +56,9 @@ public class JacksonConfiguration {
     /**
      * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
      */
+
+    // 如果用lambda表达式取代Converter内部类的写法，需要等HandlerAdapter初始化后再注入，不然会报类型匹配问题
+    @ConditionalOnBean(HandlerAdapter.class)
     @Bean
     public Converter<String, OffsetDateTime> offsetDateTimeConverter() {
         return value -> {

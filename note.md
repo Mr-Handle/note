@@ -1946,11 +1946,12 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
     <define name="LOG_HOME" class="com.lsh.config.configuration.LogHomeConfiguration" />
 
     <!-- output to console -->
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <!-- 日志输出格式：时间 日志级别 线程名 打印日志的类 日志内容 换行 -->
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{50}.%M -- %msg%n</pattern>
-            <charset>UTF-8</charset>
+            <!--时间 日志级别 线程 全限定类名.方法名 消息 换行-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %5level [%thread] %logger.%M -- %msg%n</pattern>
+            <!--日志编码，不分大小写-->
+            <charset>utf-8</charset>
         </encoder>
     </appender>
 
@@ -1971,10 +1972,10 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
         </triggeringPolicy>
     </appender>
 
-    <!-- 设置全局日志的级别：TRACE < DEBUG < INFO < WARN < ERROR，默认INFO -->
+    <!-- 日志级别，默认info：trace < debug < info < warn < error，不分大小写 -->
     <root level="INFO">
         <!-- 指定打印日志的appender -->
-        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="console" />
         <appender-ref ref="FILE" />
     </root>
 
@@ -7301,6 +7302,30 @@ public class JacksonUtilInitializer {
         field.set(null, objectMapper);
     }
 }
+
+// 或者直接通过构造方法注入
+@Component
+public final class JacksonUtil {
+    private static ObjectMapper objectMapper;
+
+    private JacksonUtil(ObjectMapper objectMapper) {
+        JacksonUtil.objectMapper = objectMapper;
+    }
+
+    public static String writeValueAsString(Object value) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(value);
+    }
+
+    public static <T> T readValue(String content, Class<T> valueType)
+    throws JsonProcessingException, JsonMappingException {
+        return objectMapper.readValue(content, valueType);
+    }
+
+    public <T> T readValue(String content, TypeReference<T> valueTypeRef)
+            throws JsonProcessingException, JsonMappingException {
+        return objectMapper.readValue(content, valueTypeRef);
+    }
+}
 ```
 
 ## swagger
@@ -7385,6 +7410,20 @@ public class PayController {
 ```
 
 - 文档地址：`http://ip:port/doc.html`
+
+## Jmeter
+
+### 线程组
+
+- 10个线程，执行5秒，每次执行2个请求
+
+![jmeter-threadGroup](/images/jmeter-threadGroup.png)
+
+### get请求
+
+- 注意点：如果直接在Path输入框中输入：<http://localhost:8080/jackson/get2>，然后填写请求参数，那么请求参数是不会拼接到请求路径后面的
+
+![jmeter-get](/images/jmeter-get.png)
 
 ## 分布式id
 
