@@ -7158,13 +7158,14 @@ seata.data-source-proxy-mode=AT
 
 ### 常规使用
 
-- gradle依赖
+- 依赖
 
 ```kotlin
-implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-
-// 要把JSON的某些值解析为特定的Java对象，例如LocalDate，需要引入标准的JSR 310关于JavaTime的数据格式定义
-implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.18.0</version>
+</dependency>
 ```
 
 - 使用
@@ -7263,144 +7264,7 @@ spring.jackson.date-format=yyyy-MM-dd HH:mm:ss
 spring.jackson.serialization.write-dates-as-timestamps=true
 ```
 
-- 自定义Jackson配置类
-
-```java
-@Configuration
-public class JacksonConfiguration {
-    /**
-     * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
-     */
-    @Bean
-    public Converter<String, LocalDateTime> localDateTimeConverter() {
-        return new Converter<String, LocalDateTime>() {
-            @Override
-            public LocalDateTime convert(String value) {
-                Instant instant = Instant.ofEpochMilli(Long.parseLong(value));
-                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-            }
-        };
-    }
-
-    /**
-     * 自定义一些类型的序列化器和反序列化器
-     */
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        return builder -> {
-            // js的精度为17位，当Long类型的数值位数超过17位时，序列化为字符串，保证数据准确性
-            builder.serializerByType(Long.class, new LongSerializer());
-            builder.deserializerByType(Long.class, new LongDeserializer());
-
-            builder.serializerByType(LocalDate.class, new LocalDateSerializer());
-            builder.deserializerByType(LocalDate.class, new LocalDateDeserializer());
-
-            builder.serializerByType(LocalDateTime.class, new LocalDateTimeSerializer());
-            builder.deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer());
-
-            builder.serializerByType(OffsetDateTime.class, new OffsetDateTimeSerializer());
-            builder.deserializerByType(OffsetDateTime.class, new OffsetDateTimeDeserializer());
-        };
-    }
-
-    public static class LongSerializer extends JsonSerializer<Long> {
-        @Override
-        public void serialize(Long value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (Objects.nonNull(value)) {
-                String stringValue = String.valueOf(value);
-                if (stringValue.length() > 17) {
-                    gen.writeString(stringValue);
-                } else {
-                    gen.writeNumber(value);
-                }
-            }
-        }
-    }
- 
-    public static class LongDeserializer extends JsonDeserializer<Long> {
-        @Override
-        public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-            return p.getValueAsLong();
-        }
-    }
- 
-    public static class LocalDateSerializer extends JsonSerializer<LocalDate> {
-        @Override
-        public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-            if (Objects.nonNull(value)) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                gen.writeString(dateTimeFormatter.format(value));
-            }
-        }
-    }
-
-    public static class LocalDateDeserializer extends JsonDeserializer<LocalDate> {
-        @Override
-        public LocalDate deserialize(JsonParser p, DeserializationContext ctxt)
-        throws IOException, JacksonException {
-            String value = p.getValueAsString();
-            if (StringUtils.isNotBlank(value)) {
-                if (value.trim().matches("^\\d{4}/\\d{1,2}/\\d{1,2}$")) {
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-                    return LocalDate.parse(value, dateTimeFormatter);
-                } else if (value.trim().matches("^\\d{4}\\-\\d{1,2}\\-\\d{1,2}$")) {
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                    return LocalDate.parse(value, dateTimeFormatter);
-                } 
-            }
-            return null;
-        }
-    }
-
-    public static class LocalDateTimeSerializer extends JsonSerializer<LocalDateTime> {
-        @Override
-        public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers)
-        throws IOException {
-            if (Objects.nonNull(value)) {
-                long timestamp = value.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                gen.writeNumber(timestamp);
-            }
-        }
-    }
-
-    public static class LocalDateTimeDeserializer extends JsonDeserializer<LocalDateTime> {
-        @Override
-        public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt)
-        throws IOException, JacksonException {
-            long timestamp = p.getValueAsLong();
-            if (timestamp > 0) {
-                Instant instant = Instant.ofEpochMilli(timestamp);
-                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-            }
-            return null;
-        }
-    }
-
-    public static class OffsetDateTimeSerializer extends JsonSerializer<OffsetDateTime> {
-        @Override
-        public void serialize(OffsetDateTime value, JsonGenerator gen, SerializerProvider serializers)
-        throws IOException {
-            if (Objects.nonNull(value)) {
-                long timestamp = value.toInstant().toEpochMilli();
-                gen.writeNumber(timestamp);
-            }
-        }
-    }
-
-    public static class OffsetDateTimeDeserializer extends JsonDeserializer<OffsetDateTime> {
-        @Override
-        public OffsetDateTime deserialize(JsonParser p, DeserializationContext ctxt)
-        throws IOException, JacksonException {
-            long timestamp = p.getValueAsLong();
-            if (timestamp > 0) {
-                Instant instant = Instant.ofEpochMilli(timestamp);
-                return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
-            }
-            return null;
-        }
-    }
-}
-```
+- 自定义Jackson配置类：[JacksonConfiguration](/java/JacksonConfiguration.java)
 
 - ObjectMapper是线程安全的，因此可以定义一个Jackson工具类，避免每次注入Jackson
 
