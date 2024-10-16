@@ -7,12 +7,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.web.servlet.HandlerAdapter;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -21,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -38,32 +37,64 @@ public class JacksonConfiguration {
 
     private static final DateTimeFormatter HYPHEN_YYYY_MM_DD_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /**
-     * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
-     * 需要等
-     */
 
-    // 如果用lambda表达式取代Converter内部类的写法，需要等HandlerAdapter初始化后再注入，不然会报类型匹配问题
-    @ConditionalOnBean(HandlerAdapter.class)
+    /**
+     * 定义Date转换器，用于转换@RequestParam和@PathVariable参数
+     * 不能用lambda表达式取代Converter内部类的写法，不然会报类型匹配问题
+     */
     @Bean
-    public Converter<String, LocalDateTime> localDateTimeConverter() {
-        return value -> {
-            Instant instant = Instant.ofEpochMilli(Long.parseLong(value));
-            return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    public Converter<String, Date> DateConverter() {
+        return new Converter<String, Date>() {
+            @Override
+            public Date convert(String source) {
+                Instant instant = Instant.ofEpochMilli(Long.parseLong(source));
+                return Date.from(instant);
+            }
         };
     }
 
     /**
-     * 定义LocalDateTime转换器，用于转换@RequestParam和@PathVariable参数
+     * 定义LocalDate转换器，用于转换@RequestParam和@PathVariable参数
+     * 不能用lambda表达式取代Converter内部类的写法，不然会报类型匹配问题
      */
+    @Bean
+    public Converter<String, LocalDate> localDateConverter() {
+        return new Converter<String, LocalDate>() {
+            @Override
+            public LocalDate convert(String source) {
+                Instant instant = Instant.ofEpochMilli(Long.parseLong(source));
+                return LocalDate.ofInstant(instant, ZoneId.systemDefault());
+            }
+        };
+    }
 
-    // 如果用lambda表达式取代Converter内部类的写法，需要等HandlerAdapter初始化后再注入，不然会报类型匹配问题
-    @ConditionalOnBean(HandlerAdapter.class)
+    /**
+     * 定义OffsetDateTime转换器，用于转换@RequestParam和@PathVariable参数
+     * 不能用lambda表达式取代Converter内部类的写法，不然会报类型匹配问题
+     */
+    @Bean
+    public Converter<String, LocalDateTime> localDateTimeConverter() {
+        return new Converter<String, LocalDateTime>() {
+            @Override
+            public LocalDateTime convert(String source) {
+                Instant instant = Instant.ofEpochMilli(Long.parseLong(source));
+                return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
+        };
+    }
+
+    /**
+     * 定义OffsetDateTime转换器，用于转换@RequestParam和@PathVariable参数
+     * 不能用lambda表达式取代Converter内部类的写法，不然会报类型匹配问题
+     */
     @Bean
     public Converter<String, OffsetDateTime> offsetDateTimeConverter() {
-        return value -> {
-            Instant instant = Instant.ofEpochMilli(Long.parseLong(value));
-            return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+        return new Converter<String, OffsetDateTime>() {
+            @Override
+            public OffsetDateTime convert(String source) {
+                Instant instant = Instant.ofEpochMilli(Long.parseLong(source));
+                return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+            }
         };
     }
 
