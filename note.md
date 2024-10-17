@@ -6656,6 +6656,43 @@ sh startup.sh
 
 - 4）分别启动n个nacos服务
 
+#### nacos-docker
+
+- compose.yaml
+
+```yaml
+nacos:
+    container_name: nacos01
+    image: nacos/nacos-server:v2.3.0
+    ports:
+        - "8848:8848"
+        - "9848:9848"
+    environment:
+        - MODE=standalone
+        - SPRING_DATASOURCE_PLATFORM=mysql
+        - MYSQL_DATABASE_NUM=1
+        - MYSQL_SERVICE_HOST=mysql01
+        - MYSQL_SERVICE_PORT=3306
+        - MYSQL_SERVICE_DB_NAME=nacos
+        - MYSQL_SERVICE_USER=root
+        - MYSQL_SERVICE_PASSWORD=mysql123
+        # 在默认的连接参数后加上allowPublicKeyRetrieval=true，这样就不用手动连接一次mysql才能成功启动nacos
+        - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+        # 登录配置
+        - NACOS_AUTH_SYSTEM_TYPE=nacos
+        - NACOS_AUTH_ENABLE=true
+        - NACOS_AUTH_TOKEN=VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg=
+        - NACOS_AUTH_IDENTITY_KEY=nacos
+        - NACOS_AUTH_IDENTITY_VALUE=nacos
+    volumes:
+        - /lsh/data/nacos/logs/:/home/nacos/logs
+    networks: 
+        - my-docker-net
+    depends_on:
+        - mysql
+    restart: always
+```
+
 #### 注册中心
 
 - 依赖
@@ -7106,6 +7143,28 @@ public class Application {
 
 ```sh
 bash seata-server.sh
+```
+
+- compose.yaml
+
+```yaml
+seata:
+    container_name: seata01
+    image: seataio/seata-server:2.0.0
+    ports:
+        - "7091:7091"
+        - "8091:8091"
+    environment:
+        # 设置公网ip，seata客户端通过这个ip连接seata服务器
+        - SEATA_IP=192.168.56.1
+        - SEATA_PORT=8091
+    volumes:
+        - /lsh/data/seata/application.yml:/seata-server/resources/application.yml
+    networks: 
+        - my-docker-net
+    restart: always
+    depends_on:
+        - nacos
 ```
 
 - 查看nacos服务列表中是否有seata，查看<http://localhost:7091/>是否能够正常访问
