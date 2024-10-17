@@ -8379,12 +8379,46 @@ docker image prune
 
 ### Pulsar
 
+- github：<https://github.com/apache/pulsar>
+
 #### 安装pulsar
 
-- docker images
+- 下载压缩包运行
 
 ```sh
-docker pull apachepulsar/pulsar:3.3.2
+cd your-pulsar-home/bin
+
+# 保留小黑窗不要动
+./pulsar standalone
+```
+
+- 测试
+
+```sh
+# 1.打开两个虚拟机终端（如果是docker版，则是进入容器交互式终端），都进入your-pulsar-home/bin目录
+# 2.在一个终端中执行消费者命令，消费者会监听，所以先执行
+./pulsar-client consume topic-test -s 'sub-test'
+# 3.在另一个终端中执行生产者命令
+./pulsar-client produce topic-test --messages 'hello pulsar'
+# 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
+```
+
+#### docker
+
+- 注意：官方docker镜像在虚拟机重启后会启动失败，试了3.3.2版本和3.0.7版本都会
+
+- 自己构建pulsar镜像
+
+```Dockerfile
+FROM bellsoft/liberica-jre-ubuntu:21.0.4-9
+# 作者信息
+LABEL author=handle
+WORKDIR /usr/local
+ADD apache-pulsar-3.3.2-bin.tar.gz /usr/local/
+# 容器启动时运行
+ENTRYPOINT ["bash", "-c", "apache-pulsar-3.3.2/bin/pulsar standalone"]
+# 暴露端口
+EXPOSE 8080 6650
 ```
 
 - compose.yaml
@@ -8392,7 +8426,7 @@ docker pull apachepulsar/pulsar:3.3.2
 ```yaml
 pulsar:
     container_name: pulsar01
-    image: apachepulsar/pulsar:3.3.2
+    image: handle/pulsar:3.3.2
     ports:
         # Bookie URL
         - "6650:6650"
@@ -8400,27 +8434,13 @@ pulsar:
         - "3080:8080"
     volumes:
         # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
-        # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data，pulsar否则会提示权限不够，
-        # 如果重启虚拟机后又失败了就不用自定义目录映射了，直接挂载容器卷（另外不要忘了声明容器卷，这里不写出来了），瞎折腾！
+        # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data
+        # pulsar否则会提示权限不够(启动官方镜像时的笔记，由于已经执行过了权限命令了，不知道自己的镜像会不会，暂时保留着)
         - /lsh/data/pulsar/data:/pulsar/data
         - /lsh/data/pulsar/conf:/pulsar/conf
-        # - pulsardata:/pulsar/data
-        # - pulsarconf:/pulsar/conf
-    entrypoint: ["bash", "-c", "bin/pulsar standalone"]
     networks: 
         - my-docker-net
     restart: always
-```
-
-- 测试
-
-```sh
-# 1.打开两个虚拟机终端，分别进入容器交互式终端，都进入/pulsar/bin目录
-# 2.在一个容器交互式终端中执行消费者命令
-./pulsar-client consume topic-test -s 'sub-test'
-# 3.在另一个容器交互式终端中执行生产者命令
-./pulsar-client produce topic-test --messages 'hello pulsar'
-# 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
 ```
 
 #### 安装pulsar-manager
@@ -13028,6 +13048,9 @@ cat /etc/redhat-release
 
 # 升级软件包及内核
 sudo yum update
+
+# 总体内存占用，-m 用Mb单位来显示
+free -m
 ```
 
 #### 日志命令
