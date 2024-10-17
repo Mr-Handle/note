@@ -10774,106 +10774,16 @@ BASE：基本可用（Basically Available）、软状态（Soft state）、最�
 
 #### Redis安装
 
-##### 离线安装
+##### 修改配置
 
-- 解压tar.gz文件
-- 进入redis根目录
-- make命令安装redis
-- make install
+- 配置文件：[redis.conf](/file/redis/redis.conf)
 
-- 查看redis有没有启动
+- daemonize no 改成 daemonize yes
+- protected-mode yes 改成 protected-mode no，不然Java程序连接不上
+- bind 127.0.0.1，表示只能本机访问，需要注释掉或者改成本机的ip地址，不然会影响远程ip连接
+- 去掉对requirepass的注释，并且指定登录密码
 
-```sh
-ps -ef|grep redis
-```
-
-- 进入redis安装目录
-
-```sh
-cd /usr/local/bin
-```
-
-- 指定配置文件启动redis服务器
-
-```sh
-redis-server /application/redis.conf
-```
-
-- 指定端口启动redis客户端
-
-```sh
-redis-cli -p 6379
-```
-
-- 测试redis数据库是否启动成功
-
-```sh
-ping
-```
-
-- 关闭redis服务器
-
-```sh
-# 在redis客户端中端中关闭服务器
-shutdown nosave
-```
-
-- 退出redis客户端
-
-```sh
-exit
-```
-
-##### 安装docker镜像的redis
-
-- 1.下载redis镜像
-
-```sh
-docker pull redis:6.2.7
-```
-
-- 2.新建目录和配置文件
-
-```sh
-# 创建存放redis数据文件的目录
-mkdir -p /data/redis/data
-
-# 创建存放redis配置文件的目录
-mkdir -p /data/redis/conf
-
-# 新建空的redis.conf配置文件
-touch /data/redis/conf/redis.conf
-```
-
-- 3.启动redis
-
-```sh
-# 冒号左边：/data/redis/data 和 /data/redis/conf/redis.conf 为linux主机目录
-# 冒号右边：/data 和 /usr/local/etc/redis/redis.conf 为docker容器目录
-# 使用指定的redis.conf文件启动docker
-docker run -p 6379:6379 \
---name redis01 \
--v /data/redis/data:/data \
--v /data/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
--d redis:7.4.0 redis-server /usr/local/etc/redis/redis.conf
-```
-
-- 4.连接redis客户端
-
-```sh
-# 方法1
-docker exec -it redis01 /bin/bash
-# 方式2
-docker exec -it redis01 redis-cli
-```
-
-- 5.测试redis
-
-```sh
-ping
-```
-
-#### `redis.conf`配置
+- 配置部分注释如下
 
 ```conf
 # 绑定可以连redis数据库的ip，多个ip用空格隔开
@@ -10923,6 +10833,95 @@ dbfilename dump.rdb
 appendonly yes
 appendfilename "appendonly.aof"
 appendfsync everysec
+```
+
+##### 离线安装
+
+- 解压tar.gz文件
+- 进入redis根目录
+- make命令安装redis
+- make install
+
+- 进入redis安装目录
+
+```sh
+cd /usr/local/bin
+```
+
+- 指定配置文件启动redis服务器
+
+```sh
+redis-server /handle/data/redis/conf/redis.conf
+```
+
+- 查看redis有没有启动
+
+```sh
+ps -ef|grep redis
+```
+
+- 指定端口启动redis客户端
+
+```sh
+redis-cli -p 6379
+```
+
+- 测试redis数据库是否启动成功
+
+```sh
+ping
+```
+
+- 关闭redis服务器
+
+```sh
+# 在redis客户端中端中关闭服务器
+shutdown nosave
+```
+
+- 退出redis客户端
+
+```sh
+exit
+```
+
+##### docker-redis
+
+- 下载redis镜像
+
+```sh
+docker pull redis:7.4
+```
+
+- compose.yaml
+
+```yaml
+redis:
+    image: redis:7.4
+    container_name: redis01
+    ports:
+        - "6379:6379"
+    volumes:
+        - /handle/data/redis/data:/data
+        - /handle/data/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    networks: 
+        - my-docker-net
+    restart: always
+```
+
+- 4.连接redis客户端
+
+```sh
+# 方法1
+docker exec -it redis01 /bin/bash
+# 方式2
+docker exec -it redis01 redis-cli
+```
+
+- 5.测试redis
+
+```sh
+ping
 ```
 
 #### 数据库操作命令
