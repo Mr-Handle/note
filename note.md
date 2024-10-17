@@ -8379,7 +8379,7 @@ docker image prune
 
 ### Pulsar
 
-#### 安装Pulsar
+#### 安装pulsar
 
 - docker images
 
@@ -8419,6 +8419,66 @@ name: my-docker-server
 ./pulsar-client produce topic-test --messages 'hello pulsar'
 # 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
 ```
+
+#### 安装pulsar-manager
+
+##### 数据库配置（可选，数据量大时使用）
+
+- 创建数据库和表：[postgresql-schema.sql](/file/pulsar-manager/postgresql-schema.sql)
+
+- 修改配置文件:[application.properties](/file/pulsar-manager/application.properties)
+
+```properties
+# 默认内置数据库的连接串要注释掉，url直接写postgresql数据库容器名（不写端口也可以）
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:postgresql://postgres01:5432/pulsar_manager
+spring.datasource.username=postgres
+spring.datasource.password=postgres123
+```
+
+##### compose.yaml
+
+```yaml
+pulsar-manager:
+    container_name: pulsar-manager
+    image: apachepulsar/pulsar-manager:v0.4.0
+    ports:
+        # 前端端口
+        - "9527:9527"
+        # 后端端口
+        - "7750:7750"
+    volumes:
+        - /lsh/data/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
+    environment:
+        # 配置文件名必须要指定
+        - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+    # 通过容器服务名和pulsar通信，不写也可以
+    # links:
+    #     - pulsar
+    networks: 
+        - my-docker-net
+    restart: always
+```
+
+##### 初始化登录的超级用户密码
+
+```sh
+# 第一步
+CSRF_TOKEN=$(curl http://localhost:7750/pulsar-manager/csrf-token)
+# 第二步
+curl \
+   -H 'X-XSRF-TOKEN: $CSRF_TOKEN' \
+   -H 'Cookie: XSRF-TOKEN=$CSRF_TOKEN;' \
+   -H "Content-Type: application/json" \
+   -X PUT http://localhost:7750/pulsar-manager/users/superuser \
+   -d '{"name": "pulsar", "password": "pulsar123", "description": "test", "email": "username@test.org"}'
+```
+
+#### 进入管理页面
+
+- 访问：<http://localhost:9527/>
+
+- 新增环境：![pulsar-manager-environment](/images/pulsar-manager-environment.png)
 
 #### java client
 
