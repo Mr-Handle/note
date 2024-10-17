@@ -8390,23 +8390,26 @@ docker pull apachepulsar/pulsar:3.3.2
 - compose.yaml
 
 ```yaml
-name: my-docker-server
-    services: 
-        pulsar:
-            container_name: pulsar01
-            image: apachepulsar/pulsar:3.3.2
-            ports:
-                - "6650:6650"
-                - "3080:8080"
-            volumes:
-                # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
-                # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data，pulsar否则会提示权限不够
-                - /lsh/data/pulsar/data:/pulsar/data
-                - /lsh/data/pulsar/conf:/pulsar/conf
-            entrypoint: ["bash", "-c", "bin/pulsar standalone"]
-            networks: 
-                - my-docker-net
-            restart: always
+pulsar:
+    container_name: pulsar01
+    image: apachepulsar/pulsar:3.3.2
+    ports:
+        # Bookie URL
+        - "6650:6650"
+        # Service URL
+        - "3080:8080"
+    volumes:
+        # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
+        # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data，pulsar否则会提示权限不够，
+        # 如果重启虚拟机后又失败了就不用自定义目录映射了，直接挂载容器卷（另外不要忘了声明容器卷，这里不写出来了），瞎折腾！
+        - /lsh/data/pulsar/data:/pulsar/data
+        - /lsh/data/pulsar/conf:/pulsar/conf
+        # - pulsardata:/pulsar/data
+        # - pulsarconf:/pulsar/conf
+    entrypoint: ["bash", "-c", "bin/pulsar standalone"]
+    networks: 
+        - my-docker-net
+    restart: always
 ```
 
 - 测试
@@ -8450,7 +8453,7 @@ pulsar-manager:
     volumes:
         - /lsh/data/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
     environment:
-        # 配置文件名必须要指定
+        # 配置文件必须要指定
         - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
     # 通过容器服务名和pulsar通信，不写也可以
     # links:
