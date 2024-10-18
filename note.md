@@ -11696,14 +11696,57 @@ java -jar lombok.jar
 
 ## 前端篇
 
+### 一些约定
+
+- 用let声明变量
+
+- 用const声明常量
+
+### html
+
+- 1.标签：一对`<>`  
+    - 单标签：`<tagName />`
+    - 双标签：`<tagName></tagName>`
+        - 开始标签：`<tagName>`
+        - 结束标签：`<tagName />`
+- 2.属性：对标签特征进行设置的一种方式，一般在开始标签中定义
+- 3.文本：双标签中的文字，单标签是没有文本的
+- 4.元素：可理解为一个定义好的标签就是一个元素（dom元素）
+
+#### html结构
+
+- 1.文档声明，html5文档类型声明：`<!DOCTYPE html>`
+
+- 2.根标签，`<html></html>`
+
+- 3.头部标签，`<head></head>`
+    - 告诉浏览器用指定字符集解码：`<meta charset="utf-8" />`
+    - 浏览器显示html文件的页面的标题：`<title></title>`
+- 4.主体标签，`<body></body>`
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+    </body>
+</html>
+```
+
 ### CSS
 
 #### CSS 语法
 
 - CSS 规则由两个主要部分构成：
     - 1.`选择器`：通常是需要改变样式的`HTML元素`
-    - 2.`声明`（一条或多条）：声明用`{}`括起来，其中的每条声明由一个`属性`和一个`值`组成，属性和值用`:`分开，每条声明以`;`结束
-- CSS注释以 `/*` 开始, 以 `*/` 结束。
+    - 2.`声明`（一条或多条）：
+        - 声明用`{}`括起来，
+        - 其中的每条声明由一个`属性`和一个`值`组成
+        - 属性和值用`:`分开，每条声明以`;`结束
+    - CSS注释以 `/*` 开始, 以 `*/` 结束。
 
 ```css
 p {
@@ -11717,25 +11760,19 @@ p {
 - #### id 选择器(#id)
 
 ```css
-#username {
-    
-}
+#username {}
 ```
 
 - #### class 选择器(.class)
 
 ```css
-#.mydiv {
-
-}
+#.mydiv {}
 ```
 
-- #### *element* 选择器(*element* )
+- #### element 选择器(html element)
 
 ```css
-div, p {
-
-}
+div, p {}
 ```
 
 #### 插入样式表
@@ -11743,7 +11780,7 @@ div, p {
 - 1.外部样式表
 
 ```html
-<link rel="stylesheet" type="text/css" href="xxx/xxx.css">
+<link type="text/css" rel="stylesheet" href="xxx/xxx.css">
 ```
 
 - 2.内部样式表
@@ -11852,7 +11889,84 @@ npm get registry
 
 - 6.执行完毕后，可在系统盘的当前用户文件夹看到`.npmrc`文件，可以打开查看配置的信息
 
+#### npm
+
+- 常用命令
+
+```sh
+# npm版本
+npm -v
+
+# 安装依赖，-g表示全局，给所有项目都安装
+# 安装完会在node_modules/package.json中dependencies属性看到安装的依赖
+npm install [-g] js包名
+# 卸载依赖
+npm uninstall js包名
+
+# 运行node_modules/package.json中scripts定义的脚本
+npm run 脚本名称
+```
+
 ### vue
+
+- 响应式特性：（变量）数据的变化可以更新到页面效果上
+
+- 单向绑定：数据变化->页面变化，前提数据是响应式
+
+- 双向绑定：数据变化<->页面变化，前提数据是响应式
+
+#### vue指令
+
+- 格式：v-xxx
+
+- v-html，将变量的值转成html显示
+
+- v-text，显示变量的值
+
+- v-on:click，简写：@click，指定方法名
+
+- v-if，判断指令
+
+- v-for，循环指令
+
+- v-bind，简写为英文冒号`:`，标签属性和变量绑定，单向绑定
+
+- v-module，标签属性和变量绑定，双向绑定
+
+- v-slot，插槽，简写为井号`#`
+
+- 父组件数据传给子组件，使用属性绑定
+
+```vue
+<!-- 父组件 -->
+<Son :fatherData=""/>
+
+<!-- 子组件 -->
+let fatherData = defineProps({
+    fatherName,
+    // 也可以自定义接受父组件的属性
+    fatherAge: {
+        type: Number,
+        required: true
+        default: 25
+    }
+});
+```
+
+- 子组件数据传给父组件
+
+```ts
+// 子组件定义发生的事件
+let emits = defineEmits(['方法名']);
+function 方法名() {
+    emits("方法名"，参数);
+}
+
+// 父组件感知和接收事件值
+<Son fatherData @方法名="父组件方法名"/>
+```
+
+- 兄弟组件传值：子1传给父，父传给子2
 
 #### 创建vue3项目
 
@@ -12508,6 +12622,14 @@ export type IUsers = IUser[]
         { id: 2, name: "lisi", age: 30 }
     ]
 </script>
+```
+
+### Axios
+
+- 安装依赖
+
+```sh
+npm install axios
 ```
 
 ## Linux篇
