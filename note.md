@@ -8556,6 +8556,14 @@ curl \
    -d '{"name": "pulsar", "password": "pulsar123", "description": "test", "email": "username@test.org"}'
 ```
 
+#### Function
+
+- 修改pulsar-home/conf/broker.conf
+
+```conf
+functionsWorkerEnabled=true
+```
+
 #### 进入管理页面
 
 - 访问：<http://localhost:9527/>
@@ -11692,17 +11700,11 @@ java -jar lombok.jar
 |Ctrl + Alt + M|提取代码为作为方法|
 |Ctrl + Alt + C|修改变量作用域|
 
-### 常见问题及处理方法
-
 ## 前端篇
 
-### 一些约定
-
-- 用let声明变量
-
-- 用const声明常量
-
 ### html
+
+#### html术语
 
 - 1.标签：一对`<>`  
     - 单标签：`<tagName />`
@@ -11710,6 +11712,7 @@ java -jar lombok.jar
         - 开始标签：`<tagName>`
         - 结束标签：`<tagName />`
 - 2.属性：对标签特征进行设置的一种方式，一般在开始标签中定义
+    - 当设置的属性值和属性名一样时，可以只写属性名
 - 3.文本：双标签中的文字，单标签是没有文本的
 - 4.元素：可理解为一个定义好的标签就是一个元素（dom元素）
 
@@ -11735,6 +11738,229 @@ java -jar lombok.jar
     </body>
 </html>
 ```
+
+#### html标签
+
+##### 标题
+
+h1-h6共有6级，文本字体大小依次递减
+
+```html
+<h1>text</h1>
+<h2>text</h2>
+<h3>text</h3>
+<h4>text</h4>
+<h5>text</h5>
+<h6>text</h6>
+```
+
+##### 段落
+
+```html
+<p>text</p>
+```
+
+##### 换行
+
+```html
+<!-- 不带分割线 -->
+<br />
+<!-- 带分割线 -->
+<hr />
+```
+
+##### 列表
+
+- 有序列表：ol
+- 无序列表: ul
+- 列表项：li
+- 列表可以嵌套列表
+
+```html
+<!-- 有序列表 -->
+<ol>
+    <li>text1</li>
+    <li>text2</li>
+    <li>text3</li>
+</ol>
+<!-- 无序列表 -->
+<ul>
+    <li>text1</li>
+    <li>text2</li>
+    <li>text3</li>
+</ul>
+```
+
+##### 超链接
+
+- href，定义要跳转的目标资源的地址，可以是
+    - url
+    - 相对路径
+        - `./`，表示当前资源所在路径，可省略不写
+        - `../`，表示当前资源上一层路径
+        - 如果当前资源位置变了，路径要跟着变
+    - 绝对路径
+        - 以`/`开头，从固定位置（如<http://localhost:8080>)作为出发点去找目标资源
+        - 如果当前资源位置变了，路径不用跟着变
+- target，定义目标资源的打开方式
+    - `_self`，在当前窗口打开目标资源
+    - `_blank`，在新窗口打开目标资源
+
+```html
+<a href="https://www.baidu.com" target="_blank">百度一下</a>
+```
+
+##### 图片
+
+- src，图片路径，可以是
+    - url
+    - 相对路径
+    - 绝对路径
+- title，鼠标悬停时提示的文字
+- alt，图片加载失败时提示的文字
+
+```html
+<img src="" title="" alt="" />
+```
+
+##### 表格
+
+- thead，表头，可不写
+- tbody，表体，可不写
+- tfoot，表尾（如总计），可不写
+- tr，表格行
+- td，单元格
+    - rowspan，指定单元格占多少行，会把跟此单元格同一列的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
+    - colpan，指定单元格占多少列，会把跟此单元格同一行的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
+- th，自带加粗和居中效果的td
+- 如果表头、表体、表尾都不写，浏览器会将tr都放到tbody里面
+
+```html
+<table>
+    <tr>
+        <th>columnName1</th>
+        <th>columnName2</th>
+        <th>columnName3</th>
+    </tr>
+    <tr>
+        <td>columnValue1</td>
+        <td>columnValue2</td>
+        <td>columnValue3</td>
+    </tr>
+</table>
+```
+
+##### 表单
+
+- 内部定义可以让用户输入信息的表单项标签
+
+- 实现让用户在界面上输入各种信息并提交的一种标签，是向服务端发送数据的主要方式之一
+
+- action，表单提交的地址，可以是
+    - url
+    - 相对路径
+    - 绝对路径
+- method，表单提交的方式
+    - get
+        - 表单数据会追加到url后面，以`?`作为参数开始的标识，`参数名=参数值`的形式，多个参数用`&`隔开
+        - 数据会直接暴露在地址栏上
+        - 地址栏长度有限制
+        - 地址栏只能是字符，不能提交文件
+        - 比post效率高
+    - post
+        - 表单数据默认不追加到url后面
+        - 表单数据不会暴露在地址栏上，单独打包通过请求体发送
+        - 提交数据量可以很大
+        - 请求体可以是字符或字节数据，可以提交文件
+        - 比get效率低
+
+```html
+<form action="" method="">
+    <!-- 在此填充表单项 -->
+</form>
+```
+
+###### 表单项标签
+
+- input
+    - name，提交时的参数名
+    - value，提交时的参数值
+    - type，表单项类型
+        - text，普通文本框
+            - readonly，只读，表单提交时会携带，`readonly=readonly`
+            - disabled，不可用，表单提交时不携带，`disabled=disabled`
+        - password，密码框
+        - file，文件上传框
+        - reset，重置按钮
+        - submit，提交按钮
+        - radio，单选框
+            - 多个单选框定义同一个name属性值，来实现互斥效果
+            - 还要通过value属性手动指定选中后的参数值是什么
+            - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
+        - checkbox，复选框
+            - 多个复选框定义同一个name属性值
+            - 还要通过value属性手动指定选中后的参数值是什么
+            - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
+        - hidden，隐藏域，不显示在页面上，提交时会携带
+
+```html
+<form action="" method="">
+    <!-- 表单项 -->
+    用户名：<input type="text" name="username" />
+    <br />
+    密码：<input type="password" name="password" />
+    <br />
+    头像：<input type="file" name="file" />
+    <br />
+    性别： 
+    <input type="radio" name="gender" value="1" checked/> 男
+    <input type="radio" name="gender" value="0"/> 女
+    <br />
+    爱好：
+    <input type="checkbox" name="hobby" value="1" checked/> 唱
+    <input type="checkbox" name="hobby" value="2"/> 跳
+    <input type="checkbox" name="hobby" value="3"/> rap
+    <br />
+    <input type="hidden" name="id" value="123"/>
+    <br />
+    <input type="reset" value="清空" />
+    <input type="submit" value="登录" />
+</form>
+```
+
+- textarea，文本域（多行文本框）
+    - value就是textarea双标签中间的文本
+
+```html
+<form action="" method="">
+    <!-- 表单项 -->
+    个人简介：<textarea name="briefIntroduction">page load text</textarea>
+</form>
+```
+
+- select，下拉框
+    - option，选项
+        - value，当不指定option的value属性值时，option就是textarea双标签中间的文本
+        - selected，是否默认选中，写法：`selected="selected"`或`selected`
+
+```html
+<form action="" method="">
+    <!-- 表单项 -->beij
+    籍贯：
+    <select name="birthplace">
+        <option value="1">北京</option>
+        <option value="2">上海</option>
+        <option value="1000" selected>请选择</option>
+    </select>
+</form>
+```
+
+##### 布局
+
+- div，块元素，自己独占一行的元素
+    - css样式的宽，高等，往往都生效
+- span，行内元素，不会自己独占一行的元素，img、a也是行内元素
+    - css样式的宽，高等，很多都不生效
 
 ### CSS
 
@@ -11906,6 +12132,14 @@ npm uninstall js包名
 # 运行node_modules/package.json中scripts定义的脚本
 npm run 脚本名称
 ```
+
+#### 一些约定
+
+- script用ts
+
+- 用let声明变量
+
+- 用const声明常量
 
 ### vue
 
@@ -13411,6 +13645,8 @@ hosts文件里可建立许多常用域名与其对应IP的映射。当用户在�
         - 6000
         - 6665-6669
         - 修改成可以使用：桌面快捷图标右键->属性->目标->最后后加上空格，然后加上`--explicitly-allowed-ports=6000,6665`
+
+## 常见问题及处理方法
 
 ## 面试篇
 
