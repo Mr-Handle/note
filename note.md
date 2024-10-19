@@ -11945,7 +11945,7 @@ h1-h6共有6级，文本字体大小依次递减
 
 ```html
 <form action="" method="">
-    <!-- 表单项 -->beij
+    <!-- 表单项 -->
     籍贯：
     <select name="birthplace">
         <option value="1">北京</option>
@@ -11955,12 +11955,15 @@ h1-h6共有6级，文本字体大小依次递减
 </form>
 ```
 
-##### 布局
+##### div
 
-- div，块元素，自己独占一行的元素
-    - css样式的宽，高等，往往都生效
+- 块元素，自己独占一行的元素
+- css样式的宽，高等，往往都生效
+
+##### span
+
 - span，行内元素，不会自己独占一行的元素，img、a也是行内元素
-    - css样式的宽，高等，很多都不生效
+- css样式的宽，高等，很多都不生效
 
 ### CSS
 
@@ -11986,19 +11989,27 @@ p {
 - #### id 选择器(#id)
 
 ```css
-#username {}
+#myId {}
+
+<tagName id="myId"></tagName>
 ```
 
 - #### class 选择器(.class)
 
 ```css
-#.mydiv {}
+.myClass1 {}
+.myClass2 {}
+
+<tagName class="myClass1 myClass2"></tagName>
 ```
 
 - #### element 选择器(html element)
 
 ```css
 div, p {}
+
+<div></div>
+<p></p>
 ```
 
 #### 插入样式表
@@ -12021,6 +12032,68 @@ div, p {}
 
 ```html
 <div style="..."></div>
+```
+
+#### 布局
+
+- 浮动，不会遮挡文字
+    - float
+        - left，向左浮动
+        - right，向右浮动
+
+```css
+.myClass {
+    float: right;
+}
+```
+
+- 定位
+    - position
+        - static，默认
+        - absolute，绝对，参考的是浏览器边缘
+        - relative，相对，参考的是元素原本的位置，元素原本的位置也不会被其它元素占用
+        - fix，相对，参考的是浏览器窗口，有点像excel的冻结行功能
+    - left
+    - right
+    - top
+    - bottom
+    - left和right只需要设置一个就行
+    - top和bottom只需要设置一个就行
+
+```css
+.myClass {
+    position: absolute;
+    top: 100px;
+    right:100px;
+}
+```
+
+- 盒子模型
+    - width和height，定义容量（在最里面）
+    - border不占用容量（在容量外面）
+    - padding，内边距（上下左右），border往内距离容量边线的边距
+    - padding-left
+    - padding-right
+    - padding-rop
+    - padding-bottom
+    - margin，外边距（上下左右），border往外的边距
+    - margin-left
+    - margin-right
+    - margin-rop
+    - margin-bottom
+
+```css
+.myClass {
+    width: 100px;
+    height: 100px;
+    border: 1px;
+    /* 分别是上下、左右内边距 */
+    padding: 10px 20px;
+    /* 分别是上、右、下、左内边距 */
+    padding: 10px 20px 30px 40px;
+    /* 居中写法：上下0像素，左右自动（平均分配） */
+    margin: 0px auto;
+}
 ```
 
 #### @keyframes
