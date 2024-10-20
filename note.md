@@ -12868,9 +12868,18 @@ export type IUsers = IUser[]
 
 ```vue
 <!-- 父组件 -->
-<Son :fatherData="" />
+<Son :fatherData="" :otherData=""/>
 
 <!-- 子组件 -->
+<!-- 指定接收 -->
+defineProps<>(['fatherData'])
+
+<!-- 指定接收 + 类型限制 -->
+<!-- defineProps<{fatherData:typeName}>() -->
+
+<!-- 指定接收 + 类型限制 + 必要性 + 默认值 -->
+<!-- withDefaults(defineProps<{fatherData?:类型名}>(),{fatherData: () => [{id: 1,name: 'handle'}]}) -->
+
 let fatherData = defineProps({
     fatherName,
     // 也可以自定义接受父组件的属性
@@ -12879,7 +12888,7 @@ let fatherData = defineProps({
         required: true
         default: 25
     }
-});
+})
 ```
 
 ##### defineEmits
@@ -12951,35 +12960,83 @@ function 方法名() {
 </script>
 ```
 
+#### 生命周期
+
+```ts
+// 创建前、创建完毕都整合到setup里面去了
+
+// 挂载前、挂载完毕
+onBeforeMount(() => {})
+onMounted(() => {})
+
+// 更新前、更新完毕
+onBeforeUpdate(() => {})
+onUpdated(() => {})
+
+// 卸载前、卸载完毕
+onBeforeUnmount(() => {})
+onUnmounted(() => {})
+```
+
+#### 自定义hooks
+
+- 定义一个useXxx.ts的文件
+
+```ts
+// 定义xxx的数据
+// 定义xxx的方法
+return {xxxDAta, xxxFunction}
+```
+
+- 在vue文件中引入useXxx.ts
+```ts
+const {xxxDAta, xxxFunction} = useXxx()
+```
 #### Vue-Router
 
 - 依赖
 
 ```sh
-npm install vue-router@4
+npm install vue-router
 ```
 
 - 配置
 
 ```ts
-// 1.定义路由表
-const routes = [
-    // 访问/时跳转到Home
-    {
-        path: '/',
-        components: Home
-    }
-]
-
-// 2.创建路由器
+// 创建路由器
 const router = createRouter({
-    history: createWebHashHistory(),
-    // 填写上面定义的路由表，routes: routes的简写
-    routes
+  // 路由器的工作模式
+  history: createWebHistory(import.meta.env.BASE_URL),
+  // 定义路由
+  routes: [
+    {
+      // 路径
+      path: '/home',
+      name: 'home',
+      // 组件名
+      component: HomeView,
+      children: [
+        {
+            // "/home/detail" 子级路由不用写撇斜杠
+            path: 'detail',
+            component: HomeDetailView
+        }
+      ]
+    },
+    {
+      path: '/about',
+      name: 'aboutRoute',
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import('../views/AboutView.vue')
+    }
+  ]
 })
 
-// 3.导出路由器
+// 导出路由器
 export default router
+
 ```
 
 - 使用
@@ -12995,11 +13052,14 @@ app.mount('#app')
 
 ```vue
 <!-- 定义跳转 -->
-<a to="/">Home</a>
-<!-- <router-link to="/">Home</router-link> -->
-<hr />
-<!-- 表示往下显示的内容是根据上面的链接地址展示的 -->
-<!-- <router-view></router-view> -->
+<RouterLink to="/home">Home</RouterLink>
+<!-- 子级路由路径要写全，不能单单写/detail -->
+<RouterLink to="/home/detail">Home</RouterLink>
+<!-- 可以通过路由的path或name属性进行映射 -->
+<RouterLink :to="{name: 'aboutRoute'}">About</RouterLink>
+
+<!-- 显示跳转的vue内容 -->
+<RouterView />
 ```
 
 #### Axios
