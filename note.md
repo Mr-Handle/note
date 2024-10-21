@@ -12989,9 +12989,11 @@ return {xxxDAta, xxxFunction}
 ```
 
 - 在vue文件中引入useXxx.ts
+
 ```ts
 const {xxxDAta, xxxFunction} = useXxx()
 ```
+
 #### Vue-Router
 
 - 依赖
@@ -13060,6 +13062,182 @@ app.mount('#app')
 
 <!-- 显示跳转的vue内容 -->
 <RouterView />
+```
+
+##### 路由传参
+
+###### query参数
+
+```vue
+<script type="ts">
+    // 通过route的query获取传参
+    let route = useRoute()
+    let {query} = toRefs(route)
+</script>
+<template>
+    <!-- 父组件 -->
+    <RouterLink :to="{
+    <!-- 传路由名称 -->
+    name: '',
+    <!-- 或者路由path -->
+    path: '',
+    <!-- 传参 -->
+    query: {
+        id: 变量名称1,
+        name: 变量名称2,
+    }
+    <!-- 子组件，获取query里面属性值 -->
+    <p>{{query.id}}</p>
+    <p>{{query.name}}</p>
+}">Home</RouterLink>
+</template>
+```
+
+###### params参数
+
+```ts
+// 路由写法
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        {
+            // params: id和name作为占位符
+            path: '/home/:id/:name',
+            name: 'homeRoute',
+            component: HomeView
+        }
+    ]
+})
+
+<!-- 跳转写法，如果加上问号，表示后面的参数不是必须 -->
+<RouterLink to="/home?/123/handle">Home</RouterLink>
+<!-- 从变量值中填充id和name作为params的写法1 -->
+<RouterLink :to="'/home/${id}/${name}'">Home</RouterLink>
+<!-- 从变量值中填充id和name作为params的写法2 -->
+<RouterLink :to="{
+    <!-- 必须传路由名称 -->
+    name: 'homeRoute',
+    <!-- 传参，和RouterLink定义的参数名要一致 -->
+    query: {
+        id: 变量名称1,
+        name: 变量名称2,
+    }
+}">Home</RouterLink>
+
+// 通过route的query获取传参
+let route = useRoute()
+let {params} = toRefs(route)
+
+<!-- 获取params里面属性值 -->
+<p>{{params.id}}</p>
+<p>{{params.name}}</p>
+```
+
+##### props配置
+
+```ts
+// 路由写法1
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        {
+            path: '/home/:id/:name',
+            name: 'homeRoute',
+            component: HomeView,
+            // 将路由收到的所有params参数作为props传给路由组件HomeView
+            // 相当于<HomeView id=?? name=?? />
+            props:true
+        }
+    ]
+})
+
+// 路由写法2
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        {
+            path: '/home/:id/:name',
+            name: 'homeRoute',
+            component: HomeView,
+            // 将路由收到的所有params参数作为props传给路由组件HomeView
+            // 相当于<HomeView id=?? name=?? />
+            props(route) {
+                // 可以返回query参数或者params参数，但是params用props:true更简洁
+                return route.query
+                // return route.params
+            }
+        }
+    ]
+})
+// 路由写法3
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        {
+            path: '/home/:id/:name',
+            name: 'homeRoute',
+            component: HomeView,
+            // 将路由收到的所有params参数作为props传给路由组件HomeView
+            // 相当于<HomeView id=?? name=?? />
+            props: {
+                // 自己决定将什么作为parops传给路由组件，但是这种是写死的
+                id: 123,
+                name: 'handle'
+            }
+        }
+    ]
+})
+
+// 获取传参写法
+defineProps(['id', 'name'])
+```
+
+##### replace属性
+
+```ts
+<!-- 跳转写法，默认push：根据浏览器历史记录可前进后退；replace则不行 -->
+<RouterLink replace to="/home">Home</RouterLink>
+```
+
+##### 编程式路由导航
+
+- 由于在ts中不能用RouterLink
+
+- 编程式路由导航也即脱离RouterLink实现路由跳转
+
+```ts
+// 获取路由器
+const router = userRouter()
+// RouterLink的to有几种写法push/replace的参数就有几种写法
+router.push("/home")
+// router.replace("/home")
+
+// 通过button的点击实现跳转
+// 限制方法的传参
+interface typeName {
+    id: number
+}
+function foo(entityName: typeName) {
+    router.push({
+        name: "homeRoute",
+        query: {
+            id: entityName.id
+        }
+    })
+}
+```
+
+##### 重定向
+
+```ts
+// 路由写法
+routes: [
+    {
+        // 访问/就重定向到/home
+        path: '/',
+        redirect: '/home'
+    }
+]
 ```
 
 #### Axios
