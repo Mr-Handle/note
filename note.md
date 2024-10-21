@@ -13240,12 +13240,184 @@ routes: [
 ]
 ```
 
+#### Pinia
+
+- 集中式状态（数据）管理，将共享的组件数据交给Pinia管理
+
+- 依赖
+
+```sh
+npm install pinia
+```
+
+- main.ts
+
+```ts
+import { createPinia } from 'pinia'
+
+const app = createApp(App)
+app.use(createPinia())
+app.mount('#app')
+```
+
 #### Axios
 
-- 安装依赖
+- 依赖
 
 ```sh
 npm install axios
+```
+
+##### axios的get请求
+
+- 不带参数
+
+```ts
+let result = await axios.get("url")
+    .then(response => {})
+    .catch(error => {})
+    .finally(() => {})
+```
+
+- 带参数
+
+```ts
+let result = await axios.get("url", {
+        params: {
+            id: 123,
+            name: 'handle'
+        }
+    })
+    .then(response => {})
+    .catch(error => {})
+    .finally(() => {})
+```
+
+- async/await写法
+
+```ts
+async function foo() {
+    try {
+        let result = await axios.get("url")
+        // 连续解构赋值+重命名
+        let {data:{content:id}} = await axios.get("url")
+        // 一层层获取
+        let id = result.data.id
+    } catch (error) {
+
+    }
+}
+```
+
+##### axios的post请求
+
+- 不带参数
+
+```ts
+let result = await axios.post("url")
+    .then(response => {})
+    .catch(error => {})
+    .finally(() => {})
+```
+
+- 带参数
+
+```ts
+let result = await axios.post("url", {
+        id: 123,
+        name: 'handle'
+    })
+    .then(response => {})
+    .catch(error => {})
+    .finally(() => {})
+```
+
+##### axios实例
+
+- 写一个ts文件，定义请求的基本信息，然后导出
+
+```ts
+const restTemplate = axios.create({
+    // 可以填写后端网关地址
+    baseURL: 'localhost:8080',
+    timeout: 2000,
+    headers: {'X-Custom-Header': 'handle'}
+})
+
+export default restTemplate
+```
+
+- 使用这个实例
+
+```ts
+restTemplate.get("/user").then(response => {})
+restTemplate.post("/user/add").then(response => {})
+```
+
+##### axios拦截器
+
+```ts
+// 添加请求拦截器
+axios.interceptors.request.use(function (config) {
+    // 在发送请求之前做些什么
+    return config;
+}, function (error) {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+});
+
+// 添加响应拦截器
+axios.interceptors.response.use(function (response) {
+    // 2xx 范围内的状态码都会触发该函数。
+    // 对响应数据做点什么
+    // return response;
+    return response.data;
+}, function (error) {
+    // 超出 2xx 范围的状态码都会触发该函数。
+    // 对响应错误做点什么
+    return Promise.reject(error);
+});
+```
+
+##### 代理设置
+
+- 修改vite.config.ts文件
+
+```ts
+export default defineConfig({
+    server: {
+        proxy: {
+            // 配了代理就不要写axios的baseURL，否则代理不生效
+            // 正则表达式写法：http://localhost:5173/api/.. -> http://localhost:8080/..
+            '^/api/.*': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+            },
+        },
+    }
+})
+```
+
+- 修改axios默认配置
+
+```ts
+// 可以填写后端网关地址，配了代理就不要写，会导致代理不生效
+// axios.defaults.baseURL = 'http://localhost:8080';
+```
+
+- 修改axios实例配置
+
+```ts
+import axios from "axios"
+
+const restTemplate = axios.create({
+    // 可以填写后端网关地址，配了代理就不要写，会导致代理不生效
+    // baseURL: 'http://localhost:8080',
+    timeout: 3000,
+})
+
+export default restTemplate
 ```
 
 ## Linux篇
