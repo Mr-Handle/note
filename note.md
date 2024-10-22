@@ -964,6 +964,110 @@ ThreadPoolExecutor executorService =
 };
 ```
 
+##### Spring的线程池
+
+- ThreadPoolTaskExecutor，自带优雅关闭线程池的骚操作
+
+- 自定义线程池配置
+
+```yaml
+thread:
+    pool:
+        task:
+            executor:
+                corePoolSize: 6
+                maxPoolSize: 12
+                queueCapacity: 18
+```
+
+- 读取配置并注入ThreadPoolTaskExecutor
+
+```java
+@Slf4j
+@Setter
+@ConfigurationProperties("thread.pool.task.executor")
+@Configuration
+public class ThreadPoolConfiguration {
+    private int corePoolSize;
+
+    private int maxPoolSize;
+
+    private int queueCapacity;
+
+    @Bean
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor() {
+            // 这个方法只对executor.submit和executor.execute方法的处理有效
+            // 如果是用CompletableFuture执行，还是需要定义它的exceptionally或whenComplete打印异常日志
+            // 不然如果不调用future.get()异常还是会丢失
+            @Override
+            public void afterExecute(Runnable runnable, Throwable throwable) {
+                super.afterExecute(runnable, throwable);
+                if (Objects.isNull(throwable) && runnable instanceof Future<?> future && future.isDone()) {
+                    try {
+                        // 如果发生了异常，调用future.get时会抛出异常
+                        future.get();
+                    } catch (CancellationException cancellationException) {
+                        throwable = cancellationException;
+                    } catch (ExecutionException executionException) {
+                        throwable = executionException.getCause();
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                if (throwable != null) {
+                    log.error(Thread.currentThread().getName() + " execute error", throwable);
+                }
+            }
+        };
+        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
+        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        return threadPoolTaskExecutor;
+    }
+}
+```
+
+- 使用demo
+
+```java
+@Slf4j
+@SpringBootTest
+public class ApplicationTest {
+    @Resource
+    private ThreadPoolTaskExecutor executor;
+
+    @Test
+    public void test() {
+        // 需要定义exceptionally或whenComplete打印异常日志，不然如果不调用future.get()异常还是会丢失
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            System.out.println(Thread.currentThread().getName() + " 线程执行了");
+            int a = 1/0;
+            return "hello ThreadPoolTaskExecutor";
+        }, executor);
+        // future.exceptionally((exception) -> {
+        //     log.error("error", exception);
+        //     // 经测试如果不抛异常而是设置一个返回值，future.get()也会抛出异常
+        //     // throw new RuntimeException(exception);
+        //     return "333";
+        // });
+        future.whenComplete((result, exception) -> {
+            if (Objects.nonNull(exception)) {
+                log.error("error", exception);
+            }
+        });
+        // future.get();
+
+        executor.submit(() -> {
+            int i = 1/0;
+        });
+        executor.execute(() -> {
+            int i = 1/0;
+        });
+    }
+}
+```
+
 #### ThreadLocal
 
 - ThreadLocal在本线程中定义、更新、删除，缺点：数据不共享
@@ -5535,13 +5639,15 @@ public static void main(String[] args) {
 
 #### `@ConfigurationProperties`
 
-- 此注解所在的类必须是一个组件，在类上注解
+- 作用：配置绑定，将类中所有属性和配置文件中的相关配置进行绑定，默认从application.properties(.yml)文件中获取值，不用写@Value
+  
+- 属性：prefix：取前缀为xxx的属性
 
-- 将类中所有属性和配置文件中的相关配置进行绑定，默认从application.properties(.yml)文件中获取值，不用写@Value
+- 此注解所在的类必须是一个组件，在类上注解
 
 - 可以给集合类型赋值
 
-- 文件内容有中文时需要用@PropertySource指定编码格式，并且文件名不能是application.properties
+- 如果是properties文件，并且内容有中文时需要用@PropertySource指定编码格式，并且文件名不能是application.properties
 
 假设配置文件application.yml存在配置
 
@@ -5550,29 +5656,46 @@ user01:
     name: 张三
 ```
 
-则可以通过如下方式将配置文件中persion.name的值封装到Person对象
+##### ConfigurationProperties用法1
+
+- @Component + @ConfigurationProperties
 
 ```java
 @Component
 @ConfigurationProperties(prefix = "user01")
+@Setter
 public class UserDO {
     private String name;
 }
 ```
 
-- 在方法上注解
+##### ConfigurationProperties用法2
 
-spring.datasource 中的配置和 DruidDataSource 中的属性绑定
+- @Configuration + @ConfigurationProperties
 
 ```java
 @Configuration
-public class MySqlDataSourceConfig {
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DruidDataSource dataSource() {
-        return new DruidDataSource();
-    }
+@ConfigurationProperties(prefix = "user01")
+@Setter
+public class UserDO {
+    private String name;
 }
+```
+
+##### ConfigurationProperties用法3
+
+- @Configuration + @EnableConfigurationProperties + @ConfigurationProperties
+
+```java
+@Setter
+@ConfigurationProperties(prefix = "user01")
+public class UserDO {
+    private String name;
+}
+
+@Configuration
+@EnableConfigurationProperties(UserDO.class)
+public class MainConfiguration {}
 ```
 
 #### `@ImportResource`
@@ -9103,77 +9226,6 @@ https://www.springframework.org/schema/beans/spring-beans.xsd">
 ```java
 @Configuration
 @ImportResource("classpath:spring.xml")
-public class MainConfiguration {
-
-}
-```
-
-- @ConfigurationProperties
-  
-    作用：配置绑定，导入application.properties（application.yml）配置文件的值到对象属性中
-  
-    属性：prefix：取前缀为xxx的属性
-  
-    用法：
-  
-  1. @Component + @ConfigurationProperties 一起使用
-
-  2. @Configuration + @EnableConfigurationProperties + @ConfigurationProperties 一起使用
-
-例子：封装application.properties的pet前缀的属性到Pet对象中
-
-用法1：
-
-1. application.properties 设置属性如下
-
-```properties
-pet.name = dog
-pet.age = 3
-```
-
-2.定义宠物类
-
-```java
-@Getter
-@Setter
-@ToString
-@Component
-@ConfigurationProperties(prefix = "pet")
-public class Pet {
-    private String name;
-
-    private int age;
-}
-```
-
-用法2：
-
-1.application.properties 设置属性如下
-
-```java
-pet.name = dog
-pet.age = 3
-```
-
-2.定义宠物类
-
-```java
-@Getter
-@Setter
-@ToString
-@ConfigurationProperties(prefix = "pet")
-public class Pet {
-    private String name;
-
-    private int age;
-}
-```
-
-3.定义配置类，开启配置绑定，加载Pet类
-
-```java
-@Configuration
-@EnableConfigurationProperties(Pet.class)
 public class MainConfiguration {
 
 }
