@@ -905,6 +905,149 @@ for (int i = 0; i < 20; i++) {
 }
 ```
 
+##### 优雅关闭线程池
+
+```java
+void shutdownAndAwaitTermination(ExecutorService pool) {
+    // Disable new tasks from being submitted
+    pool.shutdown();
+    try {
+        // Wait a while for existing tasks to terminate
+        if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+            // Cancel currently executing tasks
+            pool.shutdownNow();
+            // Wait a while for tasks to respond to being cancelled
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                log.warn("Pool did not terminate");
+            }
+        }
+    } catch (InterruptedException ex) {
+        // (Re-)Cancel if current thread also interrupted
+        pool.shutdownNow();
+        // Preserve interrupt status
+        Thread.currentThread().interrupt();
+    }
+}
+```
+
+##### 线程池处理异常
+
+- executorService.execute默认不会吞掉异常
+
+- executorService.submit默认会吞掉异常，如果发生了异常，调用future.get时会抛出异常
+
+- 因此可以在创建线程池的时候重写afterExecute方法，手动调用future.get来达到executorService无论调用哪个方法执行线程，都默认抛出异常的效果
+
+```java
+ThreadPoolExecutor executorService =
+    new ThreadPoolExecutor(12, 24, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(12), Executors.defaultThreadFactory(),
+    new ThreadPoolExecutor.AbortPolicy()) {
+    @Override
+    public void afterExecute(Runnable runnable, Throwable throwable) {
+        super.afterExecute(runnable, throwable);
+        if (Objects.isNull(throwable) && runnable instanceof Future<?> future && future.isDone()) {
+            try {
+                // 如果发生了异常，调用future.get时会抛出异常
+                future.get();
+            } catch (CancellationException cancellationException) {
+                throwable = cancellationException;
+            } catch (ExecutionException executionException) {
+                throwable = executionException.getCause();
+            } catch (InterruptedException interruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (throwable != null) {
+            log.error(Thread.currentThread().getName() + " execute error", throwable);
+        }
+    }
+};
+```
+
+#### ThreadLocal
+
+- ThreadLocal在本线程中定义、更新、删除，缺点：数据不共享
+
+```java
+ThreadLocal<Integer> threadLocal = ThreadLocal.withInitial(() -> 0);
+try {
+    // 业务逻辑
+    threadLocal.set(threadLocal.get() + 1);
+} finally {
+    threadLocal.remove();
+}
+```
+
+- InheritableThreadLocal，在父线程中定义，子线程可以获取到，缺点：使用线程池会有问题，父线程更新值后，子线程获取不到更新值
+
+```java
+InheritableThreadLocal<Integer> inheritableThreadLocal = new InheritableThreadLocal<>();
+// threadLocal.set(1);
+
+// 创建线程池
+ExecutorService threadPool = Executors.newSingleThreadExecutor();
+
+// 使用
+// 第一次设置inheritableThreadLocal
+inheritableThreadLocal.set(1);
+
+threadPool.execute(() -> {
+    System.out.println("第一次获取inheritableThreadLocal：" + inheritableThreadLocal.get());
+});
+
+TimeUnit.SECONDS.sleep(1);
+
+// 第二次设置inheritableThreadLocal
+inheritableThreadLocal.set(inheritableThreadLocal.get() + 1);
+
+threadPool.execute(() -> {
+    System.out.println("第二次获取inheritableThreadLocal：" + inheritableThreadLocal.get());
+});
+```
+
+- TransmittableThreadLocal，InheritableThreadLocal的增强版，使用线程池：父线程更新值后，子线程也可以获取到更新值
+
+- TransmittableThreadLocal需要添加依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>transmittable-thread-local</artifactId>
+    <version>2.14.5</version>
+</dependency>
+```
+
+- 使用
+
+```Java
+@Test
+public void testTransmittableThreadLocal() throws InterruptedException {
+    // 创建TransmittableThreadLocal
+    TransmittableThreadLocal<String> transmittableThreadLocal = new TransmittableThreadLocal<>();
+    // 创建线程池
+    ExecutorService threadPool = Executors.newSingleThreadExecutor();
+    // 线程池用TtlExecutors.getTtlExecutorService包装一下
+    threadPool = TtlExecutors.getTtlExecutorService(threadPool);
+
+    // 使用
+    // 第一次设置transmittableThreadLocal
+    transmittableThreadLocal.set(Thread.currentThread().getName() + " first");
+
+    threadPool.execute(() -> {
+        System.out.println("第一次获取transmittableThreadLocal：" + transmittableThreadLocal.get());
+    });
+
+    TimeUnit.SECONDS.sleep(1);
+
+    // 第二次设置transmittableThreadLocal
+    transmittableThreadLocal.set(Thread.currentThread().getName() + " second");
+
+    threadPool.execute(() -> {
+        System.out.println("第二次获取transmittableThreadLocal：" + transmittableThreadLocal.get());
+    });
+}
+```
+
 ### 动态代理
 
 从JVM角度来说，动态代理是在运行时动态生成类字节码，并加载到JVM中。
