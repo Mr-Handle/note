@@ -942,6 +942,9 @@ void shutdownAndAwaitTermination(ExecutorService pool) {
 ThreadPoolExecutor executorService =
     new ThreadPoolExecutor(12, 24, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(12), Executors.defaultThreadFactory(),
     new ThreadPoolExecutor.AbortPolicy()) {
+    // 这个方法只对executor.submit和executor.execute方法的异常处理有效
+    // 如果是用CompletableFuture执行，还是需要定义它的exceptionally或whenComplete打印异常日志
+    // 不然如果不调用future.get()异常还是会丢失
     @Override
     public void afterExecute(Runnable runnable, Throwable throwable) {
         super.afterExecute(runnable, throwable);
@@ -997,7 +1000,7 @@ public class ThreadPoolConfiguration {
     @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor() {
-            // 这个方法只对executor.submit和executor.execute方法的处理有效
+            // 这个方法只对executor.submit和executor.execute方法的异常处理有效
             // 如果是用CompletableFuture执行，还是需要定义它的exceptionally或whenComplete打印异常日志
             // 不然如果不调用future.get()异常还是会丢失
             @Override
