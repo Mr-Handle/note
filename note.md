@@ -8845,38 +8845,8 @@ functionsWorkerEnabled=true
 
 ```xml
 <dependency>
-    <groupId>org.apache.pulsar</groupId>
-    <artifactId>pulsar-client</artifactId>
-    <version>${pulsar.version}</version>
-    <exclusions>
-        <exclusion>
-            <groupId>org.apache.pulsar</groupId>
-            <artifactId>pulsar-client-api</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>org.apache.pulsar</groupId>
-            <artifactId>pulsar-client-admin-api</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-<dependency>
-    <groupId>org.apache.pulsar</groupId>
-    <artifactId>pulsar-client-api</artifactId>
-    <version>${pulsar.version}</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.pulsar</groupId>
-    <artifactId>pulsar-client-admin-api</artifactId>
-    <version>${pulsar.version}</version>
-</dependency>
-<dependency>
-    <groupId>io.opentelemetry</groupId>
-    <artifactId>opentelemetry-api</artifactId>
-    <version>1.43.0</version>
-</dependency>
-<dependency>
-    <groupId>ch.qos.logback</groupId>
-    <artifactId>logback-classic</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-pulsar</artifactId>
 </dependency>
 ```
 
@@ -8918,6 +8888,35 @@ Consumer consumer = client.newConsumer()
 TimeUnit.SECONDS.sleep(2);
 consumer.close();
 client.close();
+```
+
+- spring boot方式发送和接收消息
+
+```java
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+    @Bean
+    public ApplicationRunner runner(PulsarTemplate<String> pulsarTemplate) {
+        return (args) -> pulsarTemplate.send("hello-pulsar-topic", "Hello Pulsar World!");
+    }
+
+    @PulsarListener(subscriptionName = "hello-pulsar-sub", topics = "hello-pulsar-topic")
+    public void listen(String message) {
+        System.out.println("Message Received: " + message);
+    }
+}
+```
+
+- jdk17以上版本，需要添加jvm参数
+
+```sh
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.base/sun.net.util=ALL-UNNAMED
+--add-opens java.base/sun.net=ALL-UNNAMED
 ```
 
 ### RocketMQ
@@ -10279,7 +10278,7 @@ use 数据库名称;
 # 显示当前选择的数据库内可用表的列表
 show tables;
 
-# 心事创建表的sql语句
+# 显示创建表的sql语句
 show create table payment;
 
 # 显示表的字段信息
@@ -10680,6 +10679,73 @@ alter table `table_name` add index index_name ( `column1`, `column2`, `column3` 
 
 # 添加全文索引
 alter table `table_name` add fulltext (`column`)
+```
+
+#### 索引
+
+- 更新十分频繁、区分度不高（如性别）的字段不适合建索引
+- 建立组合索引，区分度高（重复度低）的放左边，能更加有效地过滤数据
+
+- 查询字段的区分度
+
+```sql
+# 越接近1，区分度越高
+select count(distinct columnName) / count(*) as columnName_rate from tableName
+```
+
+- 建立组合索引
+
+```sql
+create index idx_columnName1_columnName2 on tableName(columnName1, columnName2)
+```
+
+- 回表：通过辅助索引拿到主键后，再回到主键索引查询的过程，需要尽量减少回表次数，提高查询效率
+- 覆盖索引（索引包含了查询所需的所有字段的值）避免回表
+- 给有大量数据的表新建索引：新建一张表+建索引+导入旧表数据+废弃旧表
+
+#### 锁
+
+- InnoDB的行锁是通过锁住索引来实现的
+
+- 索引命中，加的是行锁
+
+```sql
+# 假设id是主键
+update user set user_name = #{userName} where id=#{id}
+```
+
+- 索引没命中，加的是表锁
+
+```sql
+# 假设user_age没有加索引
+update user set user_name = #{userName} where user_age=#{userAge}
+```
+
+#### 删除重复数据
+
+```sql
+# 查看重复数量1
+select columnName,count(1) from tableName group by columnName having count(1) > 1
+# 查看重复数量1
+select columnName,count(columnName) from tableName group by columnName having count(columnName) > 1
+
+# 查看重复数据
+select * from tableName where columnName in (
+    select 重复字段 from tableName group by 重复字段 having count(1) > 1
+)
+# 重复数据全部删除
+delete from tableName where columnName in (
+    select t.columnName from (
+        select columnName from tableName group by columnName having count(1) > 1
+    ) t
+)
+# 重复数据保留一条，其它删了
+delete from tableName where id not in (
+    select t.id from (
+        select min(id) as id from tableName group by columnName
+    ) t
+)
+
 ```
 
 ### SQL Server
