@@ -967,9 +967,23 @@ ThreadPoolExecutor executorService =
 };
 ```
 
+##### 虚拟线程池
+
+```java
+@Test
+public void test() {
+    ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    executor.execute(() -> System.out.println("hello virtual thread"));
+    executor.execute(() -> System.out.println(Thread.currentThread().isVirtual()));
+    executor.close();
+}
+```
+
 ##### Spring的线程池
 
-- ThreadPoolTaskExecutor，自带优雅关闭线程池的骚操作
+- 自带优雅关闭线程池的骚操作
+
+###### ThreadPoolTaskExecutor
 
 - 自定义线程池配置
 
@@ -1068,6 +1082,28 @@ public class ApplicationTest {
             int i = 1/0;
         });
     }
+}
+```
+
+###### SimpleAsyncTaskExecutor  
+
+- 创建虚拟线程池
+
+```java
+@Bean
+public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
+    SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+    simpleAsyncTaskExecutor.setVirtualThreads(true);
+    return simpleAsyncTaskExecutor;
+}
+
+@Resource
+private SimpleAsyncTaskExecutor simpleAsyncTaskExecutor;
+
+@Test
+public void test() {
+    simpleAsyncTaskExecutor.execute(() -> System.out.println("hello virtual thread"));
+    simpleAsyncTaskExecutor.execute(() -> System.out.println(Thread.currentThread().isVirtual()));
 }
 ```
 
@@ -2935,6 +2971,57 @@ java -classpath . com.handle.HelloWorld
 # com.handle.HelloWorld表示入口类
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
+
+## jvm
+
+- 类加载器子系统
+    - 加载阶段
+        - 引导类加载器
+        - 扩展类加载器
+        - 系统类加载器
+    - 链接阶段
+        - 验证
+        - 准备
+        - 解析
+    - 初始化阶段
+- 运行时数据区
+    - 堆（1:2），线程共享，线程之间通过TLAB隔离
+        - 新生代（8:1:1），MinorGC
+            - Eden
+            - S0
+            - S1
+        - 老年代Tenured/Old generation，MajorGC
+    - 方法区
+        - 元空间(永久代)
+            - 类型信息
+            - 域信息
+            - 方法信息
+            - 运行时常量池
+                - string constants
+                - numberic constants
+                - class references
+                - field references
+                - method references
+                - name and type
+                - invoke dynamic
+    - 虚拟机栈，线程私有
+        - 栈帧
+            - 局部变量表
+            - 操作数栈
+            - 动态链接
+            - 方法返回地址
+            - 一些附加信息
+    - 本地方法栈，线程私有
+    - 程序计数器，线程私有
+- 执行引擎
+    - 解释器
+    - jit编译器
+        - 中间代码生成器
+        - 代码优化器
+        - 目标代码生成器
+    - 垃圾回收器
+- 本地方法接口
+- 本地方法库
 
 ## 单元测试
 
@@ -8731,46 +8818,6 @@ cd your-pulsar-home/bin
 # 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
 ```
 
-#### docker
-
-- 注意：官方docker镜像在虚拟机重启后会启动失败，试了3.3.2版本和3.0.7版本都会
-
-- 自己构建pulsar镜像
-
-```Dockerfile
-FROM bellsoft/liberica-jre-ubuntu:21.0.4-9
-# 作者信息
-LABEL author=handle
-WORKDIR /usr/local
-ADD apache-pulsar-3.3.2-bin.tar.gz /usr/local/
-# 容器启动时运行
-ENTRYPOINT ["bash", "-c", "apache-pulsar-3.3.2/bin/pulsar standalone"]
-# 暴露端口
-EXPOSE 8080 6650
-```
-
-- compose.yaml
-
-```yaml
-pulsar:
-    container_name: pulsar01
-    image: handle/pulsar:3.3.2
-    ports:
-        # Bookie URL
-        - "6650:6650"
-        # Service URL
-        - "3080:8080"
-    volumes:
-        # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
-        # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data
-        # pulsar否则会提示权限不够(启动官方镜像时的笔记，由于已经执行过了权限命令了，不知道自己的镜像会不会，暂时保留着)
-        - /lsh/data/pulsar/data:/pulsar/data
-        - /lsh/data/pulsar/conf:/pulsar/conf
-    networks: 
-        - my-docker-net
-    restart: always
-```
-
 #### 安装pulsar-manager
 
 ##### 数据库配置（可选，数据量大时使用）
@@ -8917,6 +8964,40 @@ public class Application {
 --add-opens java.base/java.lang=ALL-UNNAMED
 --add-opens java.base/sun.net.util=ALL-UNNAMED
 --add-opens java.base/sun.net=ALL-UNNAMED
+```
+
+#### 事务支持
+
+- 修改broker.conf/standalone.conf
+
+```conf
+# 开启事务支持
+transactionCoordinatorEnabled=true
+systemTopicEnabled=true
+```
+
+- 初始化事务协调器元数据，然后重启bookie和broker
+
+```sh
+# 集群
+bin/pulsar initialize-transaction-coordinator-metadata -cs addr1:port1,addr2:port2 -c pulsar-cluster
+bin/pulsar-daemon stop broker
+bin/pulsar-daemon start broker
+bin/pulsar-daemon stop bookie
+bin/pulsar-daemon start bookie
+
+# 单机
+bin/pulsar initialize-transaction-coordinator-metadata -cs 127.0.0.1:2181 -c standalone
+```
+
+- 构建支持事务的客户端
+
+```java
+PulsarClient client = PulsarClient.builder()
+                                    .serviceUrl("pulsar://localhost:6650")
+                                    .enableTransaction(true)
+                                    .build();
+
 ```
 
 ### RocketMQ
@@ -10683,8 +10764,13 @@ alter table `table_name` add fulltext (`column`)
 
 #### 索引
 
+- 查询时关联列类型不一致会自动进行数据类型隐式转换，会造成列上的索引失效
+- 不同的字符集进行比较前需要进行转换会造成索引失效
 - 更新十分频繁、区分度不高（如性别）的字段不适合建索引
 - 建立组合索引，区分度高（重复度低）的放左边，能更加有效地过滤数据
+- 字段长度小的列放在联合索引的最左侧（因为字段长度越小，一页能存储的数据量越大，IO 性能也就越好）
+- 使用最频繁的列放到联合索引的左侧（这样可以比较少的建立一些索引）
+- 在定义联合索引时，如果 a 列要用到范围查找的话，就要把 a 列放到联合索引的右侧，使用 left join 或 not exists 来优化 not in 操作，因为 not in 也通常会使用索引失效
 
 - 查询字段的区分度
 
@@ -10700,7 +10786,7 @@ create index idx_columnName1_columnName2 on tableName(columnName1, columnName2)
 ```
 
 - 回表：通过辅助索引拿到主键后，再回到主键索引查询的过程，需要尽量减少回表次数，提高查询效率
-- 覆盖索引（索引包含了查询所需的所有字段的值）避免回表
+- 覆盖索引（包含了所有查询字段：where,select,order by,group by 包含的字段的索引）避免回表
 - 给有大量数据的表新建索引：新建一张表+建索引+导入旧表数据+废弃旧表
 
 #### 锁
@@ -10747,6 +10833,11 @@ delete from tableName where id not in (
 )
 
 ```
+
+#### sql优化
+
+- where从句中禁止对列进行函数转换和计算，会导致索引失效
+- 没有重复值时用union all
 
 ### SQL Server
 
