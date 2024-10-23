@@ -8731,46 +8731,6 @@ cd your-pulsar-home/bin
 # 4.查看日志生产者是否成功产生消息，消费者是否成功接收消息
 ```
 
-#### docker
-
-- 注意：官方docker镜像在虚拟机重启后会启动失败，试了3.3.2版本和3.0.7版本都会
-
-- 自己构建pulsar镜像
-
-```Dockerfile
-FROM bellsoft/liberica-jre-ubuntu:21.0.4-9
-# 作者信息
-LABEL author=handle
-WORKDIR /usr/local
-ADD apache-pulsar-3.3.2-bin.tar.gz /usr/local/
-# 容器启动时运行
-ENTRYPOINT ["bash", "-c", "apache-pulsar-3.3.2/bin/pulsar standalone"]
-# 暴露端口
-EXPOSE 8080 6650
-```
-
-- compose.yaml
-
-```yaml
-pulsar:
-    container_name: pulsar01
-    image: handle/pulsar:3.3.2
-    ports:
-        # Bookie URL
-        - "6650:6650"
-        # Service URL
-        - "3080:8080"
-    volumes:
-        # 要先把容器目录/pulsar/conf所有文件先复制到/lsh/data/pulsar/conf，否则会提示配置文件找不到
-        # 要先设置权限 chmod -R 777 /lsh/data/pulsar/data
-        # pulsar否则会提示权限不够(启动官方镜像时的笔记，由于已经执行过了权限命令了，不知道自己的镜像会不会，暂时保留着)
-        - /lsh/data/pulsar/data:/pulsar/data
-        - /lsh/data/pulsar/conf:/pulsar/conf
-    networks: 
-        - my-docker-net
-    restart: always
-```
-
 #### 安装pulsar-manager
 
 ##### 数据库配置（可选，数据量大时使用）
@@ -8917,6 +8877,37 @@ public class Application {
 --add-opens java.base/java.lang=ALL-UNNAMED
 --add-opens java.base/sun.net.util=ALL-UNNAMED
 --add-opens java.base/sun.net=ALL-UNNAMED
+```
+
+#### 事务支持
+
+- 修改broker.conf
+
+```conf
+# 开启事务支持
+transactionCoordinatorEnabled=true
+#开启批量确认
+acknowledgmentAtBatchIndexLevelEnable=true
+```
+
+- 初始化事务协调器元数据，然后重启bookie和broker
+
+```sh
+bin/pulsar initialize-transaction-coordinator-metadata -cs addr1:port1,addr2:port2 -c pulsar-cluster
+bin/pulsar-daemon stop broker
+bin/pulsar-daemon start broker
+bin/pulsar-daemon stop bookie
+bin/pulsar-daemon start bookie
+```
+
+- 构建支持事务的客户端
+
+```java
+PulsarClient client = PulsarClient.builder()
+                                    .serviceUrl("pulsar://localhost:6650")
+                                    .enableTransaction(true)
+                                    .build();
+
 ```
 
 ### RocketMQ
