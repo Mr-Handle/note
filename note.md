@@ -8968,26 +8968,23 @@ public class Application {
 
 #### 事务支持
 
-- 修改broker.conf/standalone.conf
+- 修改broker.conf
 
 ```conf
 # 开启事务支持
 transactionCoordinatorEnabled=true
-systemTopicEnabled=true
+#开启批量确认
+acknowledgmentAtBatchIndexLevelEnable=true
 ```
 
 - 初始化事务协调器元数据，然后重启bookie和broker
 
 ```sh
-# 集群
 bin/pulsar initialize-transaction-coordinator-metadata -cs addr1:port1,addr2:port2 -c pulsar-cluster
 bin/pulsar-daemon stop broker
 bin/pulsar-daemon start broker
 bin/pulsar-daemon stop bookie
 bin/pulsar-daemon start bookie
-
-# 单机
-bin/pulsar initialize-transaction-coordinator-metadata -cs 127.0.0.1:2181 -c standalone
 ```
 
 - 构建支持事务的客户端
