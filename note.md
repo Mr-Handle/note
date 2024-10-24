@@ -9054,33 +9054,29 @@ Normal/FIFO/Delay/Transaction
 #### 安装rabbitmq
 
 ```sh
-# management版本的有web管理页面
-docker pull rabbitmq:3.9.16-management
-```
-
-#### 启动rabbitmq
-
-```sh
-# 5672是rabbitmq客户端与服务器交互的端口，15672是rabbitmq管理页面的端口
-docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq 66a12a0cafcc
+rabbitmq:
+    container_name: rabbitmq01
+    image: rabbitmq:4.0.2-management
+    ports:
+        # 前端端口
+        - "15672:15672"
+        # 后端端口
+        - "5672:5672"
+    environment:
+        - RABBITMQ_DEFAULT_USER=rabbitmq
+        - RABBITMQ_DEFAULT_PASS=rabbitmq123
+    networks: 
+        - my-docker-net
+    restart: always
 ```
 
 #### 登录rabbitmq管理页面
 
-```properties
-管理页面：主机地址:15672
-账号：guest
-密码：guest
-```
+- 管理页面：主机地址:15672
 
-#### rabbitmq四种模式
+#### spring boot发送/接收测试
 
-- 1.direct，点对点，只发送到路由键完全匹配的队列
-- 2.fanout，广播，不管路由键是什么都全部发送到绑定的队列
-- 3.topic，根据路由键匹配规则匹配，*匹配一个，#匹配0个或多个，只发送到匹配的队列
-- 4.headers，很少用
-
-#### maven dependency
+- 依赖
 
 ```xml
 <dependency>
@@ -9089,76 +9085,72 @@ docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq 66a12a0cafcc
 </dependency>
 ```
 
-#### 应用配置
+- 配置
 
-```properties
-spring.rabbitmq.host=192.168.31.149
-spring.rabbitmq.port=5672
-spring.rabbitmq.username=guest
-spring.rabbitmq.password=guest
-spring.rabbitmq.virtual-host=/
+```yaml
+spring:
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: rabbitmq
+        password: rabbitmq123
 ```
 
-#### 监听消息
-
-- 启动类
+- 监听并消费消息
 
 ```java
-package com.handle.amqp;
-
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
-// 开启基于注解的rabbitmq模式
-@EnableRabbit
-public class AmqpApplication {
- public static void main(String[] args) {
-  SpringApplication.run(AmqpApplication.class, args);
- }
-
-}
-
-```
-
-- 监听服务类
-
-```java
-package com.handle.amqp.service;
-
-import java.util.Map;
-
+import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Service
 @Slf4j
-public class OrderService {
-    /**
-     * 直接接收消息内容，@RabbitListener指定监听队列
-     * 
-     * @param map
-     */
-    @RabbitListener(queues = "order")
-    public void receiveObject(Map<String, String> map) {
-        log.info("receive from rabbitmq: {}", map);
-    }
+@Component
+public class RabbitmqMessageListener {
+    private static final String EXCHANGE_DIRECT = "exchange.direct.order";
 
-    /**
-     * 接收消息对象：包含消息体、消息头等信息，@RabbitListener指定监听队列
-     * 
-     * @param message
-     */
-    @RabbitListener(queues = "order.hat")
-    public void receiveMessage(Message message) {
-        log.info("receive from rabbitmq: {}", message.toString());
+    private static final String ROUTING_KEY = "order";
+
+    private static final String QUEUE_NAME = "queue.order";
+
+    // 监听+创建交换机、队列和绑定路由键
+    @RabbitListener(bindings = @QueueBinding(
+            // 持久化设置为true
+            value = @Queue(value = QUEUE_NAME, durable = "true"),
+            exchange = @Exchange(value = EXCHANGE_DIRECT),
+            key = {ROUTING_KEY}
+    ))
+    // 只监听（如果rabbitmq服务器已经有对应交换机和队列了）
+    // @RabbitListener(queues = {QUEUE_NAME})
+    public void processMessage(String content, Message message, Channel channel) {
+        log.info("receive message: {}", content);
     }
 }
 ```
+
+- 发送消息
+
+```java
+@SpringBootTest
+public class ApplicationTest {
+    private static final String EXCHANGE_DIRECT = "exchange.direct.order";
+
+    private static final String ROUTING_KEY = "order";
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Test
+    public void test() {
+        rabbitTemplate.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "hello rabbitmq");
+    }
+}
+```
+
+#### rabbitmq四种模式
+
+- 1.direct，点对点，只发送到路由键完全匹配的队列
+- 2.fanout，广播，不管路由键是什么都全部发送到绑定的队列
+- 3.topic，根据路由键匹配规则匹配，*匹配一个，#匹配0个或多个，只发送到匹配的队列
+- 4.headers，很少用
 
 #### 定义默认消息转换器
 
@@ -9187,39 +9179,11 @@ public class AmqpConfiguration {
 
 ```
 
-#### 发送消息
+#### 创建、绑定或删除交换器、队列
 
 ```java
-package com.handle.amqp;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-/**
- * AmqpApplicationTests
- *
- * @author handle
- * @date 2022-05-06 22:41:14
- * @since jdk-1.8
- */
 @SpringBootTest
 public class AmqpApplicationTests {
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    /*
-    * 创建、绑定或删除交换器、队列
-    */
     @Autowired
     private AmqpAdmin amqpAdmin;
 
@@ -9238,26 +9202,6 @@ public class AmqpApplicationTests {
         amqpAdmin.deleteQueue("amqpAdmin.queue");
         // 删除交换器
         amqpAdmin.deleteExchange("amqpAdmin.direct");
-    }
-
-    @Test
-    void testSendDirectMessage() {
-        Map<String, String> map = new HashMap<>();
-        map.put("message", "java to rabbitmq, hello " + LocalDateTime.now().toString());
-        rabbitTemplate.convertAndSend("handle.direct", "order.hat", map);
-    }
-
-    @Test
-    void testReceiveDirectMessage() {
-        Object message = rabbitTemplate.receiveAndConvert("order");
-        System.out.println(message);
-    }
-
-    @Test
-    void testSendFanoutMessage() {
-        Map<String, String> map = new HashMap<>();
-        map.put("message", "java to rabbitmq, fanout hello");
-        rabbitTemplate.convertAndSend("handle.fanout", "", map);
     }
 }
 ```
