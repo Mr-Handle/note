@@ -13993,8 +13993,10 @@ export default defineConfig({
 - 修改axios默认配置
 
 ```ts
-// 可以填写后端网关地址，配了代理就不要写，会导致代理不生效
+// 可以填写后端网关地址，配了代理就不要写完整的地址，会导致代理不生效
 // axios.defaults.baseURL = 'http://localhost:8080';
+// 可以写相对地址，比如可以加前缀，然后代理配置再把前缀去掉，方便代理配置
+axios.defaults.baseURL = '/api',
 ```
 
 - 修改axios实例配置
@@ -14003,12 +14005,44 @@ export default defineConfig({
 import axios from "axios"
 
 const restTemplate = axios.create({
-    // 可以填写后端网关地址，配了代理就不要写，会导致代理不生效
+    // 可以填写后端网关地址，配了代理就不要写完整的地址，会导致代理不生效
+    // 可以写相对地址，比如可以加前缀，然后代理配置再把前缀去掉，方便代理配置
     // baseURL: 'http://localhost:8080',
+    baseURL: '/api',
     timeout: 3000,
 })
 
 export default restTemplate
+```
+
+#### 项目部署
+
+- 打包项目
+
+```sh
+npm run build
+```
+
+- 将打包生成的dist文件夹重命名，然后放到服务器的某个目录下（如：/var/myweb/）
+
+- 修改nginx配置文件
+
+```conf
+# 配置nginx根目录为/var/myweb
+location / {
+    root /var/myweb;
+    index index.html index.htm;
+    # 当没有匹配资源的时候都匹配到index.html，解决刷新404
+    try_files $uri $uri/ /index.html;
+}
+
+# 设置代理，转发请求
+# location的/api/末尾的/一定要写，proxy_pass地址末尾的/一定要写，才能去掉前缀/api
+# http://前端服务器ip:port/api/.. -> http://后端网关ip:port/..
+location /api/ {
+    # 设置代理目标(后端网关地址)，
+    proxy_pass http://后端网关ip:port/;
+}
 ```
 
 ## Linux篇
