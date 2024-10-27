@@ -4680,6 +4680,9 @@ public class LogAspect {
 
 ### TX
 
+- 不可重复读：一个事务读到另一个事务已经提交的update的数据，导致一个事务中多次查询结果不一致
+- 幻读：一个事务读到另一个事务已经提交的insert的数据，导致一个事务中多次查询结果不一致
+
 #### 注解配置事务管理器
 
 ```java
@@ -4729,7 +4732,7 @@ public class AccountService {
     - `Propagation.REQUIRES_NEW`，无论父方法是否有事务，都新建事务自己独立
     - 在同一个类中，对注解@Transactional的方法调用，事务传播行为不会生效。因为Spring框架是使用代理模式实现事务机制的，但是同一个类中的方法调用不经过代理，而是通过对象方法的调用，不会被代理捕获，也就不产生事务传播行为的效果。
 
-#### 配置事务管理器
+#### xml配置事务管理器
 
 ```xml
 <bean id="txManager" class="...TransactionManager">
@@ -5585,6 +5588,22 @@ public class UserDO {
 ```
 
 ##### ConfigurationProperties用法3
+
+- @Configuration + @ConfigurationProperties
+
+```java
+@Configuration
+public class ApplicationConfiguration {
+    // 会自动将配置文件中对应的属性设置到UserDO，然后加入到IOC容器
+    @ConfigurationProperties(prefix = "user01")
+    @Bean
+    public UserDO userDO() {
+        return new UserDO();
+    }
+}
+```
+
+##### ConfigurationProperties用法4
 
 - @Configuration + @EnableConfigurationProperties + @ConfigurationProperties
 
@@ -11997,6 +12016,36 @@ java -jar lombok.jar
 |Ctrl + Alt + M|提取代码为作为方法|
 |Ctrl + Alt + C|修改变量作用域|
 
+## Yaml
+
+### 语法
+
+- `key:空格value`，标识一对键值对
+- 键值对的属性和值都是大小写敏感的
+- 以缩进的空格数来控制层级关系
+- 只要是左对齐的一列数据，都是同一层级
+- 字符串默认不用添加双/单引号
+    - 英文双引号不会转义字符串里面的特殊字符，
+    - 英文单引号会转义字符串里面的特殊字符，会把特殊字符转义成普通的字符
+
+```yaml
+# first 换行 second
+line: "first \n second"
+
+# first \n second，把换行符变成普通的\n了
+line: 'first \n second'
+```
+
+## Markdown
+
+```md
+# 图片
+![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
+
+# 链接
+[超链接显示名](超链接地址 "超链接title，当鼠标悬停在链接上时会出现的文字")
+```
+
 ## 前端篇
 
 ### html
@@ -14853,16 +14902,6 @@ hosts文件里可建立许多常用域名与其对应IP的映射。当用户在�
 - 当我们在文件中写入“127.0.0.1+空格+你想屏蔽的网址”，或者是“0.0.0.0+空格+你想屏蔽的网址”就可以实现该网站的屏蔽
   
 - cmd 输入 `ipconfig /flushdns` 让host文件生效
-
-## Markdown
-
-```md
-# 图片
-![可选的图片描述，当图片不能被显示时而出现的替代文字](图片相对路径 "鼠标悬置于图片上会出现的文字，可以不写")
-
-# 链接
-[超链接显示名](超链接地址 "超链接title，当鼠标悬停在链接上时会出现的文字")
-```
 
 ## 算法篇
 
