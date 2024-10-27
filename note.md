@@ -2,15 +2,36 @@
 
 ## Java基础
 
+- 文件夹名称一律用小驼峰，并且单个单词的文件夹名称一律用单数形式
+- 变量命名：变量名+变量类型，这样可以快速知道变量属于什么类型，并且不用输入那么多字母就弹出来代码补全了，省的都是时间啊
+- 用来存储对象的变量称为引用变量。
+- 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
+- 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
+- Java编译器自动引入java.lang。
+- 内存回收：调用`System.gc()`，一般不会手动调用此方法；
+- `方法的签名`（signature）: 要完整地描述一个方法，需要指出`方法名`以及`参数类型`
+    - 返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
+- VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
+- DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
+- DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
+- PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系
+    - 如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
+- 不用public、protected、private修饰的字段和方法就是包作用域。位于同一个包的类，可以访问包作用域的字段和方法。
+
 ### JDK
 
-- `JRE` 是 Java 运行时环境。它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。但是，它不能用于创建新程序。
-- `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。它拥有 JRE 所拥有的一切，还有编译器（javac）和工具（如 javadoc 和 jdb）。它能够创建和编译程序。
+- `JRE` 是 Java 运行时环境
+    - 它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。
+    - 但是，它不能用于创建新程序。
+- `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。
+    - 它拥有 JRE 所拥有的一切
+    - 还有编译器（javac）和工具（如 javadoc 和 jdb）。
+    - 它能够创建和编译程序。
 
 #### 1.windows安装jdk
 
-- 1.下载jdk压缩包xxx.zip，解压到指定目录（解压后bin文件夹所在目录为jdk根目录，假设为`D:\java\jdk\xxx`）
-- 2.新增环境变量`JAVA_HOME：D:\java\jdk\xxx`
+- 1.下载jdk压缩包xxx.zip，解压到指定目录（解压后bin文件夹所在目录为jdk根目录，假设为`D:\jdk\xxx`）
+- 2.新增环境变量`JAVA_HOME：D:\jdk\xxx`
 - 3.`Path`中添加：`%JAVA_HOME%\bin`
 
 #### 2.linux安装jdk
@@ -24,7 +45,7 @@ mkdir -p 指定目录
 tar -zxvf xxx.tar.gz -C 指定目录
 ```
 
-- 2.设置环境变量（解压后bin文件夹所在目录为jdk根目录，假设为`/usr/local/java/jdk/xxx`）
+- 2.设置环境变量（解压后bin文件夹所在目录为jdk根目录，假设为`/usr/local/jdk/xxx`）
 
 ```sh
 # 1.先备份profile文件
@@ -34,7 +55,7 @@ cp /etc/profile /etc/profile.bk
 vi /etc/profile
 
 # 3.在profile文件末尾添加
-export JAVA_HOME=/usr/local/java/jdk/xxx
+export JAVA_HOME=/usr/local/jdk/xxx
 export PATH=$PATH:${JAVA_HOME}/bin
 ```
 
@@ -48,6 +69,25 @@ source /etc/profile
 
 ```sh
 java -version
+```
+
+### Java源文件
+
+- 若将多个类的声明放在一个文档中，只能有一个类声明为公有类。
+
+```java
+public class A {}
+
+class B {}
+```
+
+- Java源文件名必须与文档中公有类名一致（区分大小写）
+
+```java
+// 文件名必须为 A.java
+public class A {}
+
+class B {}
 ```
 
 ### 二进制知识
@@ -180,60 +220,20 @@ int r = m >>> 1;   // 01111111 11111111 11111111 11111111 = 2147483647
 
 位运算是按位进行与（&）、或（|）、非（!）和异或（~，异或运算的规则是，如果两个数不同，结果为1，否则为0）的运算
 
-### Java知识
-
-#### 运算优先级
+### 运算优先级
 
 在Java的计算表达式中，运算优先级从高到低依次是：
 
-`()`
-`! ~ ++ --`
-`* / %`
-`+ -`
-`<< >> >>>`
-`&`
-`|`
-`+= -= *= /=`
+- `()`
+- `! ~ ++ --`
+- `* / %`
+- `+ -`
+- `<< >> >>>`
+- `&`
+- `|`
+- `+= -= *= /=`
 
-#### 继承
-
-- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
-
-- 子类自动获得父类的所有字段，严禁定义与父类重名的字段
-
-- 子类不能继承父类的静态属性，但可以对父类静态属性操作
-
-- 子类能不能访问父类字段要看父类字段的访问修饰符
-
-- 任何class的构造方法，第一行语句必须是调用父类的构造方法。如果没有明确地调用父类的构造方法，编译器会帮我们自动加一句super();
-
-- 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
-
-- 如果一个父类的方法本身不需要实现任何功能，仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法；因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
-
-- 如果一个抽象类没有字段，所有方法全部都是抽象方法，就可以把该抽象类改写为接口
-
-#### 继承关系判断
-
-```java
-// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
-Assertions.assertTrue("handle" instanceof Object);
-
-  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
-Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
-```
-
-- 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型。
-
-```java
- Object object = "hello";
-if (object instanceof String s) {
-    // 可以直接使用变量s:
-    System.out.println(s.toUpperCase());
-}
-```
-
-#### `==`比较运算符
+### `==`比较运算符
 
 - 基本数据类型，`==`比较的是`值`
 
@@ -265,7 +265,46 @@ User b = new User("handle");
 Assertions.assertFalse(a == b);
 ```
 
-#### 定义常量
+### 继承
+
+- 继承写法：子类名 extends 父类名；子类名 implements 父接口名；子接口名 extends 父接口名。
+
+- 子类自动获得父类的所有字段，严禁定义与父类重名的字段
+
+- 子类不能继承父类的静态属性，但可以对父类静态属性操作
+
+- 子类能不能访问父类字段要看父类字段的访问修饰符
+
+- 任何class的构造方法，第一行语句必须是调用父类的构造方法。如果没有明确地调用父类的构造方法，编译器会帮我们自动加一句super();
+
+- 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
+
+- 如果一个父类的方法本身不需要实现任何功能，仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法；
+    - 因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
+
+- 如果一个抽象类没有字段，所有方法全部都是抽象方法，就可以把该抽象类改写为接口
+
+#### 继承关系判断
+
+```java
+// 判断实例是否为某个类型：（子）实例 instanceof （父）类型
+Assertions.assertTrue("handle" instanceof Object);
+
+  // 判断能子类型能否向上转型：父类型类实例.isAssignableFrom(子类型类实例);
+Assertions.assertTrue(Object.class.isAssignableFrom(Integer.class));
+```
+
+- 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型。
+
+```java
+ Object object = "hello";
+if (object instanceof String s) {
+    // 可以直接使用变量s:
+    System.out.println(s.toUpperCase());
+}
+```
+
+### 定义常量
 
 ```java
 public class C() {
@@ -279,13 +318,13 @@ public class C() {
 }
 ```
 
-#### 静态方法中获取所在类实例
+### 静态方法中获取所在类实例
 
 ```java
 Class clazz = MethodHandles.lookup().lookupClass();
 ```
 
-#### 打印对象内存地址
+### 打印对象内存地址
 
 ```java
 Object object = new Object();
@@ -296,7 +335,7 @@ String hexAddress1 = Integer.toHexString(System.identityHashCode(object));
 String hexAddress2 = object.toString().substring(object.toString().indexOf("@") + 1);
 ```
 
-#### 文件复制
+### 文件复制
 
 ```java
 try (InputStream inputStream = Application.class.getClassLoader().getResourceAsStream(fileName);
@@ -310,58 +349,13 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 }
 ```
 
-#### 其它
-
-- 文件夹名称一律用小驼峰，并且单个单词的文件夹名称一律用单数形式
-
-- 变量命名：变量名+变量类型，这样可以快速知道变量属于什么类型，并且不用输入那么多字母就弹出来代码补全了，省的都是时间啊
-
-- 若将多个类的声明放在一个文档中，只能有一个类声明为公有类。
-
-```java
-public class A {}
-
-class B {}
-
-class C {}
-```
-
-- Java源文档名必须与文档中公有类名一致（区分大小写）。
-
-```java
-// 文件名必须为 A.java
-public class A {}
-
-class B {}
-```
-
-- 以集合作为参数的任何方法，参数应该尽可能地使用接口类型，而不要使用具体的实现类型。
-
-```java
-// 推荐
-public void function(List<Integer> list) {}
-
-// 不推荐
-public void function(ArrayList<Integer> list) {}
-```
-
-- 用来存储对象的变量称为引用变量。
-- 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
-- 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
-- Java编译器自动引入java.lang。
-- 内存回收：调用`System.gc()`，一般不会手动调用此方法；
-- `方法的签名`（signature）: 要完整地描述一个方法，需要指出`方法名`以及`参数类型`。返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
-- VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
-- DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
-- DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
-- PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
-- 不用public、protected、private修饰的字段和方法就是包作用域。位于同一个包的类，可以访问包作用域的字段和方法。
-
-### java 数据类型
+### Java数据类型
 
 #### BigDecimal
 
-- 防止精度丢失，更推荐使用`BigDecimal(String val)`构造方法来创建对象；`BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
+- 防止精度丢失，更推荐使用`new BigDecimal(String val)`构造方法来创建对象；
+- `BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
+- 等值比较应该用compareTo()方法，而不是equals()方法；因为equals()方法会比较值和精度，而compareTo()方法比较的时候会忽略精度
 
 - 除法计算要指定结果精度
 
@@ -373,16 +367,13 @@ BigDecimal result = b1.divide(b2, 3, RoundingMode.HALF_UP);
 Assertions.assertEquals("6.667", result.toString());
 ```
 
-- 等值比较应该用compareTo()方法，而不是equals()方法；因为equals()方法会比较值和精度，而compareTo()方法比较的时候会忽略精度
-
 #### 枚举
 
 - 枚举:所有的枚举类型都是`Enum`类的子类。在比较两个枚举类型的值时， 永远不需要调用equals, 而直接使用`==`。
-- 如果需要的话， 可以在枚举类型中添加一些构造器、方法和域。当然，构造器只是在构造枚举常量的时候被调用。可以定义构造函数，默认是`private`。
+- 如果需要的话， 可以在枚举类型中添加一些构造器、方法和域
+- 构造器默认是`private`，只在构造枚举常量的时候被调用
 
 ```java
-import lombok.Getter;
-
 @Getter
 public enum ColorEnum {
     RED("red"), GREEN("green"), BLUE("blue");
@@ -397,7 +388,7 @@ public enum ColorEnum {
 
 #### 泛型
 
-- 定义泛型类
+##### 定义和使用泛型
 
 ```java
 public class ClassName<T> {
@@ -419,36 +410,41 @@ public class ClassName {
 }
 ```
 
-- 定义泛型类的对象：
+- 定义泛型类的对象
   
 ```java
 泛型类名<具体类型> object = new 泛型类名<具体类型>();
 ```
 
-##### 1. 通配符类型(wildcard type)
+##### 通配符类型(wildcard type)
 
-在Java库中， 使用变量E表示集合的元素类型，K和V分别表示表的关键字与值的类型。T(需要时还可以用临近的
-字母U和S)表示“任意类型”。
+- 在Java库中， 使用变量E表示集合的元素类型
+- K和V分别表示表的关键字与值的类型
+- T(需要时还可以用临近的字母U和S)表示“任意类型”
 
-##### 2. 类型变量的限定（子类型限定）
+##### 类型变量的限定（子类型限定）
 
-`<T extends BoundingType>`，表示T应该是绑定类型的子类型（subtype)。T和绑定类型可以是类，也可以是接口。
+- `<T extends SupperType>`，表示T应该是绑定类型的子类型，T和绑定类型可以是类，也可以是接口
 
-一个类型变量或通配符可以有多个限定， 例如：
-`T extends Comparable & Serializable`
-限定类型用`&`分隔，而逗号用来分隔类型变量。在Java的继承中，可以根据需要拥有多个接口超类型，但限定中至多有一个类。如果用一个类作为限定，它必须是限定列表中的第一个。为了提高效率，应该将标签（tagging）接口（即没有方法的接口）放在边界列表的末尾。
+- 一个类型变量或通配符可以有多个限定，限定类型用`&`分隔，而逗号用来分隔类型变量。例如：`T extends Comparable & Serializable`
 
-##### 3. 通配符的超类型限定
+- 在Java的继承中，可以根据需要拥有多个接口超类型，但限定中至多有一个类
+- 如果用一个类作为限定，它必须是限定列表中的第一个
+- 为了提高效率，应该将标签接口（即没有方法的接口）放在边界列表的末尾
 
-`<? super BoundingType>`，表示这个通配符限制为绑定类型的所有超类型。
+##### 通配符的超类型限定
 
-直观地讲，带有超类型限定的通配符可以向泛型对象写入，带有子类型限定的通配符可以从泛型对象读取。
+- `<? super BoundingType>`，表示这个通配符限制为绑定类型的所有超类型。
 
-##### 4. 无限定通配符<?>
+- 直观地讲，带有超类型限定的通配符可以向泛型对象写入，带有子类型限定的通配符可以从泛型对象读取。
+
+##### 无限定通配符<?>
 
 #### 数组
 
-- 不用for循环快速打印一维数组：Arrays.toString()
+##### Arrays.toString()
+
+- 不用for循环快速打印一维数组
 
 ```java
 Integer[] array = new Integer[]{1, 2, 3};
@@ -456,12 +452,16 @@ Integer[] array = new Integer[]{1, 2, 3};
 System.out.println(Arrays.toString(array));
 ```
 
-- 不用for循环快速打印多维数组：Arrays.deepToString()
+##### Arrays.deepToString()
+
+- 不用for循环快速打印多维数组
 
 ```java
 Integer[][] array = new Integer[][]{{1, 2, 3}, {4, 5, 6}};
 System.out.println(Arrays.deepToString(array));
 ```
+
+##### Arrays.sort()
 
 - 数组排序
 
@@ -473,6 +473,22 @@ System.out.println(Arrays.toString(array));
 ```
 
 #### List
+
+- 定义集合类型的变量时，应该尽可能地使用接口类型，而不要使用具体的实现类型。
+
+```java
+List<Integer> list = ArrayList<Integer>;
+```
+
+- 以集合作为参数的任何方法，参数应该尽可能地使用接口类型，而不要使用具体的实现类型。
+
+```java
+// 推荐
+public void function(List<Integer> list) {}
+
+// 不推荐
+public void function(ArrayList<Integer> list) {}
+```
 
 - 生成List
 
@@ -622,7 +638,9 @@ Timestamp timestamp = Timestamp.from(Instant.now());
 - 创建OffsetDateTime
 
 ```java
-ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
+OffsetDateTime offsetDateTime = OffsetDateTime.now();
+
+OffsetDateTime offsetDateTime = ZonedDateTime.now().toOffsetDateTime();
 ```
 
 ##### ZonedDateTime
@@ -636,6 +654,8 @@ ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
 - 创建ZonedDateTime
 
 ```java
+ZonedDateTime zonedDateTime = ZonedDateTime.now();
+
 ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
 
 // 显示为中国北京时间
@@ -1508,35 +1528,6 @@ byte[] input ="handle".getBytes(StandardCharsets.UTF_8);
 ```java
 byte[] input = { -24, -128, -127, -27, -123, -83 };
 String s = new String(input, StandardCharsets.UTF_8);
-```
-
-### 部署
-
-#### 手动生成jre
-
-```sh
-# 1.打开cmd（权限不够时用管理员身份打开cmd）
-# 2.进入某个目录，生成的jre会在这个目录下
-cd 指定目录
-
-# 3.生成jre
-jlink.exe --module-path jmods --add-modules java.base --output jre
-```
-
-#### 发布
-
-- 1.复制jre、可执行jar文档、run.bat（springboot项目看需求创建config文档夹，里面放application.properties配置文档），到同一目录下即可
-- 2.运行run.bat快速启动可执行jar文档
-
-#### 生成可执行文件graalvm
-
-`关闭360`
-
-```sh
-mvn -Pnative native:compile
-
-# 如果报Execution of ..\jdk-xxx\bin\native-image.cmd @target\tmp\native-image-xxxxxxxxxx.args returned non-zero result
-native-image @target\tmp\native-image-xxxxxxx.args
 ```
 
 ### foreach遍历顺序
@@ -3023,11 +3014,40 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
+### 部署
+
+#### 手动生成jre
+
+```sh
+# 1.打开cmd（权限不够时用管理员身份打开cmd）
+# 2.进入某个目录，生成的jre会在这个目录下
+cd 指定目录
+
+# 3.生成jre
+jlink.exe --module-path jmods --add-modules java.base --output jre
+```
+
+#### 普通springboot发布
+
+- 1.复制jre、可执行jar文档、run.bat（springboot项目看需求创建config文档夹，里面放application.properties配置文档），到同一目录下即可
+- 2.运行run.bat快速启动可执行jar文档
+
+#### 生成可执行文件graalvm
+
+`关闭360`
+
+```sh
+mvn -Pnative native:compile
+
+# 如果报Execution of ..\jdk-xxx\bin\native-image.cmd @target\tmp\native-image-xxxxxxxxxx.args returned non-zero result
+native-image @target\tmp\native-image-xxxxxxx.args
+```
+
 ## 单元测试
 
 ### Junit5
 
-#### Maven依赖
+- 依赖
 
 ```xml
 <dependency>
@@ -3065,7 +3085,7 @@ public static void initStatic() {
 #### Junit5执行顺序
 
 - 1.@BeforeAll
-- 2.循环
+- 2.循环以下步骤
     - 2.1 @BeforeEach
     - 2.2 @Test
     - 2.3 @AfterEach
@@ -3073,13 +3093,11 @@ public static void initStatic() {
 
 ### Mock
 
-### @Resource/@Autowired
-
-真实调用
+- @Resource/@Autowired为真实调用
 
 #### @MockBean
 
-- 如果没有制定规则，返回默认值（对象为null,基本数据类型为0）
+- 如果没有制定规则，返回默认值（基本数据类型为0，对象为null）
 - 如果制定了规则，就按照规则走
 
 ```java
@@ -3111,9 +3129,7 @@ when(someService.someMethod(parameter...)).thenReturn(someValue);
 @ToString
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
-public class Account {
-    private Long id;
-}
+public class AccountPo {}
 ```
 
 ## EasyExcel
