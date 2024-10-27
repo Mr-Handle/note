@@ -787,6 +787,8 @@ try {
 - 通常而言，名称中不带Async 的方法和它的前一个任务一样，在同一个线程中运行
 - CompletableFuture的静态工厂方法
 
+- CompletableFuture的静态方法
+
 | 方法名                                                    | 描述                                            |
 |:------------------------------------------------------ |:--------------------------------------------- |
 | runAsync(Runnable runnable)                            | 使用ForkJoinPool.commonPool()作为它的线程池执行异步代码，无返回值 |
@@ -2510,343 +2512,6 @@ public class Applistener implements ServletContextListener {
     }
 
 }
-```
-
-### JSP
-
-1) 输出<%:在文本中写<\%
-
-2) 使用<%--......--%>注释，在浏览器查看/源文档菜单中看不到
-
-3) 使用<!--......-->注释，在浏览器查看/源文档菜单中看得到
-
-4) request、response:每次请求新页面，就会产生新的request、response对象
-
-5) session:打开浏览器，首次访问服务目录的某个JSP页面时创立，到关闭浏览器或session对象达到最大生存时间时，session对象才被取消
-
-6) application:所有客户共享，服务器启动产生，直到服务器关闭，application对象才被取消
-
-- 居中
-  table居中：margin:0 auto;或align:center;
-
-- JSP页面控件 click事件写法
-  1）控件属性添加 onclick="javascript:方法名()"
-  2）控件`<head></head>`中添加方法体：
-
-```html
-<script type="text/javascript">
-    function fun() {
-        // 方法体
-    }
-</script>
-```
-
-3）在script 方法中显示确定取消弹窗
-
-```javascript
-if(window.confirm("是否确定撤销？")) {
-
-}
-```
-
-- ajax 只调用方法不传参写法
-
-```javascript
-$.ajax({
-    url:"<%=basePath%>ClearDownload.action" 
-});
-```
-
-- 表单提交方式：
-
-```java
-// 1
-document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?index="+index;//这种情况下传参为字符型可能在后台收到乱七八糟的符号，最好只传数值型参数
-document.czbListform.submit();
-
-// 2
-//这里不传参，但是相应控件全部放在提交的form标签里面，后台action方法形参里面加上需要传参的控件name就可以了
-document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?;
-document.czbListform.submit();
-String AddNew(HttpSession session,HttpServletRequest request,int index) {
-}
-
-// 3
-window.location.href="${pageContext.request.contextPath }/DeleteRecord.action?emp_no="+emp_no+"&pregnantDate="+pregnantDate+"&index="+index;
-```
-
-```html
-<!-- 4 -->
-$.ajax({
-    type:"post",
-<%--url:"<%=basePath%>addPregnantRecord.action", --%>
-    data:{"emp_no":emp_no,"pregnantDate":document.getElementById("pregnantDate").value},
-    dataType:"json",
-    success:function(data) {
-    }
-});
-```
-
-```jsp
-<!-- 条件判断1 -->
-<c:if test="${item.getFilePath().length()>0}">
-    <c:forTokens items="${item.getFilePath()}" delims=";" var="path" varStatus="s">
-        <a href="${pageContext.request.contextPath }/PregnantEmployeeSubmitWeb/FileList.jsp" style="text-decoration: underline;">${fn:substring(path,lfn:lastIndexOf(path,"-")+1,-1)}</a><br>
-    </c:forTokens>
-</c:if>
-
-<!-- 条件判断1 -->
-<c:choose>
-    <c:when test="${sign_state== '待签核'}">
-    </c:when>
-    <c:when test="${emp_no == null}">
-    </c:when>
-    <c:otherwise>
-    </c:otherwise>
-</c:choose>
-```
-
-10.下拉框 select
-1）标签写法
-
-```jsp
-<select id="select1" name="select1" >
-    <option value="id" <c:if test="${search_mode== 'id'}">selected="selected"</c:if>>
-        id
-    </option>
-    <option value="name" <c:if test="${search_mode== 'name'}">selected="selected" </c:if>>
-        name
-    </option>
-</select>
-```
-
-2）javascript获取select的值
-
-```js
- function querySignState() {
-    var select=document.getElementById('search_mode').value;
-    document.form1.action="${pageContext.request.contextPath }/opaSearch.action?";
-    document.form1.submit();
-}
-```
-
-3）后台获取select的值
-jsp中将select标签放在form1中，和form1一起提交，select的name属性作为后台的形参，在函数体中直接使用
-
-```java
-@RequestMapping(value = "/hello")
-String opaSearch(String select1) {
-    // 直接使用 select1
-}
-```
-
-11.jsp中,文本框没有填写字符串时
-1）javascript 函数中的值为
-var emp_no=document.getElementById("emp_no").value;//emp_no=""
-2）action中的值为
-String empno=emp_no;//empno=""
-
-12.jsp中没有写相应的文本框hr_check_signtime时，
-1）get方法返回的值为null
-public String getHr_check_signtime() {
-        if(hr_check_signtime==null)
-        {
-            hr_check_signtime="";
-        }
-        return hr_check_signtime;
-    }
-2）传到mapper的值为
-getter为 null时，为null;
-getter为 ""时，为'';
-
-- 请求处理方法返回字符串（页面）的写法
-    ![返回字符串](/images/2021-05-22-19-20-17.png)
-- 请求处理方法返回类型为void的写法
-    ![返回void](/images/2021-05-22-19-16-31.png)
-- ResponseBody 响应json数据（用于ajax请求）
-    ![ResponseBody](/images/2021-05-22-20-11-24.png)
-- 返回ModelAndView，和返回字符串（页面）功能一样
-    ![返回ModelAndView](/images/2021-05-22-19-45-01.png)
-
-Servlet就是一个能处理HTTP请求，发送HTTP响应的小进程，而发送响应无非就是获取`PrintWriter`，然后输出HTML。
-
-JSP是一种在HTML中嵌入动态输出的文档，它和Servlet正好相反，Servlet是在Java代码中嵌入输出HTML；
-
-```java
-PrintWriter pw = resp.getWriter();
-pw.write("<html>");
-pw.write("<body>");
-pw.write("<h1>Welcome, " + name + "!</h1>");
-pw.write("</body>");
-pw.write("</html>");
-pw.flush();
-```
-
-只不过，用PrintWriter输出HTML比较痛苦，因为不但要正确编写HTML，还需要插入各种变量。如果想在Servlet中输出一个类似新浪首页的HTML，写对HTML基本上不太可能。就可以用jsp了。
-
-JSP是Java Server Pages的缩写，它的文档必须放到`/src/main/webapp`下，文档名必须以`.jsp`结尾，整个文档与HTML并无太大区别，但需要插入变量，或者动态输出的地方，使用特殊指令`<% ... %>`
-
-整个JSP的内容实际上是一个HTML，但是稍有不同：
-
-- 包含在`<%--`和`--%>`之间的是JSP的注释，它们会被完全忽略；
-- 包含在`<%`和`%>`之间的是Java代码，可以编写任意Java代码；
-- 如果使用`<%= xxx %>`则可以快捷输出一个变量的值。
-
-JSP页面内置了几个变量，这几个变量可以直接使用：
-
-- out：表示HttpServletResponse的PrintWriter；
-- session：表示当前HttpSession对象；
-- request：表示HttpServletRequest对象。
-
-JSP和Servlet有什幺区别？其实它们没有任何区别，因为JSP在执行前首先被编译成一个Servlet。在Tomcat的临时目录下，可以找到一个`xxx_jsp.java`的源文档，这个文档就是Tomcat把JSP自动转换成的Servlet源码。
-
-可见JSP本质上就是一个Servlet，只不过无需配置映射路径，Web Server会根据路径查找对应的`.jsp`文档，如果找到了，就自动编译成Servlet再执行。在服务器运行过程中，如果修改了JSP的内容，那幺服务器会自动重新编译。
-
-```jsp
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <title></title>
-    </head>
-    <body>
-    </body>
-</html>
-```
-
-jsp页面乱码解决方案：
-
-1） jsp页面头部加上：<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
-2）Servlet响应代码中加上：resp.setCharacterEncoding("UTF-8"); //设置HTTP 响应的编码
-
-#### JSP高级功能
-
-JSP的指令非常复杂，除了`<% ... %>`外，JSP页面本身可以通过`page`指令引入Java类：
-
-```jsp
-<%@ page import="java.io.*" %>
-<%@ page import="java.util.*" %>
-```
-
-这样后续的Java代码才能引用简单类名而不是完整类名。
-
-使用`include`指令可以引入另一个JSP文档：
-
-```jsp
-<html>
-<body>
-    <%@ include file="header.jsp"%>
-    <h1>Index Page</h1>
-    <%@ include file="footer.jsp"%>
-</body>
-```
-
-#### JSP Tag
-
-JSP还允许自定义输出的tag，例如：
-
-```jsp
-<c:out value = "${sessionScope.user.name}"/>
-```
-
-JSP Tag需要正确引入taglib的jar包，并且还需要正确声明，使用起来非常复杂，对于页面开发来说，*不推荐*使用JSP Tag，因为我们后续会介绍更简单的模板引擎，这里我们不再介绍如何使用taglib。
-
-1. 表单提交方式：
-
-```javascript
-// 1.这种情况下传参为字符型可能在后台收到乱七八糟的符号，最好只传数值型参数
-document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?index="+index;
-document.czbListform.submit();
-
-// 2.这里不传参，但是相应控件全部放在提交的form标签里面，后台action方法形参里面加上需要传参的控件id就可以了
-document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?;
-document.czbListform.submit();
-String AddNew(HttpSession session,HttpServletRequest request,int index) {
-
-}
-
-// 3
-window.location.href="${pageContext.request.contextPath }/DeleteRecord.action?emp_no="+emp_no+"&pregnantDate="+pregnantDate+"&index="+index;
-
-$.ajax({
-    type:"post",
-    url:"<%=basePath%>addPregnantRecord.action",
-    data:{"emp_no":emp_no,"pregnantDate":document.getElementById("pregnantDate").value},
-    dataType:"json",
-    success:function(data) {
-
-    }
-});
-```
-
-```jsp
-<c:if test="${item.getFilePath().length()>0}">
-    <c:forTokens items="${item.getFilePath()}" delims=";" var="path" varStatus="s">
-        <a href="${pageContext.request.contextPath }/PregnantEmployeeSubmitWeb/FileList.jsp" style="text-decoration: underline;">${fn:substring(path,lfn:lastIndexOf(path,"-")+1,-1)}</a><br>
-    </c:forTokens>
-</c:if>
-```
-
-#### 页面预览pdf
-
-```java
-    @RequestMapping(value = "OnlineBrowse")
-    public void OnlineBrowse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
-        File file = new File(fileName);
-        // Response.setContentType(MIME)的作用是使客户端的浏览器区分不同种类的数据
-        // 并根据不同的MIME调用浏览器内不同的进程嵌入模块来处理相应的数据
-        // response.setContentType 指定 HTTP 响应的编码,同时指定了浏览器显示的编码
-        response.setContentType("application/pdf;charset=UTF-8");
-        // 设置下载文档名
-        // 在设置Content-Disposition头字段之前，一定要设置Content-Type头字段
-        // Content-Disposition属性有两种类型：inline 和 attachment
-        // inline ：将文档内容直接显示在页面
-        // attachment：弹出对话框让用户下载
-        // URLEncoder.encode(file.getName(),"UTF-8") 防止文档名乱码
-        // response.setHeader("Content-Type","application/pdf");
-        response.setHeader("Content-Disposition", "inline; filename="+URLEncoder.encode(file.getName(),"UTF-8"));
-        // 设置从request中取得的值或从数据库中取出的值
-        // request.setCharacterEncoding("utf-8");
-        // response.setCharacterEncoding 设置HTTP 响应的编码
-        // 如果之前使用response.setContentType设置了编码格式
-        // 则使用response.setCharacterEncoding指定的编码格式覆盖之前的设置
-        // response.setCharacterEncoding("utf-8");
-
-        if (file.exists()) {
-            byte[] data = null;
-            FileInputStream fileInputStream=null;
-            try {
-                fileInputStream= new FileInputStream(file);
-                data = new byte[fileInputStream.available()];
-                fileInputStream.read(data);
-
-                //加载pdf
-                PDDocument document = PDDocument.load(data); 
-                //获得文档属性对象
-                PDDocumentInformation documentInformation = document.getDocumentInformation(); 
-                //修改标题属性 这个标题会被展示
-                documentInformation.setTitle(file.getName()); 
-                document.setDocumentInformation(documentInformation);
-                document.setAllSecurityToBeRemoved(true);
-                //修改完直接输出到响应体中
-                document.save(response.getOutputStream()); 
-                document.close();
-                //response.getOutputStream().write(data);
-            } catch (Exception e) {
-                System.out.println("pdf文档处理异常：" + e);
-            }finally{
-                try {
-                    if(fileInputStream!=null){
-                        fileInputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 ```
 
 ### Tomcat
@@ -9647,17 +9312,41 @@ systemctl enable haproxy
 - 在某一个节点上创建队列，会自动分散到各个节点上
 - 创建队列时，type选择Quorum，node选择一个节点作为主节点
 
-## Thymeleaf
+## elasticsearch
 
-1. 标签中变量写法：${qrCodeImage}
-2. 标签中路径写法：@{/qrCode/generator}
-3. 标签中路径有变量的写法：@{/downloads/{qrCodeImage}(qrCodeImage=${qrCodeImage})}，
+- 官网：<https://www.elastic.co/cn/elasticsearch>
 
-{qrCodeImage}相当于占位符，qrCodeImage从括号里面取值，${qrCodeImage}表示取后台传过来的值
+### 安装elasticsearch
 
-1. js中变量写法：[[${qrCodeImage}]]
+- 下载tar.gz文件并解压到指定目录
+- 修改conf/elasticsearch.yml文件
 
-2. js中路径写法：[[@{/qrCode/generator}]]
+```yaml
+xpack.security.enabled: false
+```
+
+- elasticsearch不允许使用root启动，先创建elasticsearch用户
+
+```sh
+# 创建elasticsearch用户，然后根据提示指定密码
+adduser elasticsearch
+# 将elasticsearch的根目录权限赋给用户
+chown -R elasticsearch yourpath/elasticsearch-8.15.3
+
+# 切到elasticsearch用户
+su elasticsearch
+```
+
+- 启动elasticsearch
+
+```sh
+# 先进入elasticsearch的bin目录
+cd yourpath/elasticsearch-8.15.3/bin
+# 启动elasticsearch
+./elasticsearch
+```
+
+- 测试，访问：<http://localhost:9200/>
 
 ## Maven
 
@@ -12762,6 +12451,355 @@ calc() 函数用于动态计算长度值，运算符（ "+", "-", "*", "/" ）�
 | 值            | 描述                       |
 |:------------ |:------------------------ |
 | *expression* | 必须，一个数学表达式，结果将采用运算后的返回值。 |
+
+### JSP
+
+1) 输出<%:在文本中写<\%
+
+2) 使用<%--......--%>注释，在浏览器查看/源文档菜单中看不到
+
+3) 使用<!--......-->注释，在浏览器查看/源文档菜单中看得到
+
+4) request、response:每次请求新页面，就会产生新的request、response对象
+
+5) session:打开浏览器，首次访问服务目录的某个JSP页面时创立，到关闭浏览器或session对象达到最大生存时间时，session对象才被取消
+
+6) application:所有客户共享，服务器启动产生，直到服务器关闭，application对象才被取消
+
+- 居中
+  table居中：margin:0 auto;或align:center;
+
+- JSP页面控件 click事件写法
+  1）控件属性添加 onclick="javascript:方法名()"
+  2）控件`<head></head>`中添加方法体：
+
+```html
+<script type="text/javascript">
+    function fun() {
+        // 方法体
+    }
+</script>
+```
+
+3）在script 方法中显示确定取消弹窗
+
+```javascript
+if(window.confirm("是否确定撤销？")) {
+
+}
+```
+
+- ajax 只调用方法不传参写法
+
+```javascript
+$.ajax({
+    url:"<%=basePath%>ClearDownload.action" 
+});
+```
+
+- 表单提交方式：
+
+```java
+// 1
+document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?index="+index;//这种情况下传参为字符型可能在后台收到乱七八糟的符号，最好只传数值型参数
+document.czbListform.submit();
+
+// 2
+//这里不传参，但是相应控件全部放在提交的form标签里面，后台action方法形参里面加上需要传参的控件name就可以了
+document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?;
+document.czbListform.submit();
+String AddNew(HttpSession session,HttpServletRequest request,int index) {
+}
+
+// 3
+window.location.href="${pageContext.request.contextPath }/DeleteRecord.action?emp_no="+emp_no+"&pregnantDate="+pregnantDate+"&index="+index;
+```
+
+```html
+<!-- 4 -->
+$.ajax({
+    type:"post",
+<%--url:"<%=basePath%>addPregnantRecord.action", --%>
+    data:{"emp_no":emp_no,"pregnantDate":document.getElementById("pregnantDate").value},
+    dataType:"json",
+    success:function(data) {
+    }
+});
+```
+
+```jsp
+<!-- 条件判断1 -->
+<c:if test="${item.getFilePath().length()>0}">
+    <c:forTokens items="${item.getFilePath()}" delims=";" var="path" varStatus="s">
+        <a href="${pageContext.request.contextPath }/PregnantEmployeeSubmitWeb/FileList.jsp" style="text-decoration: underline;">${fn:substring(path,lfn:lastIndexOf(path,"-")+1,-1)}</a><br>
+    </c:forTokens>
+</c:if>
+
+<!-- 条件判断1 -->
+<c:choose>
+    <c:when test="${sign_state== '待签核'}">
+    </c:when>
+    <c:when test="${emp_no == null}">
+    </c:when>
+    <c:otherwise>
+    </c:otherwise>
+</c:choose>
+```
+
+10.下拉框 select
+1）标签写法
+
+```jsp
+<select id="select1" name="select1" >
+    <option value="id" <c:if test="${search_mode== 'id'}">selected="selected"</c:if>>
+        id
+    </option>
+    <option value="name" <c:if test="${search_mode== 'name'}">selected="selected" </c:if>>
+        name
+    </option>
+</select>
+```
+
+2）javascript获取select的值
+
+```js
+ function querySignState() {
+    var select=document.getElementById('search_mode').value;
+    document.form1.action="${pageContext.request.contextPath }/opaSearch.action?";
+    document.form1.submit();
+}
+```
+
+3）后台获取select的值
+jsp中将select标签放在form1中，和form1一起提交，select的name属性作为后台的形参，在函数体中直接使用
+
+```java
+@RequestMapping(value = "/hello")
+String opaSearch(String select1) {
+    // 直接使用 select1
+}
+```
+
+11.jsp中,文本框没有填写字符串时
+1）javascript 函数中的值为
+var emp_no=document.getElementById("emp_no").value;//emp_no=""
+2）action中的值为
+String empno=emp_no;//empno=""
+
+12.jsp中没有写相应的文本框hr_check_signtime时，
+1）get方法返回的值为null
+public String getHr_check_signtime() {
+        if(hr_check_signtime==null)
+        {
+            hr_check_signtime="";
+        }
+        return hr_check_signtime;
+    }
+2）传到mapper的值为
+getter为 null时，为null;
+getter为 ""时，为'';
+
+- 请求处理方法返回字符串（页面）的写法
+    ![返回字符串](/images/2021-05-22-19-20-17.png)
+- 请求处理方法返回类型为void的写法
+    ![返回void](/images/2021-05-22-19-16-31.png)
+- ResponseBody 响应json数据（用于ajax请求）
+    ![ResponseBody](/images/2021-05-22-20-11-24.png)
+- 返回ModelAndView，和返回字符串（页面）功能一样
+    ![返回ModelAndView](/images/2021-05-22-19-45-01.png)
+
+Servlet就是一个能处理HTTP请求，发送HTTP响应的小进程，而发送响应无非就是获取`PrintWriter`，然后输出HTML。
+
+JSP是一种在HTML中嵌入动态输出的文档，它和Servlet正好相反，Servlet是在Java代码中嵌入输出HTML；
+
+```java
+PrintWriter pw = resp.getWriter();
+pw.write("<html>");
+pw.write("<body>");
+pw.write("<h1>Welcome, " + name + "!</h1>");
+pw.write("</body>");
+pw.write("</html>");
+pw.flush();
+```
+
+只不过，用PrintWriter输出HTML比较痛苦，因为不但要正确编写HTML，还需要插入各种变量。如果想在Servlet中输出一个类似新浪首页的HTML，写对HTML基本上不太可能。就可以用jsp了。
+
+JSP是Java Server Pages的缩写，它的文档必须放到`/src/main/webapp`下，文档名必须以`.jsp`结尾，整个文档与HTML并无太大区别，但需要插入变量，或者动态输出的地方，使用特殊指令`<% ... %>`
+
+整个JSP的内容实际上是一个HTML，但是稍有不同：
+
+- 包含在`<%--`和`--%>`之间的是JSP的注释，它们会被完全忽略；
+- 包含在`<%`和`%>`之间的是Java代码，可以编写任意Java代码；
+- 如果使用`<%= xxx %>`则可以快捷输出一个变量的值。
+
+JSP页面内置了几个变量，这几个变量可以直接使用：
+
+- out：表示HttpServletResponse的PrintWriter；
+- session：表示当前HttpSession对象；
+- request：表示HttpServletRequest对象。
+
+JSP和Servlet有什幺区别？其实它们没有任何区别，因为JSP在执行前首先被编译成一个Servlet。在Tomcat的临时目录下，可以找到一个`xxx_jsp.java`的源文档，这个文档就是Tomcat把JSP自动转换成的Servlet源码。
+
+可见JSP本质上就是一个Servlet，只不过无需配置映射路径，Web Server会根据路径查找对应的`.jsp`文档，如果找到了，就自动编译成Servlet再执行。在服务器运行过程中，如果修改了JSP的内容，那幺服务器会自动重新编译。
+
+```jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+    </head>
+    <body>
+    </body>
+</html>
+```
+
+jsp页面乱码解决方案：
+
+1） jsp页面头部加上：<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+2）Servlet响应代码中加上：resp.setCharacterEncoding("UTF-8"); //设置HTTP 响应的编码
+
+#### JSP高级功能
+
+JSP的指令非常复杂，除了`<% ... %>`外，JSP页面本身可以通过`page`指令引入Java类：
+
+```jsp
+<%@ page import="java.io.*" %>
+<%@ page import="java.util.*" %>
+```
+
+这样后续的Java代码才能引用简单类名而不是完整类名。
+
+使用`include`指令可以引入另一个JSP文档：
+
+```jsp
+<html>
+<body>
+    <%@ include file="header.jsp"%>
+    <h1>Index Page</h1>
+    <%@ include file="footer.jsp"%>
+</body>
+```
+
+#### JSP Tag
+
+JSP还允许自定义输出的tag，例如：
+
+```jsp
+<c:out value = "${sessionScope.user.name}"/>
+```
+
+JSP Tag需要正确引入taglib的jar包，并且还需要正确声明，使用起来非常复杂，对于页面开发来说，*不推荐*使用JSP Tag，因为我们后续会介绍更简单的模板引擎，这里我们不再介绍如何使用taglib。
+
+1. 表单提交方式：
+
+```javascript
+// 1.这种情况下传参为字符型可能在后台收到乱七八糟的符号，最好只传数值型参数
+document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?index="+index;
+document.czbListform.submit();
+
+// 2.这里不传参，但是相应控件全部放在提交的form标签里面，后台action方法形参里面加上需要传参的控件id就可以了
+document.czbListform.action="${pageContext.request.contextPath }/revokePregnantRecord.action?;
+document.czbListform.submit();
+String AddNew(HttpSession session,HttpServletRequest request,int index) {
+
+}
+
+// 3
+window.location.href="${pageContext.request.contextPath }/DeleteRecord.action?emp_no="+emp_no+"&pregnantDate="+pregnantDate+"&index="+index;
+
+$.ajax({
+    type:"post",
+    url:"<%=basePath%>addPregnantRecord.action",
+    data:{"emp_no":emp_no,"pregnantDate":document.getElementById("pregnantDate").value},
+    dataType:"json",
+    success:function(data) {
+
+    }
+});
+```
+
+```jsp
+<c:if test="${item.getFilePath().length()>0}">
+    <c:forTokens items="${item.getFilePath()}" delims=";" var="path" varStatus="s">
+        <a href="${pageContext.request.contextPath }/PregnantEmployeeSubmitWeb/FileList.jsp" style="text-decoration: underline;">${fn:substring(path,lfn:lastIndexOf(path,"-")+1,-1)}</a><br>
+    </c:forTokens>
+</c:if>
+```
+
+#### 页面预览pdf
+
+```java
+    @RequestMapping(value = "OnlineBrowse")
+    public void OnlineBrowse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
+        File file = new File(fileName);
+        // Response.setContentType(MIME)的作用是使客户端的浏览器区分不同种类的数据
+        // 并根据不同的MIME调用浏览器内不同的进程嵌入模块来处理相应的数据
+        // response.setContentType 指定 HTTP 响应的编码,同时指定了浏览器显示的编码
+        response.setContentType("application/pdf;charset=UTF-8");
+        // 设置下载文档名
+        // 在设置Content-Disposition头字段之前，一定要设置Content-Type头字段
+        // Content-Disposition属性有两种类型：inline 和 attachment
+        // inline ：将文档内容直接显示在页面
+        // attachment：弹出对话框让用户下载
+        // URLEncoder.encode(file.getName(),"UTF-8") 防止文档名乱码
+        // response.setHeader("Content-Type","application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename="+URLEncoder.encode(file.getName(),"UTF-8"));
+        // 设置从request中取得的值或从数据库中取出的值
+        // request.setCharacterEncoding("utf-8");
+        // response.setCharacterEncoding 设置HTTP 响应的编码
+        // 如果之前使用response.setContentType设置了编码格式
+        // 则使用response.setCharacterEncoding指定的编码格式覆盖之前的设置
+        // response.setCharacterEncoding("utf-8");
+
+        if (file.exists()) {
+            byte[] data = null;
+            FileInputStream fileInputStream=null;
+            try {
+                fileInputStream= new FileInputStream(file);
+                data = new byte[fileInputStream.available()];
+                fileInputStream.read(data);
+
+                //加载pdf
+                PDDocument document = PDDocument.load(data); 
+                //获得文档属性对象
+                PDDocumentInformation documentInformation = document.getDocumentInformation(); 
+                //修改标题属性 这个标题会被展示
+                documentInformation.setTitle(file.getName()); 
+                document.setDocumentInformation(documentInformation);
+                document.setAllSecurityToBeRemoved(true);
+                //修改完直接输出到响应体中
+                document.save(response.getOutputStream()); 
+                document.close();
+                //response.getOutputStream().write(data);
+            } catch (Exception e) {
+                System.out.println("pdf文档处理异常：" + e);
+            }finally{
+                try {
+                    if(fileInputStream!=null){
+                        fileInputStream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+```
+
+### Thymeleaf
+
+1. 标签中变量写法：${qrCodeImage}
+2. 标签中路径写法：@{/qrCode/generator}
+3. 标签中路径有变量的写法：@{/downloads/{qrCodeImage}(qrCodeImage=${qrCodeImage})}，
+
+{qrCodeImage}相当于占位符，qrCodeImage从括号里面取值，${qrCodeImage}表示取后台传过来的值
+
+1. js中变量写法：[[${qrCodeImage}]]
+
+2. js中路径写法：[[@{/qrCode/generator}]]
 
 ### vue
 
