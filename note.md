@@ -2244,7 +2244,7 @@ public class LogHomeConfiguration extends PropertyDefinerBase {
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- 定义变量 -->
-    <define name="LOG_HOME" class="com.lsh.config.configuration.LogHomeConfiguration" />
+    <define name="LOG_HOME" class="com.handle.config.configuration.LogHomeConfiguration" />
 
     <!-- output to console -->
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -2879,101 +2879,6 @@ $.ajax({
 
 ### jvm
 
-#### jvm参数
-
-- 指定新生代的大小
-
-```properties
-# 方法1
--XX:NewSize=512m
--XX:MaxNewSize=1024m
-
-# 方法2（NewSize，MaxNewSize设置为一致）
--Xmn512m
-
-# 方法3，设置老年代/新生代内存的比值，在Xms=Xmx并且设置了Xmn的情况下，该参数不需要进行设置
--XX:NewRatio=4
-
-# 表示eden/两个survivor
--XX:SurvivorRatio=8
-```
-
-- 指定元空间的大小
-
-```properties
-# 元空间的初始大小，若未指定，则元空间将根据运行时的应用程序需求动态地重新调整大小
--XX:MetaspaceSize=1024m
-
-# 元空间的最大大小，默认值为unlimited，只受系统内存的限制
--XX:MaxMetaspaceSize=2048m
-```
-
-- 指定垃圾收集器
-
-```properties
-# 串行垃圾收集器
--XX:+UseSerialGC
-
-# 并行垃圾收集器
--XX:+UseParallelGC
-
-# CMS垃圾收集器
--XX:+UseParNewGC
-
-# G1垃圾收集器
--XX:+UseG1GC
-```
-
-- 记录GC活动
-
-```properties
--XX:+UseGCLogFileRotation 
--XX:NumberOfGCLogFiles=50 
--XX:GCLogFileSize=100m
--Xloggc:/.../gc.log
-```
-
-- 在OOM时，打印输出
-
-```properties
--XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=你要输出的日志路径
-```
-
-```properties
-# 对象晋升到老年代的年龄阈值
--XX:MaxTenuringThreshold
-
-# 指定最小堆内存(单位：g、m、k)
--Xms4g
-
-# 指定最大堆内存(单位：g、m、k)
--Xmx8g
-
-# 字符串常量池大小
--XX:StringTableSize
-```
-
-#### JDK命令行工具
-
-如果我们要执行一个jar包的class，就可以把jar包放到classpath中，这样JVM会自动在hello.jar文件里去搜索某个类
-
-- 通过指定classpath和主类运行某个路径下的class文件
-
-```sh
-# .表示当前路径，假设class文件路径为：./com/handle/HelloWorld.class
-java -classpath . com.handle.HelloWorld
-```
-
-- 通过指定classpath和主类运行jar包中的class文件
-
-```sh
-# ./HelloWorld.jar 表示当前目录下的HelloWorld.jar文件，里面包含com.handle.HelloWorld.class文件
-# com.handle.HelloWorld表示入口类
-java -classpath ./HelloWorld.jar com.handle.HelloWorld
-```
-
-## jvm
-
 - 类加载器子系统
     - 加载阶段
         - 引导类加载器
@@ -3022,6 +2927,101 @@ java -classpath ./HelloWorld.jar com.handle.HelloWorld
     - 垃圾回收器
 - 本地方法接口
 - 本地方法库
+
+#### jvm参数
+
+##### 指定新生代的大小
+
+```properties
+# 方法1
+-XX:NewSize=512m
+-XX:MaxNewSize=1024m
+
+# 方法2（NewSize，MaxNewSize设置为一致）
+-Xmn512m
+
+# 方法3，设置老年代/新生代内存的比值，在Xms=Xmx并且设置了Xmn的情况下，该参数不需要进行设置
+-XX:NewRatio=4
+
+# 表示eden/两个survivor
+-XX:SurvivorRatio=8
+```
+
+##### 指定元空间的大小
+
+```properties
+# 元空间的初始大小，若未指定，则元空间将根据运行时的应用程序需求动态地重新调整大小
+-XX:MetaspaceSize=1024m
+
+# 元空间的最大大小，默认值为unlimited，只受系统内存的限制
+-XX:MaxMetaspaceSize=2048m
+```
+
+##### 指定垃圾收集器
+
+```properties
+# 串行垃圾收集器
+-XX:+UseSerialGC
+
+# 并行垃圾收集器
+-XX:+UseParallelGC
+
+# CMS垃圾收集器
+-XX:+UseParNewGC
+
+# G1垃圾收集器
+-XX:+UseG1GC
+```
+
+##### 记录GC活动
+
+```properties
+-XX:+UseGCLogFileRotation 
+-XX:NumberOfGCLogFiles=50 
+-XX:GCLogFileSize=100m
+-Xloggc:/.../gc.log
+```
+
+##### 在OOM时，打印输出
+
+```properties
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=你要输出的日志路径
+```
+
+##### 其它jvm设置
+
+```properties
+# 对象晋升到老年代的年龄阈值
+-XX:MaxTenuringThreshold
+
+# 指定最小堆内存(单位：g、m、k)
+-Xms4g
+
+# 指定最大堆内存(单位：g、m、k)
+-Xmx8g
+
+# 字符串常量池大小
+-XX:StringTableSize
+```
+
+#### jdk命令行工具
+
+如果我们要执行一个jar包的class，就可以把jar包放到classpath中，这样JVM会自动在xxx.jar文件里去搜索某个类
+
+- 通过指定classpath和主类运行某个路径下的class文件
+
+```sh
+# .表示当前路径，假设class文件路径为：./com/handle/HelloWorld.class
+java -classpath . com.handle.HelloWorld
+```
+
+- 通过指定classpath和主类运行jar包中的class文件
+
+```sh
+# ./HelloWorld.jar 表示当前目录下的HelloWorld.jar文件，里面包含com.handle.HelloWorld.class文件
+# com.handle.HelloWorld表示入口类
+java -classpath ./HelloWorld.jar com.handle.HelloWorld
+```
 
 ## 单元测试
 
@@ -4322,6 +4322,53 @@ public class Person {
 }
 ```
 
+##### @ImportResource
+  
+- 作用：导入Spring配置文件(springConfig.xml)
+  
+- 用法：@Configuration + @ImportResource("classpath:xxx.xml") 一起用
+
+例子：读取spring.xml文件中的Pet
+
+1. 定义宠物类
+
+```java
+@Getter
+@Setter
+@ToString
+public class Pet {
+    private String name;
+
+    private int age;
+}
+```
+
+2.设置spring.xml配置Pet
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="pet" class="com.handle.entities.Pet">
+        <property name="name" value="cat"></property>
+        <property name="age" value="2"></property>
+    </bean>
+</beans>
+```
+
+3.定义.定义配置类
+
+```java
+@Configuration
+@ImportResource("classpath:spring.xml")
+public class MainConfiguration {
+
+}
+```
+
 #### DI注解
 
 ##### @AutoWired
@@ -5341,6 +5388,90 @@ public String setCookies(HttpServletResponse response) {
 }
 ```
 
+#### @RequestAttribute
+
+- 获取 request 的属性的值
+
+```java
+@Controller
+@RequestMapping("/application")
+public class ApplicationController {
+    @GetMapping("/gotoDestination")
+    public String gotoDestination(HttpServletRequest request) {
+        // 设置request属性值
+        request.setAttribute("code", "200");
+        request.setAttribute("message", "success");
+
+        // 转发到/destination
+        return "forward:/application/destination";
+    }
+
+    @ResponseBody
+    @GetMapping("/destination")
+    public Map<String, Object> getDestination(
+        @RequestAttribute("message") String message, HttpServletRequest request) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", request.getAttribute("code"));
+        map.put("message", message);
+
+        // {"code":"200", "message":"success"}
+        return map;
+    }
+}
+```
+
+#### @MatrixVariable
+
+- 获取矩阵变量的值
+
+```java
+/**
+ * 路径变量配置
+ */
+@Configuration(proxyBeanMethods = false)
+public class ApplicationConfiguration {
+    @Bean
+    public WebMvcConfigurer webMvcConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configurePathMath(PathMatchConfigurer configurer) {
+                UrlPathHelper urlPathHelper = new UrlPathHelper();
+                // 不移除路径变量中分号后面的内容（矩阵变量）
+                urlPathHelper.setRemoveSemicolonContent(false);
+
+                configurer.setUrlPathHelper(urlPathHelper);
+            }
+        };
+    }
+}
+```
+
+```java
+/**
+ *  获取矩阵变量的值
+ */
+@GetMapping("/user/{bossAge}/{empAge}/getMatrixVariables")
+public Map<String, Object> getMatrixVariables(
+    @MatrixVariable(value = "age", pathVar = "bossAge") Integer bossAge,
+    @MatrixVariable(value = "age", pathVar = "empAge") List<Integer> empAge
+) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("bossAge", bossAge);
+    map.put("empAge", empAge);
+    return map;
+}
+```
+
+请求：localhost:8080/application/user/boss;age=23/emp;age=18;age=19,20,21/getMatrixVariables
+响应：
+
+```json
+{
+    "bossAge":23,
+    "empAge":[18,19,20,21]
+}
+```
+
 #### Spring MVC 原生对象获取
 
 - 只要在对应的控制器方法添加形参即可获取到
@@ -5536,7 +5667,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-### 拦截器
+### Spring MVC拦截器
 
 - DispatcherServlet的doDispatch方法内
     - getHandler，获取handlerMapping
@@ -7041,7 +7172,7 @@ nacos:
         - NACOS_AUTH_IDENTITY_KEY=nacos
         - NACOS_AUTH_IDENTITY_VALUE=nacos
     volumes:
-        - /lsh/data/nacos/logs/:/home/nacos/logs
+        - /handle/data/nacos/logs/:/home/nacos/logs
     networks: 
         - my-docker-net
     depends_on:
@@ -7515,7 +7646,7 @@ seata:
         - SEATA_IP=192.168.56.1
         - SEATA_PORT=8091
     volumes:
-        - /lsh/data/seata/application.yml:/seata-server/resources/application.yml
+        - /handle/data/seata/application.yml:/seata-server/resources/application.yml
     networks: 
         - my-docker-net
     restart: always
@@ -8846,7 +8977,7 @@ pulsar-manager:
         # 后端端口
         - "7750:7750"
     volumes:
-        - /lsh/data/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
+        - /handle/data/pulsar-manager/application.properties:/pulsar-manager/pulsar-manager/application.properties
     environment:
         # 配置文件必须要指定
         - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
@@ -9039,7 +9170,7 @@ sh bin/mqshutdown namesrv
 sh bin/mqadmin updatetopic -n localhost:9876 -t TestTopic -c DefaultCluster
 ```
 
-### 消息类型
+#### 消息类型
 
 Normal/FIFO/Delay/Transaction
 
@@ -9102,7 +9233,7 @@ spring:
             simple:
                 # 消息确认模式设置为手动确认
                 acknowledge-mode: manual
-                # 每次从队列中国取回消息的数量，用来做消费端限流
+                # 每次从队列中取回消息的数量，用来做消费端限流
                 prefetch: 1
 ```
 
@@ -9207,7 +9338,7 @@ public class AmqpApplicationTests {
 
         // 绑定队列到交换器
         amqpAdmin.declareBinding(
-        new Binding("amqpAdmin.queue", Binding.DestinationType.QUEUE, "amqpAdmin.direct", "amqpAdmin", null));
+            new Binding("amqpAdmin.queue", Binding.DestinationType.QUEUE, "amqpAdmin.direct", "amqpAdmin", null));
         // 删除队列
         amqpAdmin.deleteQueue("amqpAdmin.queue");
         // 删除交换器
@@ -9285,7 +9416,7 @@ public class RabbitmqConfiguration implements RabbitTemplate.ConfirmCallback, Ra
 
 #### 消息超时
 
-- 可在队列创建的时候设置消息的过期时间（x-message-ttl），队列中的所有消息使用这个果实
+- 可在队列创建的时候设置消息的过期时间（x-message-ttl），队列中的所有消息使用这个超时
 时间
 - 给具体的某个消息设置过期时间
 - 如果这两个都做了设置，哪个时间短，哪个生效
@@ -9309,7 +9440,7 @@ rabbitTemplate.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "hello rabbitmq", me
 - 死信的处理方式
     - 丢弃：不重要的消息直接丢弃，不做处理
     - 入库：把死信写入数据库，日后处理
-    - 监听：进入死信队列，专门设置消费端监听死信队列，做后续处理（通常采用）
+    - 监听：将消息放到死信队列，专门设置消费端监听死信队列，做后续处理（通常采用）
         - 创建队列时设置x-dead-letter-exchange、x-dead-letter-routing-key
 
 #### 延迟队列
@@ -9377,7 +9508,7 @@ public RabbitTemplate rabbitTemplate2(CachingConnectionFactory factory) {
 public void test2() {
     rabbitTemplate1.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "message1");
     int i = 1 /0 ;
-    rabbitTemplate1.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "message1");
+    rabbitTemplate1.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "message2");
 }
 ```
 
@@ -9450,7 +9581,7 @@ haproxy -v
 ```conf
 # 前端功能
 # 前端配置（自定义前端名称）
-frontend rabbitmq_ui_fromtend
+frontend rabbitmq_ui_frontend
 # 以后浏览器通过访问这个地址进入管理页面
 bind ip:port
 mode http
@@ -9468,7 +9599,7 @@ server rabbitmq_ui2 ip2:15672 check
 server rabbitmq_ui3 ip3:15672 check
 
 # 核心功能（自定义前端名称）
-frontend rabbitmq_fromtend
+frontend rabbitmq_frontend
 # 以后后端通过访问这个地址进入和rabbitmq通信
 bind ip:port
 mode tcp
@@ -9479,7 +9610,6 @@ default_backend rabbitmq_backend
 backend rabbitmq_backend
 mode tcp
 balance roundrobin
-option httpchk GET /
 # 服务器节点的地址
 server rabbitmq_1 ip1:5672 check
 server rabbitmq_2 ip2:5672 check
@@ -9500,135 +9630,6 @@ systemctl enable haproxy
 
 - 在某一个节点上创建队列，会自动分散到各个节点上
 - 创建队列时，type选择Quorum，node选择一个节点作为主节点
-
-## 注解
-
-- @ImportResource
-  
-    作用：导入Spring配置文件
-  
-    用法：@Configuration + @ImportResource("classpath:xxx.xml") 一起用
-
-例子：读取spring.xml文件中的Pet
-
-1. 定义宠物类
-
-```java
-@Getter
-@Setter
-@ToString
-public class Pet {
-    private String name;
-
-    private int age;
-}
-```
-
-2.设置spring.xml配置Pet
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.springframework.org/schema/beans
-https://www.springframework.org/schema/beans/spring-beans.xsd">
-
-    <bean id="pet" class="com.handle.use_annotation_import_resource.Pet">
-        <property name="name" value="cat"></property>
-        <property name="age" value="2"></property>
-    </bean>
-</beans>
-```
-
-3.定义.定义配置类
-
-```java
-@Configuration
-@ImportResource("classpath:spring.xml")
-public class MainConfiguration {
-
-}
-```
-
-- @RequestAttribute : 获取 request 的属性的值
-
-```java
-@Controller
-@RequestMapping("/application")
-public class ApplicationController {
-    @GetMapping("/gotoDestination")
-    public String gotoDestination(HttpServletRequest request) {
-        // 设置request属性值
-        request.setAttribute("code", "200");
-        request.setAttribute("message", "success");
-
-        // 转发到/destination
-        return "forward:/application/destination";
-    }
-
-    @ResponseBody
-    @GetMapping("/destination")
-    public Map<String, Object> getDestination(
-        @RequestAttribute("message") String message, HttpServletRequest request) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("code", request.getAttribute("code"));
-        map.put("message", message);
-
-        // {"code":"200", "message":"success"}
-        return map;
-    }
-}
-```
-
-- @MatrixVariable : 获取矩阵变量的值
-
-```java
-/**
- * 路径变量配置
- */
-@Configuration(proxyBeanMethods = false)
-public class ApplicationConfiguration {
-    @Bean
-    public WebMvcConfigurer webMvcConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void configurePathMath(PathMatchConfigurer configurer) {
-                UrlPathHelper urlPathHelper = new UrlPathHelper();
-                // 不移除路径变量中分号后面的内容（矩阵变量）
-                urlPathHelper.setRemoveSemicolonContent(false);
-
-                configurer.setUrlPathHelper(urlPathHelper);
-            }
-        };
-    }
-}
-```
-
-```java
-/**
- *  获取矩阵变量的值
- */
-@GetMapping("/user/{bossAge}/{empAge}/getMatrixVariables")
-public Map<String, Object> getMatrixVariables(
-    @MatrixVariable(value = "age", pathVar = "bossAge") Integer bossAge,
-    @MatrixVariable(value = "age", pathVar = "empAge") List<Integer> empAge
-) {
-    Map<String, Object> map = new HashMap<>();
-    map.put("bossAge", bossAge);
-    map.put("empAge", empAge);
-    return map;
-}
-```
-
-请求：localhost:8080/application/user/boss;age=23/emp;age=18;age=19,20,21/getMatrixVariables
-响应：
-
-```json
-{
-    "bossAge":23,
-    "empAge":[18,19,20,21]
-}
-```
 
 ## Thymeleaf
 
