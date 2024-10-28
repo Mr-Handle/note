@@ -2064,6 +2064,11 @@ public class BaseException extends RuntimeException {
 }
 ```
 
+#### try-with-resources
+
+- 适用于实现 java.lang.AutoCloseable或者 java.io.Closeable 的对象
+- catch 或 finally 块在声明的资源关闭后运行
+
 ### 加密
 
 ```java
@@ -9444,6 +9449,13 @@ cd yourpath/elasticsearch-8.15.3/bin
             ...
         </dependencies>
     </dependencyManagement>
+
+     <!-- 5.插件声明，可以被子工程继承 -->
+    <pluginManagement>
+        <plugins>
+            ...
+        </plugins>
+    </pluginManagement>
 </project>
 ```
 
@@ -9707,6 +9719,12 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
       </executions>
   </plugin>
   ```
+
+### 依赖冲突解决
+
+- 先定义先使用
+- 路径最近原则（直接声明使用）
+- 手动排除依赖
 
 ### maven 常见问题及解决方案
 
@@ -11295,11 +11313,23 @@ type k1
 # 设置k1的值为v1
 set k1 v1
 
-# 当且仅k1不存在时设置k1的值为v1
+# 当且仅当k1不存在时设置k1的值为v1
 setnx k1 v1
+
+# 当且仅当k1不存在时设置k1的过期时间和值
+setnx k1 30 v1
+
+# 当且仅当k1存在时设置k1的过期时间和值
+setex k1 30 v1
 
 # 获取k1的值
 get k1
+
+# 设置k1为新值，返回老值
+set k1 v1 get
+
+# 设置k1为新值，返回老值
+getset k1 v1
 
 # 设置一个或多个key的值
 mset k1 v1 k2 v2
@@ -11307,18 +11337,34 @@ mset k1 v1 k2 v2
 # 获取一个或多个key的值
 mget k1 k2
 
-# 获取k1的值的（字符串）长度
-strlen k1
+# 从k1下标为1开始，用ab，覆盖原来对应下标的值
+setrange k1 1 ab
+
+# 获取k1的子串（闭区间）
+getrange k1 0 -1
 
 # k1的（数字）值增1
 incr k1
 
+# k1的值自增步长值
+incrby k1 2
+
 # k1的（数字）值减1
 decr k1
+
+# k1的值自减步长值
+decrby k1 2
+
+# k1的值末尾追加字符s
+append k1 s
+
+# 获取k1的值的（字符串）长度
+strlen k1
 ```
 
 #### `List`操作命令
 
+- 是一个双端链表的结构
 - List的头部为左边，List的尾部在右边
 - 可以通过`rpush/lpop`或者`lpush/rpop`实现队列
 - 可以通过`rpush/rpop`或者`lpush/lpop`实现栈
@@ -11344,6 +11390,22 @@ lpop k1
 
 # 移除并返回k1最右边的元素
 rpop k1
+
+# 通过索引获取列表中的元素
+lindex list1 1
+
+# 删除3个值为value1的元素
+lrem list1 3 value1
+
+# 截取范围内的值再赋给key
+ltrim list 0 2
+
+# list1取出一个元素加到list2
+rpoplpush list1 list2
+
+# 在列表中的指定元素前/后插入一个新元素
+linsert list1 before/after 元素 新元素
+linsert list1 after zhang san
 ```
 
 #### `Hash`操作命令
