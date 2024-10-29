@@ -2374,7 +2374,12 @@ contentPane.add(component);
 
 ### 序列化/反序列化
 
-- serialVersionUID 起版本控制的作用。反序列化时，会检查 serialVersionUID 是否和当前类的 serialVersionUID 一致。如果 serialVersionUID 不一致则会抛出 InvalidClassException 异常。
+- JSON和XML这种属于文本类序列化方式（比如后端返回前端的json），这样的实体类可以不实现可序列化接口
+- 如果实体对象需要转为字节（通常是二进制字节流）的形式传输（数据存储/网络传输），就必须实现可序列化接口
+- 当实体类的所有属性都已经实现了可序列化接口时，实体类可以不实现序列化接口
+- serialVersionUID 起版本控制的作用。
+    - 反序列化时，会检查 serialVersionUID 是否和当前类的 serialVersionUID 一致
+    - 如果 serialVersionUID 不一致则会抛出 InvalidClassException 异常
 
 ```java
 public class ClassName implements Serializable {
@@ -5834,16 +5839,31 @@ mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 ### 打包
 
+spring boot原文：
+    - The spring-boot-starter-parent POM includes <executions> configuration to bind the repackage goal.
+    - If you do not use the parent POM, you need to declare this configuration yourself.
+
 - 依赖
 
 ```xml
 <build>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
-    </plugins>
+    <!-- 声明插件版本，供子模块使用（不用写version），从而实现版本锁定 -->
+    <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <!-- 子项目只需添加groupId、artifactId，executions对所有子项目生效 -->
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+    </pluginManagement>
 </build>
 ```
 
