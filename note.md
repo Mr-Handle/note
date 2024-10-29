@@ -357,6 +357,19 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 - `BigDecimal.valueOf(double val)`静态方法创建对象，当数值有效位数很多的时候，会有科学计数的精度问题。
 - 等值比较应该用compareTo()方法，而不是equals()方法；因为equals()方法会比较值和精度，而compareTo()方法比较的时候会忽略精度
 
+- RoundingMode.HALF_UP，四舍五入，在大量运算时，结果偏向大数，使得误差产生积累进而产生系统误差
+
+- RoundingMode.HALF_EVEN，四舍六入五成双，在大量运算时，它使舍入后的结果误差的均值趋于零
+    - 小于等于4时舍去（1.1->1，-1.1->-1）
+    - 大于等于6时进1（1.6->2，-1.6->-2）
+    - 等于5时
+        - 如果5后面还有数
+            - 并且为0，舍去（2.50->2，-2.50->-2）
+            - 并且不为0，进1（2.51->3，-2.51->-3）
+        - 如果5后面没有数
+            - 5前面为奇数，进1（5.5->6，-5.5->-6）
+            - 5前面为偶数，舍去（2.5->2，-2.5->-2）
+
 - 除法计算要指定结果精度
 
 ```java
@@ -5839,7 +5852,7 @@ mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 ### 打包
 
-spring boot原文：
+- spring boot原文：
     - The spring-boot-starter-parent POM includes <executions> configuration to bind the repackage goal.
     - If you do not use the parent POM, you need to declare this configuration yourself.
 
