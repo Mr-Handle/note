@@ -2731,6 +2731,457 @@ mvn -Pnative native:compile
 native-image @target\tmp\native-image-xxxxxxx.args
 ```
 
+## Maven
+
+### 安装Maven
+
+- 1.添加环境变量：MAVEN_HOME=`maven根目录`
+
+- 2.环境变量Path追加：`%MAVEN_HOME%\bin`
+
+- 3.修改`MAVEN_HOME\conf\settings.xml` 配置文件
+  
+```xml
+<!-- 1.设置本地仓库路径 -->
+<localRepository>...\repository</localRepository>
+  
+<mirrors>
+    <!-- 2.设置下载jar包的镜像地址 -->
+    <mirror>
+        <id>alimaven</id>
+        <mirrorOf>central</mirrorOf>
+        <name>aliyun maven</name>
+        <url>http://maven.aliyun.com/nexus/content/repositories/central</url>
+    </mirror>
+</mirrors>  
+  
+<profiles>
+    <!-- 3.设置默认jdk -->
+    <profile>
+        <id>jdk-21</id>
+        <activation>
+            <jdk>21</jdk>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <maven.compiler.source>21</maven.compiler.source>
+            <maven.compiler.target>21</maven.compiler.target>
+            <maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
+            <encoding>UTF-8</encoding>
+        </properties>
+    </profile>
+</profiles>
+```
+
+### scope
+
+| 依赖范围 | 编译有效 | 测试有效 | 运行有效 | 打包有效 | 例子 |
+|:- |:- |:- |:- |:- |:- |
+| compile | true | true | true | true | spring-core |
+| test | false | true | false | false | junit |
+| provided | true | true | false | false | lombok |
+| runtime | false | true | true | true | 数据库驱动 |
+| system | true | true | false | false | 本地maven仓库之外的类库，基本用不到 |
+
+### 依赖的传递性
+
+- maven依赖默认是有传递性的
+
+- maven依赖的optional属性说明
+    -Flagging the dependency as optional prevents it from being transitively applied to other modules that use your project
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>some-groupId</groupId>
+        <artifactId>some-artifactId</artifactId>
+        <!-- 防止传递依赖 -->
+        <optional>true</optional>
+    </dependency>
+</dependencies>
+```
+
+### maven生命周期
+
+#### clean生命周期
+
+- pre-clean
+- clean
+- post-clean
+
+```sh
+mvn clean
+```
+
+#### default生命周期（也成为构建生命周期）
+
+- validate，验证项目的正确性
+- compile
+- test
+- package
+- verify，对项目进行额外的检查
+- install，将package安装到maven的本地仓库
+- deploy，将package部署到远程仓库
+
+#### site生命周期
+
+- site，生成项目文档和站点信息
+- deploy-site，将生成的项目文档和站点信息发布到远程服务器
+
+### maven插件
+
+- Maven本质上是⼀个插件框架，它的核⼼并不执⾏任何具体的构建任务，所有这些任务都交给插件来完成
+
+- 每个任务对应了⼀个插件⽬标（goal）
+
+- 每个插件会有⼀个或者多个⽬标
+
+#### 调⽤Maven插件⽬标
+
+- 将插件⽬标与⽣命周期阶段（lifecycle phase）绑定
+
+```xml
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <goals>
+                <goal>repackage</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+- 直接在命令⾏指定要执⾏的插件⽬标
+
+```sh
+mvn spring-boot:repackage
+```
+
+### 创建Maven继承/聚合工程
+
+继承：在父工程中统一声明版本信息，是一种依赖管理的版本简化
+<br/>
+聚合：通过父工程统一构建子工程，它会优化构建顺序，是一种构建管理的简化
+
+- 创建一个maven项目作为父工程，只留下pom文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 1.填写父工程坐标 -->
+    <groupId>com.handle</groupId>
+    <artifactId>application</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- 2.定义打包方式为pom -->
+    <packaging>pom</packaging>
+
+    <!-- 3.填写子工程名称（可选，如果子工程不想聚合给父工程统一管理则可以不写） -->
+    <modules>
+        <module>子工程名称1</module>
+        <module>子工程名称n</module>
+    </modules>
+
+    <!-- 4.依赖声明，可以被子工程继承 -->
+    <dependencyManagement>
+        <dependencies>
+            ...
+        </dependencies>
+    </dependencyManagement>
+
+     <!-- 5.插件声明，可以被子工程继承 -->
+    <pluginManagement>
+        <plugins>
+            ...
+        </plugins>
+    </pluginManagement>
+</project>
+```
+
+- 创建一个maven项目作为子工程，修改pom文件，继承父工程
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 1.填写父工程坐标以继承父工程 -->
+    <parent>
+        <groupId>com.handle</groupId>
+        <artifactId>application</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- 2.填写子工程名称 -->
+    <artifactId>子工程名称</artifactId>
+
+    <!-- 3.填写依赖，继承自父工程的依赖不用写version和scope -->
+    <dependencies>
+        <dependency>
+            <groupId>...</groupId>
+            <artifactId>...</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+### 打包时跳过测试
+
+- 1.命令方式
+
+```sh
+mvn clean package -Dmaven.test.skip=true
+```
+
+- 2.插件方式
+
+```xml
+<build>
+    <plugins>
+        <!-- maven 打包时跳过测试 -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven.surefire.plugin.version}</version>
+            <configuration>
+                <skip>true</skip>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+### 安装远程仓库（私服）
+
+- 解压安装包 `nexus-3.33.0-01-win64.zip`
+
+- 添加环境变量 `..\nexus-3.33.0-01-win64\nexus-3.33.0-01\bin`
+
+- 配置地址、端口、上下文路径 `..\nexus-3.33.0-01-win64\nexus-3.33.0-01\etc\nexus-default.properties`
+
+- 以系统管理员身份打开`cmd`
+
+- 安装 `nexus /install`
+
+- 启动
+
+- 后台启动 ，看不到实时日志`nexus /start`
+
+- 实时启动，可以看到日志，不能关闭cmd窗口 `nexus /run`
+
+- 输入 `http://localhost:8001` 访问，如果默认端口已经改了以新的端口为准
+
+- 查看初始密码 `..\nexus-3.33.0-01-win64\sonatype-work\nexus3\admin.password`
+
+- 输入账号 `admin` 及上面文档的密码登录
+
+- 修改密码
+
+- 设置jar包保存路径
+  
+    ![Blob Stores](/images/BlobStores.png "Blob Stores")
+
+- 设置`maven`配置文档`..\apache-maven-3.6.3\conf\settings.xml` server的id和repository的id要一致
+
+- 设置maven登录私服的账号密码
+  
+  ```xml
+  <server>
+      <id>releases</id>
+      <username>admin</username>
+      <password>Nexus**..</password>
+  </server>
+  <server>
+      <id>snapshots</id>
+      <username>admin</username>
+      <password>Nexus**..</password>
+  </server>
+  <server>
+      <id>nexus</id>
+      <username>admin</username>
+      <password>Nexus**..</password>
+  </server>
+  ```
+
+- 设置私服镜像，镜像id要和server标签的id一致
+  
+  ```xml
+  <mirrors>
+      <mirror>
+          <id>nexus</id>
+          <url>http://localhost:8001/repository/maven-public/</url>
+          <mirrorOf>*</mirrorOf>
+      </mirror>
+  </mirrors>  
+  ```
+
+- 设置pom.xml上传jar包到私服的配置，repository的id要和server的id一致
+
+```xml
+<distributionManagement>
+    <repository>
+        <id>releases</id>
+        <url>
+            http://localhost:8001/repository/maven-releases/
+        </url>
+    </repository>
+    <snapshotRepository>
+        <id>snapshots</id>
+        <url>
+            http://localhost:8001/repository/maven-snapshots/
+        </url>
+    </snapshotRepository>
+</distributionManagement>
+```
+
+- 设置`..\apache-maven-3.6.3\conf\settings.xml` 从私服下载jar包的配置
+
+```xml
+<profiles>
+    <profile>
+        <id>nexus</id>
+        <repositories>
+            <repository>
+                <id>central</id>
+                <url>http://localhost:8001/repository/maven-public/</url>
+                <releases>
+                    <enabled>true</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+            </repository>
+        </repositories>
+        <pluginRepositories>
+            <pluginRepository>
+                <id>central</id>
+                <name>nexus repositories</name>
+                <url>http://localhost:8001/repository/maven-public/</url>
+            </pluginRepository>
+        </pluginRepositories>
+    </profile>
+</profiles>
+
+<!-- 激活 profile -->
+<activeProfiles>
+    <!-- nexus 为上面定义的 profile id -->
+    <activeProfile>nexus</activeProfile>
+</activeProfiles>
+```
+
+- 卸载 `nexus /uninstall`
+
+- maven 安装本地 jar 到 本地 repository
+
+```cmd
+mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -DgroupId=com.microsoft.sqlserver -DartifactId=sqljdbc -Dversion=4.1.5605
+```
+
+### pom.xml 文档设置
+
+- 设置基本信息
+  
+  ```xml
+  <properties>
+      <maven.compiler.source>11</maven.compiler.source>
+      <maven.compiler.target>11</maven.compiler.target>
+      <maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+      <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  ```
+
+- 设置打包时生成source.jar
+  
+  ```xml
+  <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>3.2.1</version>
+      <!-- 指定插件的 goal -->
+      <executions>
+          <execution>
+              <id>attach-sources</id>
+              <goals>
+                  <goal>jar</goal>
+              </goals>
+              <!-- 将 goal 和 maven 生命周期的 package 阶段绑定 -->
+              <phase>package</phase>
+          </execution>
+      </executions>
+  </plugin>
+  ```
+
+- 设置打包时生成javadoc.jar
+  
+  ```xml
+  <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <version>3.3.0</version>
+      <!-- 指定插件的 goal -->
+      <executions>
+          <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                  <goal>jar</goal>
+              </goals>
+              <!-- 将 goal 和 maven 生命周期的 package 阶段绑定 -->
+              <phase>package</phase>
+              <!-- configuration 标签用来设置插件的参数 -->
+              <configuration>
+                  <!-- Specifies the encoding name of the source files. -->
+                  <!-- If not specificed, the encoding value will be the value of the file.encoding system property. -->
+                  <encoding>UTF-8</encoding>
+  
+                  <!-- Specifies the encoding of the generated HTML files-->
+                  <!--  If not specificed, the docencoding value will be UTF-8. -->
+                  <docencoding>UTF-8</docencoding>
+                  <!-- Specifies the HTML character set for this document. -->
+                  <!-- If not specificed, the charset value will be the value of the docencoding parameter. -->
+                  <charset>UTF-8</charset>
+  
+                  <tags>
+                      <!-- define @date tag -->
+                      <tag>
+                          <name>date</name>
+                          <!-- define @date tag for all places -->
+                          <placement>a</placement>
+                          <head>created time:</head>
+                      </tag>
+                  </tags>
+              </configuration>
+          </execution>
+      </executions>
+  </plugin>
+  ```
+
+### 依赖冲突解决
+
+- 先定义先使用
+- 路径最近原则（直接声明使用）
+- 手动排除依赖
+
+### maven 常见问题及解决方案
+
+#### 1. maven 控制台日志乱码
+
+- 查看 maven 默认编码：`mvn -v`
+
+- 设置maven默认编码：`-Dfile.encoding=GBK`
+  
+    ![设置maven默认编码](/images/设置maven默认编码.png "设置maven默认编码")
+
 ## 单元测试
 
 ### Junit5
@@ -5499,7 +5950,7 @@ public class UserController {
 
 ## Spring Boot
 
-- maven dependency
+- 依赖
 
 ```xml
 <!-- 适用于聚合项目 -->
@@ -9404,370 +9855,6 @@ cd yourpath/elasticsearch-8.15.3/bin
 ```
 
 - 测试，访问：<http://localhost:9200/>
-
-## Maven
-
-### 安装Maven
-
-- 1.添加环境变量：MAVEN_HOME=`“maven根目录”`
-
-- 2.环境变量Path追加：`%MAVEN_HOME%\bin`
-
-- 3.修改`“MAVEN_HOME”\conf\settings.xml` 配置文件
-  
-```xml
-<!-- 1.设置本地仓库路径 -->
-<localRepository>...\repository</localRepository>
-  
-<mirrors>
-    <!-- 2.设置下载jar包的镜像地址 -->
-    <mirror>
-        <id>alimaven</id>
-        <mirrorOf>central</mirrorOf>
-        <name>aliyun maven</name>
-        <url>http://maven.aliyun.com/nexus/content/repositories/central</url>
-    </mirror>
-</mirrors>  
-  
-<profiles>
-    <!-- 3.设置默认jdk -->
-    <profile>
-        <id>jdk-21</id>
-        <activation>
-            <jdk>21</jdk>
-            <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-            <maven.compiler.source>21</maven.compiler.source>
-            <maven.compiler.target>21</maven.compiler.target>
-            <maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
-            <encoding>UTF-8</encoding>
-        </properties>
-    </profile>
-</profiles>
-```
-
-### 创建Maven继承/聚合工程
-
-继承：在父工程中统一声明版本信息，是一种依赖管理的版本简化
-<br/>
-聚合：通过父工程统一构建子工程，它会优化构建顺序，是一种构建管理的简化
-
-- 创建一个maven项目作为父工程，只留下pom文件
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <!-- 1.填写父工程坐标 -->
-    <groupId>com.handle</groupId>
-    <artifactId>application</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <!-- 2.定义打包方式为pom -->
-    <packaging>pom</packaging>
-
-    <!-- 3.填写子工程名称（可选，如果子工程不想聚合给父工程统一管理则可以不写） -->
-    <modules>
-        <module>子工程名称1</module>
-        <module>子工程名称n</module>
-    </modules>
-
-    <!-- 4.依赖声明，可以被子工程继承 -->
-    <dependencyManagement>
-        <dependencies>
-            ...
-        </dependencies>
-    </dependencyManagement>
-
-     <!-- 5.插件声明，可以被子工程继承 -->
-    <pluginManagement>
-        <plugins>
-            ...
-        </plugins>
-    </pluginManagement>
-</project>
-```
-
-- 创建一个maven项目作为子工程，修改pom文件，继承父工程
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <!-- 1.填写父工程坐标以继承父工程 -->
-    <parent>
-        <groupId>com.handle</groupId>
-        <artifactId>application</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-
-    <!-- 2.填写子工程名称 -->
-    <artifactId>子工程名称</artifactId>
-
-    <!-- 3.填写依赖，继承自父工程的依赖不用写version和scope -->
-    <dependencies>
-        <dependency>
-            <groupId>...</groupId>
-            <artifactId>...</artifactId>
-        </dependency>
-    </dependencies>
-</project>
-```
-
-### 打包时跳过测试
-
-- 1.命令方式
-
-```sh
-mvn clean package -Dmaven.test.skip=true
-```
-
-- 2.插件方式
-
-```xml
-<build>
-    <plugins>
-        <!-- maven 打包时跳过测试 -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>${maven.surefire.plugin.version}</version>
-            <configuration>
-                <skip>true</skip>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
-```
-
-### 安装远程仓库（私服）
-
-- 解压安装包 `nexus-3.33.0-01-win64.zip`
-
-- 添加环境变量 `..\nexus-3.33.0-01-win64\nexus-3.33.0-01\bin`
-
-- 配置地址、端口、上下文路径 `..\nexus-3.33.0-01-win64\nexus-3.33.0-01\etc\nexus-default.properties`
-
-- 以系统管理员身份打开`cmd`
-
-- 安装 `nexus /install`
-
-- 启动
-
-- 后台启动 ，看不到实时日志`nexus /start`
-
-- 实时启动，可以看到日志，不能关闭cmd窗口 `nexus /run`
-
-- 输入 `http://localhost:8001` 访问，如果默认端口已经改了以新的端口为准
-
-- 查看初始密码 `..\nexus-3.33.0-01-win64\sonatype-work\nexus3\admin.password`
-
-- 输入账号 `admin` 及上面文档的密码登录
-
-- 修改密码
-
-- 设置jar包保存路径
-  
-    ![Blob Stores](/images/BlobStores.png "Blob Stores")
-
-- 设置`maven`配置文档`..\apache-maven-3.6.3\conf\settings.xml` server的id和repository的id要一致
-
-- 设置maven登录私服的账号密码
-  
-  ```xml
-  <server>
-      <id>releases</id>
-      <username>admin</username>
-      <password>Nexus**..</password>
-  </server>
-  <server>
-      <id>snapshots</id>
-      <username>admin</username>
-      <password>Nexus**..</password>
-  </server>
-  <server>
-      <id>nexus</id>
-      <username>admin</username>
-      <password>Nexus**..</password>
-  </server>
-  ```
-
-- 设置私服镜像，镜像id要和server标签的id一致
-  
-  ```xml
-  <mirrors>
-      <mirror>
-          <id>nexus</id>
-          <url>http://localhost:8001/repository/maven-public/</url>
-          <mirrorOf>*</mirrorOf>
-      </mirror>
-  </mirrors>  
-  ```
-
-- 设置pom.xml上传jar包到私服的配置，repository的id要和server的id一致
-
-```xml
-<distributionManagement>
-    <repository>
-        <id>releases</id>
-        <url>
-            http://localhost:8001/repository/maven-releases/
-        </url>
-    </repository>
-    <snapshotRepository>
-        <id>snapshots</id>
-        <url>
-            http://localhost:8001/repository/maven-snapshots/
-        </url>
-    </snapshotRepository>
-</distributionManagement>
-```
-
-- 设置`..\apache-maven-3.6.3\conf\settings.xml` 从私服下载jar包的配置
-
-```xml
-<profiles>
-    <profile>
-        <id>nexus</id>
-        <repositories>
-            <repository>
-                <id>central</id>
-                <url>http://localhost:8001/repository/maven-public/</url>
-                <releases>
-                    <enabled>true</enabled>
-                </releases>
-                <snapshots>
-                    <enabled>true</enabled>
-                </snapshots>
-            </repository>
-        </repositories>
-        <pluginRepositories>
-            <pluginRepository>
-                <id>central</id>
-                <name>nexus repositories</name>
-                <url>http://localhost:8001/repository/maven-public/</url>
-            </pluginRepository>
-        </pluginRepositories>
-    </profile>
-</profiles>
-
-<!-- 激活 profile -->
-<activeProfiles>
-    <!-- nexus 为上面定义的 profile id -->
-    <activeProfile>nexus</activeProfile>
-</activeProfiles>
-```
-
-- 卸载 `nexus /uninstall`
-
-- maven 安装本地 jar 到 本地 repository
-
-```cmd
-mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -DgroupId=com.microsoft.sqlserver -DartifactId=sqljdbc -Dversion=4.1.5605
-```
-
-### pom.xml 文档设置
-
-- 设置基本信息
-  
-  ```xml
-  <properties>
-      <maven.compiler.source>11</maven.compiler.source>
-      <maven.compiler.target>11</maven.compiler.target>
-      <maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
-      <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
-  ```
-
-- 设置打包时生成source.jar
-  
-  ```xml
-  <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-source-plugin</artifactId>
-      <version>3.2.1</version>
-      <!-- 指定插件的 goal -->
-      <executions>
-          <execution>
-              <id>attach-sources</id>
-              <goals>
-                  <goal>jar</goal>
-              </goals>
-              <!-- 将 goal 和 maven 生命周期的 package 阶段绑定 -->
-              <phase>package</phase>
-          </execution>
-      </executions>
-  </plugin>
-  ```
-
-- 设置打包时生成javadoc.jar
-  
-  ```xml
-  <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-javadoc-plugin</artifactId>
-      <version>3.3.0</version>
-      <!-- 指定插件的 goal -->
-      <executions>
-          <execution>
-              <id>attach-javadocs</id>
-              <goals>
-                  <goal>jar</goal>
-              </goals>
-              <!-- 将 goal 和 maven 生命周期的 package 阶段绑定 -->
-              <phase>package</phase>
-              <!-- configuration 标签用来设置插件的参数 -->
-              <configuration>
-                  <!-- Specifies the encoding name of the source files. -->
-                  <!-- If not specificed, the encoding value will be the value of the file.encoding system property. -->
-                  <encoding>UTF-8</encoding>
-  
-                  <!-- Specifies the encoding of the generated HTML files-->
-                  <!--  If not specificed, the docencoding value will be UTF-8. -->
-                  <docencoding>UTF-8</docencoding>
-                  <!-- Specifies the HTML character set for this document. -->
-                  <!-- If not specificed, the charset value will be the value of the docencoding parameter. -->
-                  <charset>UTF-8</charset>
-  
-                  <tags>
-                      <!-- define @date tag -->
-                      <tag>
-                          <name>date</name>
-                          <!-- define @date tag for all places -->
-                          <placement>a</placement>
-                          <head>created time:</head>
-                      </tag>
-                  </tags>
-              </configuration>
-          </execution>
-      </executions>
-  </plugin>
-  ```
-
-### 依赖冲突解决
-
-- 先定义先使用
-- 路径最近原则（直接声明使用）
-- 手动排除依赖
-
-### maven 常见问题及解决方案
-
-#### 1. maven 控制台日志乱码
-
-- 查看 maven 默认编码：`mvn -v`
-
-- 设置maven默认编码：`-Dfile.encoding=GBK`
-  
-    ![设置maven默认编码](/images/设置maven默认编码.png "设置maven默认编码")
 
 ## gradle
 
