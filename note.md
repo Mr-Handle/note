@@ -3182,6 +3182,185 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
   
     ![设置maven默认编码](/images/设置maven默认编码.png "设置maven默认编码")
 
+## Gradle
+
+- 官网：<https://gradle.org/>
+
+### 安装Gradle
+
+- 参考Spring Boot支持的Gradle版本
+
+- 参考Idea支持的Gradle版本：`idea_home\plugins\gradle\lib`
+
+- 参考Gradle支持的jdk版本，需要先安装jdk并配置好
+
+- 下载完整版（包含了文档和源码）
+
+- 修改maven下载源
+    - 在`GRADLE_HOME/init.d`目录下创建init.gradle文件，内容如下
+
+```groovy
+allprojects {
+    // 项目依赖的下载地址
+    repositories {
+        mavenLocal()
+        maven {
+            name "aliyun";
+            url "https://maven.aliyun.com/repository/public"
+        }
+        mavenCentral()
+    }
+    // build.gradle构建脚本使用的依赖的下载地址，一般是各种插件的下载地址
+    buildscript {
+        repositories {
+            mavenLocal()
+            maven {
+                name "aliyun";
+                url "https://maven.aliyun.com/repository/public"
+            }
+            mavenCentral()
+        }
+    }
+}
+```
+
+- 配置环境变量
+    - `GRADLE_HOME`
+    - `GRADLE_USER_HOME`，gradle的本地仓库路径和gradle wrapper的缓存路径，指定为maven的repository路径就行，但是下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
+    - `M2_HOME`，maven家目录，修改maven下载源的话才需要定义
+
+- 配置Path：`GRADLE_HOME\bin`
+
+- 测试：`gradle -v`
+
+### Gradle项目目录结构
+
+- Gradle项目默认目录结构和Maven项目的一致，都是基于约定大于配置
+
+- gradlew、gradlew.bat执行的是gradle/wrapper里面指定版本的gradle指令，不是本地安装的gradle的指令
+
+- 如果要执行的是本地安装的gardle的指令，gradle/wrapper，gradlew、gradlew.bat，这三个玩意是用不到的，是可以删了的
+
+- project-root
+    - build，存放编译后的字节码，打成的包、测试报告等，类似maven的target目录
+    - gradle，封装包装器文件夹
+        - wrapper
+            - gradle-wrapper.jar
+            - gradle-wrapper.properties
+    - src
+        - main
+            - java
+            - resources
+            - webapp，war工厂才有这个目录
+                - WEB-INF
+                    - web.xml
+                - index.jsp
+        - test
+            - java
+            - resources
+    - gradlew，包装器在非Windows系统的启动脚本
+    - gradlew.bat，包装器在Windows系统的启动脚本
+    - build.gradle，构建脚本，类似maven的pom.xml
+    - settings.gradle，配置文件，定义项目和子项目名称信息，一个项目只能有一个此文件（子项目是没有这个文件的）
+
+### Gradle常用指令
+
+- gradle指令要在含有build.gradle的目录执行
+
+|指令|说明|
+|:-|:-|
+|gradle clean|删除build目录|
+|gradle classes|编译业务代码和配置文件|
+|gradle test|编译测试代码，生成测试报告|
+|gradle build|构建项目，默认会执行gradle classes、gradle test，以及打包|
+|gradle build -x test|跳过测试构建项目|
+
+### 使用Gradle
+
+- 新建gradle项目
+  
+```sh
+gradle init
+```
+
+- build.gradle.kts
+
+Build script of app project.
+
+```kotlin
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    application
+}
+
+repositories {
+    // 使用本地仓
+    mavenLocal()
+    // 阿里云仓库
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public")
+    }
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+    // compileOnly — for dependencies that are necessary to compile your production code but shouldn’t be part of the runtime classpath
+    // implementation (supersedes compile) — used for compilation and runtime
+    // runtimeOnly (supersedes runtime) — only used at runtime, not for compilation
+    // testCompileOnly — same as compileOnly except it’s for the tests
+    // testImplementation — test equivalent of implementation
+    // testRuntimeOnly — test equivalent of runtimeOnly
+    // Be aware that the Java Library Plugin offers two additional configurations — api and compileOnlyApi — for dependencies that are required for compiling both the module and any modules that depend on it.
+
+    // Use JUnit Jupiter for testing.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // This dependency is used by the application.
+    implementation("com.google.guava:guava:32.1.1-jre")
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+application {
+    // Define the main class for the application.
+    mainClass.set("com.handle.App")
+}
+
+tasks.named<Test>("test") {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+// 指定本项目版本
+version = "1.0.0"
+```
+
+- settings.gradle.kts
+
+Settings file to define build name and subprojects
+
+```kotlin
+plugins {
+    // Apply the foojay-resolver plugin to allow automatic download of JDKs
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+}
+
+// assigns a name to the build, which overrides the default behavior of naming the build after the directory it’s in. It’s recommended to set a fixed name as the folder might change if the project is shared - e.g. as root of a Git repository.
+rootProject.name = "HelloWorld"
+
+// defines that the build consists of one subproject called app that contains the actual code and build logic. More subprojects can be added by additional include(…​) statements.
+include("app")
+
+```
+
 ## 单元测试
 
 ### Junit5
@@ -8312,29 +8491,54 @@ public class ApplicationTest {
 
 ## Zookeeper
 
-### 启动zookeeper
+### 安装Zookeeper单机版
+
+- 修改zoo_sample.cfg为zoo.cfg
 
 ```sh
-# 启动zookeeper服务器1
+mv zoo_sample.cfg zoo.cfg
+```
+
+- 修改zoo.cfg配置
+
+```conf
+dataDir=/handle/data/zookeeper/data
+```
+
+- 启动zookeeper
+
+```sh
+# 启动zookeeper服务器
 bin/zkServer.sh start
 
-# 启动zookeeper服务器2
-./zkServer.sh start
-
-# 启动zookeeper客户端1
-bin/zkCli.sh
-
-# 启动zookeeper客户端2
-./zkCli.sh
-
-# 退出客户端
-quit
+# 查看zookeeper状态
+bin/zkServer.sh status
 
 # 停止zookeeper
 bin/zkServer.sh stop
 
-# 查看zookeeper状态
-bin/zkServer.sh status
+# 启动zookeeper客户端
+bin/zkCli.sh
+
+# 退出客户端
+quit
+```
+
+### 安装Zookeeper集群
+
+- 在dataDir定义的目录下创建一个myid文件
+    - 在文件中填写server编号（上下不要有空行，左右不要有空格）
+- 修改配置
+
+```conf
+# server.id=serverip:port1:port2
+# id是myid文件里面对应的编号
+# serverip是服务器地址
+# port1是fllower和leader交换信息的端口，如2888
+# port2是选举端口，如3888
+server.1=serverip1:port1:port2
+server.2=serverip2:port1:port2
+server.3=serverip3:port1:port2
 ```
 
 ## Docker
@@ -9855,92 +10059,6 @@ cd yourpath/elasticsearch-8.15.3/bin
 ```
 
 - 测试，访问：<http://localhost:9200/>
-
-## gradle
-
-- 新建gradle项目
-  
-```sh
-gradle init
-```
-
-- build.gradle.kts
-
-Build script of app project.
-
-```kotlin
-plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    application
-}
-
-repositories {
-    // 使用本地仓
-    mavenLocal()
-    // 阿里云仓库
-    maven {
-        url = uri("https://maven.aliyun.com/repository/public")
-    }
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
-}
-
-dependencies {
-    // compileOnly — for dependencies that are necessary to compile your production code but shouldn’t be part of the runtime classpath
-    // implementation (supersedes compile) — used for compilation and runtime
-    // runtimeOnly (supersedes runtime) — only used at runtime, not for compilation
-    // testCompileOnly — same as compileOnly except it’s for the tests
-    // testImplementation — test equivalent of implementation
-    // testRuntimeOnly — test equivalent of runtimeOnly
-    // Be aware that the Java Library Plugin offers two additional configurations — api and compileOnlyApi — for dependencies that are required for compiling both the module and any modules that depend on it.
-
-    // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
-
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
-    implementation("com.google.guava:guava:32.1.1-jre")
-}
-
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-application {
-    // Define the main class for the application.
-    mainClass.set("com.handle.App")
-}
-
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
-}
-
-// 指定本项目版本
-version = "1.0.0"
-```
-
-- settings.gradle.kts
-
-Settings file to define build name and subprojects
-
-```kotlin
-plugins {
-    // Apply the foojay-resolver plugin to allow automatic download of JDKs
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
-}
-
-// assigns a name to the build, which overrides the default behavior of naming the build after the directory it’s in. It’s recommended to set a fixed name as the folder might change if the project is shared - e.g. as root of a Git repository.
-rootProject.name = "HelloWorld"
-
-// defines that the build consists of one subproject called app that contains the actual code and build logic. More subprojects can be added by additional include(…​) statements.
-include("app")
-
-```
 
 ## git
 
