@@ -3263,6 +3263,77 @@ allprojects {
     - build.gradle，构建脚本，类似maven的pom.xml
     - settings.gradle，配置文件，定义项目和子项目名称信息，一个项目只能有一个此文件（子项目是没有这个文件的）
 
+### Gradle插件
+
+```gradle
+plugins {
+    // java插件，提供compileOnly、runtimeOnly、implementation、testCompileOnly、testRuntimeOnly、testImplementation这几种依赖类型
+    id 'java'
+    // 包含了java插件提供的功能
+    id 'java-library'
+}
+```
+
+### Gradle依赖
+
+#### Gradle依赖类型
+
+|依赖类型|说明|用例|
+|:-|:-|:-|
+|compileOnly|for dependencies that are necessary to compile your production code but shouldn’t be part of the runtime classpath，Java插件提供，只在编译期需要|Lombok|
+|runtimeOnly (supersedes runtime)|only used at runtime, not for compilation，Java插件提供，只在运行期需要|数据库驱动|
+|implementation (supersedes compile)|used for compilation and runtime，Java插件提供，编译、运行都需要|spring-context|
+|testCompileOnly|same as compileOnly except it’s for the tests，Java插件提供，只在测试类编译期需要||
+|testRuntimeOnly|test equivalent of runtimeOnly，Java插件提供，只在测试类运行期需要||
+|testImplementation|test equivalent of implementation，Java插件提供，测试类编译、运行都需要||
+|providedCompile|war插件提供支持，编译、测试需要，运行时由容器提供支持，无需打入war包中|servlet-api、jsp-api|
+|api|Java Library Plugin offers two additional configurations,for dependencies that are required for compiling both the module and any modules that depend on it，java-library插件提供，支持依赖传递，编译和运行期需要||
+|compileOnlyApi|Java Library Plugin offers two additional configurations,for dependencies that are required for compiling both the module and any modules that depend on it，java-library插件提供，被依赖模块和依赖模块，编译期需要，运行期不需要||
+
+#### Gradle依赖写法
+
+- 直接依赖
+
+```gradle
+dependencies {
+    // 简写
+    implementation 'org.springframework.boot:spring-boot:3.3.5'
+
+    // 全写
+    implementation group: 'org.springframework.boot', name: 'spring-boot', version: '3.3.5'
+}
+```
+
+- 项目依赖
+
+```gradle
+dependencies {
+    // 这个项目要在setting.gradle中声明才可以
+    implementation project(':subproject01')
+}
+```
+
+- 本地依赖
+
+```gradle
+dependencies {
+    // 假设项目根目录下有个lib文件夹存放了各种jar包
+    implementation files('lib/xxx1.jar', 'lib/xxx2.jar')
+    implementation fileTree('dir':'lib', includes:['*.jar'], excludes:['*.war'])
+}
+```
+
+```gradle
+// 实际上是dependencies({})的另一种写法
+dependencies {
+    
+    // Use JUnit Jupiter for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+
+    implementation 'org.springframework.boot:spring-boot:3.3.5'
+}
+```
+
 ### Gradle常用指令
 
 - gradle指令要在含有build.gradle的目录执行
@@ -3305,14 +3376,6 @@ repositories {
 }
 
 dependencies {
-    // compileOnly — for dependencies that are necessary to compile your production code but shouldn’t be part of the runtime classpath
-    // implementation (supersedes compile) — used for compilation and runtime
-    // runtimeOnly (supersedes runtime) — only used at runtime, not for compilation
-    // testCompileOnly — same as compileOnly except it’s for the tests
-    // testImplementation — test equivalent of implementation
-    // testRuntimeOnly — test equivalent of runtimeOnly
-    // Be aware that the Java Library Plugin offers two additional configurations — api and compileOnlyApi — for dependencies that are required for compiling both the module and any modules that depend on it.
-
     // Use JUnit Jupiter for testing.
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
 
