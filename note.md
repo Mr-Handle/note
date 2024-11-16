@@ -3182,6 +3182,36 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
   
     ![设置maven默认编码](/images/设置maven默认编码.png "设置maven默认编码")
 
+## Maven Daemon
+
+- 官网：<https://github.com/apache/maven-mvnd>
+
+- 可以看作是maven的增强版，内嵌了maven，只需将maven的命令mvn改成mvnd即可
+
+### 安装Maven Daemon
+
+- 1.下载zip压缩包
+
+- 2.添加环境变量：MVND_HOME=`Maven Daemon根目录`
+
+- 3.环境变量Path追加：`%MVND_HOME%\bin`
+
+- 4.修改`MVND_HOME\conf\mvnd.properties` 配置文件，设置maven的settings.xml文件位置为`MVND_HOME\mvn\conf\settings.xml`
+
+- 5.修改`MVND_HOME\mvn\conf\settings.xml` 配置文件
+
+- 6.测试`mvnd -v`
+
+### Idea配置Maven Daemon
+
+- IntelliJ IDEA 2024.3 (Community Edition)还没支持Maven Daemon，通过Maven Helper插件来使用
+
+- 点击`File->Settings->Other Settings->Maven Helper`
+    - 勾上`Use a Terminal to run goals, with a custom mvn command`
+    - 并指定命令路径为`MVND_HOME\bin\mvnd.cmd`
+
+- 使用：右键项目名-Run Maven选择对应指令执行即可
+
 ## Gradle
 
 - 官网：<https://gradle.org/>
