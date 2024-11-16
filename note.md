@@ -3263,20 +3263,12 @@ allprojects {
     - build.gradle，构建脚本，类似maven的pom.xml
     - settings.gradle，配置文件，定义项目和子项目名称信息，一个项目只能有一个此文件（子项目是没有这个文件的）
 
-### Gradle插件
-
-```gradle
-plugins {
-    // java插件，提供compileOnly、runtimeOnly、implementation、testCompileOnly、testRuntimeOnly、testImplementation这几种依赖类型
-    id 'java'
-    // 包含了java插件提供的功能
-    id 'java-library'
-}
-```
-
 ### Gradle依赖
 
 #### Gradle依赖类型
+
+- implementation不支持依赖传递，api支持依赖传递
+- 除了模块间依赖引用其它情况优先使用implementation
 
 |依赖类型|说明|用例|
 |:-|:-|:-|
@@ -3294,10 +3286,13 @@ plugins {
 
 - 直接依赖
 
-```gradle
+```groovy
 dependencies {
     // 简写
     implementation 'org.springframework.boot:spring-boot:3.3.5'
+
+    // 遍历所有仓库用最新版本，属于动态版本声明，不建议使用
+    implementation 'org.springframework.boot:spring-boot:+'
 
     // 全写
     implementation group: 'org.springframework.boot', name: 'spring-boot', version: '3.3.5'
@@ -3306,7 +3301,7 @@ dependencies {
 
 - 项目依赖
 
-```gradle
+```groovy
 dependencies {
     // 这个项目要在setting.gradle中声明才可以
     implementation project(':subproject01')
@@ -3315,7 +3310,7 @@ dependencies {
 
 - 本地依赖
 
-```gradle
+```groovy
 dependencies {
     // 假设项目根目录下有个lib文件夹存放了各种jar包
     implementation files('lib/xxx1.jar', 'lib/xxx2.jar')
@@ -3323,7 +3318,7 @@ dependencies {
 }
 ```
 
-```gradle
+```groovy
 // 实际上是dependencies({})的另一种写法
 dependencies {
     
@@ -3332,6 +3327,132 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot:3.3.5'
 }
+```
+
+### Gradle依赖冲突解决
+
+- 默认采用最新版本（官方默认的方式就够了）
+
+- exclude排除依赖
+
+```groovy
+dependencies {
+    implementation('org.springframework.boot:spring-boot:3.3.5') {
+        // 支持如下排除写法
+        exclude group: 'org.slf4j'
+        exclude module: 'slf4j-api'
+        exclude group: 'org.slf4j',module: 'slf4j-api'
+    }
+    // 排除后手动引入
+    implementation 'org.slf4j:slf4j-api:1.4.0'
+}
+```
+
+- 不允许依赖传递，不建议使用
+
+```groovy
+dependencies {
+    implementation('org.springframework.boot:spring-boot:3.3.5') {
+        transitive(false)
+    }
+}
+```
+
+- 强制使用某个版本，官方推荐
+
+```groovy
+dependencies {
+    // 加两个英文感叹号
+    implementation 'org.slf4j:slf4j-api:1.4.0!!'
+
+    // 或者这种写法
+    implementation('org.slf4j:slf4j-api:1.4.0!!') {
+        version {
+            strictly("1.4.0")
+        }
+    }
+}
+```
+
+- 配置遇到依赖冲突的时候，构建失败
+
+```groovy
+configuration.all() {
+    Configuration configuration -> configuration.resolutionStrategy.failOnVersionConflict()
+}
+```
+
+### Gradle插件
+
+#### 脚本插件
+
+- 本质是一个脚本文件，它是模块化的基础，可以通过它来做依赖的版本管控
+
+- 自定义一个xxx.gradle文件，然后在build.gradle引入进来
+
+```groovy
+apply from: "xxx.gradle"
+```
+
+#### 内部插件
+
+- 对象插件，就是实现了org.gradle.api.Plugin接口的插件，每个Java Gradle插件都有一个plugin id
+
+```groovy
+// dsl写法
+plugins {
+    id 'java'
+}
+
+// apply的map具名参数写法，value可以是插件id、插件的全限定类名、插件的类名（插件所在类的包已经被引入的情况）
+apply plugin:'java'
+
+// apply的闭包写法
+apply {
+    plugin 'java'
+}
+```
+
+#### 第三方插件
+
+```groovy
+// 这种写法必须保证插件已经被托管了，否则要用传统方式
+plugins {
+    id 'org.springframe.boot' version '2.4.1'
+}
+
+// 传统方式，要求这个buildscript要在文件开头
+buildscript {
+    ext {
+        // 定义版本
+        v="3.2.0"
+    }
+    repositories {
+        // 插件从哪里下载
+    }
+    dependencies {
+        // 引入插件插件gav
+        classpath("g:a:${v}")
+    }
+}
+```
+
+#### 用户自定义插件
+
+- 创建buildSrc目录，它是Gradle默认的插件目录
+    - 新建gradle模块，模块名为buildSrc
+    - 只保留里面的build文件夹、src目录和build.gradle文件
+    - 项目根目录settings.gradle中对buildSrc的声明删了
+
+```groovy
+// 实现接口
+class MyPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        // todo
+    }
+}
+// 应用插件
+apply plugin: MyPlugin
 ```
 
 ### Gradle常用指令
