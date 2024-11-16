@@ -2766,12 +2766,19 @@ native-image @target\tmp\native-image-xxxxxxx.args
         <properties>
             <maven.compiler.source>21</maven.compiler.source>
             <maven.compiler.target>21</maven.compiler.target>
-            <maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
             <encoding>UTF-8</encoding>
         </properties>
     </profile>
 </profiles>
 ```
+
+### Idea配置Maven
+
+- File->Settings->Build,Execution,Deployment->Build Tools->Maven
+    - Maven home path，指定Maven家目录
+    - User settings file，勾上Override，选择Maven的settings.xml配置文件路径
+    - Use settings from .mvn/maven.config，取消勾选
+    - 点击Runner子选项，勾上Skip Tests
 
 ### scope
 
@@ -3092,9 +3099,8 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
   
   ```xml
   <properties>
-      <maven.compiler.source>11</maven.compiler.source>
-      <maven.compiler.target>11</maven.compiler.target>
-      <maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+      <maven.compiler.source>21</maven.compiler.source>
+      <maven.compiler.target>21</maven.compiler.target>
       <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -3208,9 +3214,9 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 
 - 点击`File->Settings->Other Settings->Maven Helper`
     - 勾上`Use a Terminal to run goals, with a custom mvn command`
-    - 并指定命令路径为`MVND_HOME\bin\mvnd.cmd`
+    - 并指定命令为`mvnd`，然后关闭再打开Idea，如果不行就直接指定命令的全路径为`MVND_HOME\bin\mvnd.cmd`
 
-- 使用：右键项目名-Run Maven选择对应指令执行即可
+- 使用：右键项目名->Run Maven选择对应指令执行即可
 
 ## Gradle
 
@@ -3574,6 +3580,57 @@ rootProject.name = "HelloWorld"
 include("app")
 
 ```
+
+## Groovy
+
+- 官网：<https://groovy-lang.org/>
+
+- Groovy兼容Java语法
+
+- 当Groovy的源文件定义了类的时候，这个类实际上实现了GroovyObject
+
+- 当Groovy的源文件没有定义类的时候，这个源文件会被转换为扩展了Script的类
+    - 这个类将作为脚本使用
+    - 这个类使用源文件名作为类名
+    - 源文件的内容被打包进run方法
+    - 这个类会加入一个main方法使得可以外部执行该脚本
+
+- 在Groovy的源文件中可以混合类的定义和脚本定义，此时不能定义一个和文件同名的类
+
+- Groovy默认类、方法和字段是public修饰的
+
+- Groovy使用def定义变量和方法，不建议使用具体的数据类型
+
+- 无论变量、属性、方法、闭包的参数还是方法的返回值，类型都是可有可无的，都是在给变量赋值的时候才决定它们的类型
+
+- Groovy基本类型也是对象，可以直接调用对象对应的方法
+
+### Groovy属性
+
+- 属性赋值
+    - 对象.属性名=属性值
+    - 对象的setter方法
+    - 具名构造器
+- 属性读取
+    - 对象.属性名
+    - 对象["属性名"]
+    - 对象的getter方法
+- 对类的属性的操作本质还是通过getter、setter方法完成的
+
+### Groovy方法
+
+- 方法声明
+    - 参数类型、返回值类型可以省略
+    - return关键字可以省略，默认使用方法最后一句的返回值作为方法的返回值
+- 方法调用，在不导致二义性的时候，`()`可以省略
+
+### Groovy字符串
+
+- 单引号，作为字符串常量使用，没有运算能力
+
+- 双引号，可通过`${}`引用变量，有运算能力
+
+- 三引号，模板字符串，支持字符串换行
 
 ## 单元测试
 
@@ -6710,6 +6767,7 @@ mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
                     <!-- 子项目只需添加groupId、artifactId，executions对所有子项目生效 -->
                     <executions>
                         <execution>
