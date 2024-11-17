@@ -13299,7 +13299,18 @@ getter为 null时，为null;
 getter为 ""时，为'';
 
 - 请求处理方法返回字符串（页面）的写法
-    ![返回字符串](/images/2021-05-22-19-20-17.png)
+
+```java
+@RequestMapping("/getString")
+public String getString(Model model) {
+    User user = new User();
+    user.setName("handle");
+    model.addAttribute("user", user);
+    // 返回user.jsp
+    return "user";
+}
+```
+
 - 请求处理方法返回类型为void的写法
     ![返回void](/images/2021-05-22-19-16-31.png)
 - ResponseBody 响应json数据（用于ajax请求）
