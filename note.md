@@ -10906,7 +10906,7 @@ alter database `database_name` [character set charset_name] [collate collation_n
 drop database [if exists] 数据库名
 
 # 显示可用的数据库列表
-show databases [like 'stu%'];
+show databases [like 'han%'];
 
 # 查看当前（选择的）数据库
 select database();
