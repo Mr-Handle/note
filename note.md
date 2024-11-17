@@ -3471,6 +3471,8 @@ buildscript {
         classpath("g:a:${v}")
     }
 }
+
+apply plugin: "io.spring.dependency-management"
 ```
 
 #### 用户自定义插件
@@ -3505,80 +3507,79 @@ apply plugin: MyPlugin
 
 ### 使用Gradle
 
-- 新建gradle项目
-  
+#### 创建Gradle项目
+
+- Idea新建项目选择Gradle进行创建
+
+- 命令行创建
+
 ```sh
 gradle init
 ```
 
-- build.gradle.kts
+#### settings.gradle
 
-Build script of app project.
+- Settings file to define build name and subprojects
 
-```kotlin
-plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    application
-}
-
-repositories {
-    // 使用本地仓
-    mavenLocal()
-    // 阿里云仓库
-    maven {
-        url = uri("https://maven.aliyun.com/repository/public")
-    }
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
-}
-
-dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
-
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
-    implementation("com.google.guava:guava:32.1.1-jre")
-}
-
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-application {
-    // Define the main class for the application.
-    mainClass.set("com.handle.App")
-}
-
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
-}
-
-// 指定本项目版本
-version = "1.0.0"
+```groovy
+rootProject.name = 'hello-world'
 ```
 
-- settings.gradle.kts
+#### build.gradle
 
-Settings file to define build name and subprojects
+- Build script of the project
 
-```kotlin
+```groovy
 plugins {
-    // Apply the foojay-resolver plugin to allow automatic download of JDKs
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
+    id 'java'
+    //  This plugin provides useful defaults and Gradle tasks
+    id 'org.springframework.boot' version '3.2.0'
 }
 
-// assigns a name to the build, which overrides the default behavior of naming the build after the directory it’s in. It’s recommended to set a fixed name as the folder might change if the project is shared - e.g. as root of a Git repository.
-rootProject.name = "HelloWorld"
+// 提供版本管理支持，填写依赖的时候可以省略版本号
+apply plugin: 'io.spring.dependency-management'
 
-// defines that the build consists of one subproject called app that contains the actual code and build logic. More subprojects can be added by additional include(…​) statements.
-include("app")
+// 项目名称和版本，项目名在settings.gradle中定义了
+group = 'com.handle'
+version = '1.0-SNAPSHOT'
 
+// 依赖
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+```
+
+### 发布Maven BOM
+
+```groovy
+plugins {
+    // BOM插件
+    id 'java-platform'
+    // 发布插件
+    id 'maven-publish'
+}
+
+group = 'com.handle'
+version = '1.0-SNAPSHOT'
+
+dependencies {
+    constraints {
+        // 这些依赖会生成到BOM的dependencyManagement里面
+        api 'com.alibaba.cloud:spring-cloud-alibaba-dependencies:2023.0.0.0-RC1'
+        api 'org.springframework.cloud:spring-cloud-dependencies:2023.0.0'
+        api 'org.springframework.boot:spring-boot-dependencies:3.2.0'
+    }
+}
+
+publishing {
+    publications {
+        // 自定义发布名称为bom
+        bom(MavenPublication) {
+            // 发布成BOM
+            from components.javaPlatform
+        }
+    }
+}
 ```
 
 ## Groovy
