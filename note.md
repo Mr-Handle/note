@@ -10717,7 +10717,7 @@ docker run -p 5050:80 \
 
 ### MySQL
 
-#### windows安装（压缩包版）
+#### windows安装（免安装版）
 
 以下安装步骤均在管理员身份的dos窗口中执行。
 
@@ -10763,17 +10763,17 @@ docker run -p 5050:80 \
    mysqld --remove mysql
    ```
 
-#### linux安装
+#### Linux安装MySQL
 
 ```sh
 # 查看是否安装了mysql相关的组件
-rpm -qa | grep mariadb
+rpm -qa | grep mariadbMySQL
 
 # 卸载mysql相关组件
 rpm -e --nodeps mariadb-libs
 ```
 
-#### mysql-docker
+#### Docker安装MySQL
 
 ```sh
 # 安装
@@ -10783,9 +10783,58 @@ docker pull mysql:8.0.29
 docker run -p 3306:3306 --name mysql01 -e MYSQL_ROOT_PASSWORD=mysql123 -d mysql:8.0.29 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ```
 
-#### CRUD 操作
+#### MySQL字符集
 
-##### 用户和权限操作
+- 层级：server（MySQL 实例级别）、database（库级别）、table（表级别）、column（字段级别），优先级从左往右依次增大
+
+- 查看数据库字符集
+
+```sql
+select default_character_set_name, default_collation_name
+from information_schema.schemata 
+where schema_name = 'db_name';
+```
+
+##### 连接字符集
+
+- character_set_client ：描述了客户端发送给服务器的 SQL 语句使用的是什么字符集。
+- character_set_connection ：描述了服务器接收到 SQL 语句时使用什么字符集进行翻译。
+- character_set_results ：描述了服务器返回给客户端的结果使用的是什么字符集
+
+- 查看连接字符集
+
+```sql
+select * from performance_schema.session_variables
+where variable_name in (
+'character_set_client', 'character_set_connection',
+'character_set_results', 'collation_connection'
+) 
+order by variable_name;
+```
+
+##### 排序字符集
+
+- utf8mb4_unicode_ci，是基于标准的Unicode来排序和比较，能够在各种语言之间精确排序
+- utf8mb4_general_ci，没有实现Unicode排序规则，在遇到某些特殊语言或者字符集，排序结果可能不一致，在比较和排序的时候更快
+- 使用的时候统一只用某一种就行
+
+##### JDBC驱动字符集
+
+- characterEncoding
+- characterSetResults
+
+- MySQL连接串
+
+```properties
+spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# characterEncoding=UTF-8会自动映射为MySQL的utf8mb4
+spring.datasource.url=jdbc:mysql://localhost:3306/handle?useUnicode=true&characterEncoding=UTF-8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
+spring.datasource.username=root
+spring.datasource.password=mysql123
+```
+
+#### 用户和权限操作
 
 ```sql
 # 显示当前用户
@@ -10844,17 +10893,17 @@ revoke select on hr.* from dbadmin;
 drop user dbadmin;
 ```
 
-##### 数据库操作
+#### 数据库操作
 
 ```sql
 # 创建数据库
-create database if not exists `study` default character set utf8mb4 collate utf8mb4_unicode_ci;
+create database [if not exists] `database_name` character set utf8mb4 collate utf8mb4_unicode_ci;
 
 # 修改数据库
-alter database 数据库名 [character set charset_name] [collate collation_name]
+alter database `database_name` [character set charset_name] [collate collation_name]
 
 # 删除数据库，同时删除该数据库相关的目录及其目录内容
-drop database[if exists] 数据库名
+drop database [if exists] 数据库名
 
 # 显示可用的数据库列表
 show databases [like 'stu%'];
@@ -10869,7 +10918,26 @@ show create database 数据库名称;
 use 数据库名称;
 ```
 
-##### 表操作
+#### 表操作
+
+##### 建表
+
+建表：字符集utf8mb4 ，排序规则utf8mb4_unicode_ci, InnoDB引擎，增加事务处理，MyISAM引擎，高效处理插入和查询
+
+```sql
+create table account (
+    id int unsigned not null auto_increment,
+    name nvarchar(16) not null unique,
+    password char(32) not null,
+    salt char(128) not null,
+    latestLoginCity nvarchar(32) not null default '',
+    latestLoginIp char(16) not null default '',
+    latestLoginTime datetime not null default now(),
+    latestLogOutTime datetime not null default now(),
+    primary key (id)
+    # auto_increment=1 设置自增初始值
+)auto_increment=1,character set = utf8mb4, collate = utf8mb4_unicode_ci, engine=InnoDB;
+```
 
 ```sql
 # 显示当前选择的数据库内可用表的列表
@@ -11151,28 +11219,9 @@ create table user(
     balance decimal(12, 2)  not null
     
     # auto_increment=1 设置自增初始值
-)auto_increment=1,CHARACTER SET = utf8mb4, COLLATE = utf8mb4_general_ci, ENGINE=MyISAM;
+)auto_increment=1,CHARACTER SET = utf8mb4, COLLATE = utf8mb4_unicode_ci, ENGINE=MyISAM;
 
 select * from user;
-```
-
-Mysql
-
-建库：字符集utf8mb4 ，排序规则utf8mb4_general_ci,InnoDB引擎，增加事务处理，MyISAM引擎，高效处理插入和查询
-
-```sql
-create table account (
-    id int unsigned not null auto_increment,
-    name nvarchar(16) not null unique,
-    password char(32) not null,
-    salt char(128) not null,
-    latestLoginCity nvarchar(32) not null default '',
-    latestLoginIp char(16) not null default '',
-    latestLoginTime datetime not null default now(),
-    latestLogOutTime datetime not null default now(),
-    primary key (id)
-    # auto_increment=1 设置自增初始值
-)auto_increment=1,CHARACTER SET = utf8mb4, COLLATE = utf8mb4_general_ci, ENGINE=MyISAM;
 ```
 
 - 备份数据库：
@@ -11232,7 +11281,7 @@ describe account;
 select concat(id,'(',name,')') from account order by id;
 ```
 
-##### 其他操作
+#### 其他操作
 
 ```sql
 # 显示数据库版本
