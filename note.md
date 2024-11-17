@@ -13312,11 +13312,53 @@ public String getString(Model model) {
 ```
 
 - 请求处理方法返回类型为void的写法
-    ![返回void](/images/2021-05-22-19-16-31.png)
+
+```java
+@RequestMapping("/testVoid")
+public void testVoid(HttpServletRequest request, HttpServletResponse response) {
+    // 请求转发
+    request.getRequestDispatcher("/WEB-INF/pages/success.jsp").forward(request, response);
+
+    // 请求重定向
+    response.sendRedirect(request.getContextPath() + "/index.jsp");
+
+    // 设置编码
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType("text/html;charset=UTF-8");
+
+    // 直接相应
+    response.getWriter.print("hello world");
+}
+```
+
 - ResponseBody 响应json数据（用于ajax请求）
-    ![ResponseBody](/images/2021-05-22-20-11-24.png)
+
+```java
+@RequestMapping("/updateUser")
+@ResponseBody
+public User updateUser(@RequestBody User user) {
+    user.setName("handle");
+    // 返回json
+    return user;
+}
+```
+
 - 返回ModelAndView，和返回字符串（页面）功能一样
-    ![返回ModelAndView](/images/2021-05-22-19-45-01.png)
+
+```java
+@RequestMapping("/testModelAndView")
+public ModelAndView testModelAndView() {
+    User user = new User();
+    user.setName("handle");
+
+    ModelAndView modelAndView = new ModelAndView();
+    // 把user对象存到ModelAndView中，也会把user对象存入到request对象中
+    modelAndView.addObject("user", user);
+    // 跳转到user页面
+    modelAndView.setViewName("user");
+    return modelAndView;
+}
+```
 
 Servlet就是一个能处理HTTP请求，发送HTTP响应的小进程，而发送响应无非就是获取`PrintWriter`，然后输出HTML。
 
