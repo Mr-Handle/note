@@ -3582,6 +3582,32 @@ publishing {
 }
 ```
 
+### 使用Maven BOM
+
+```groovy
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0' apply false
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.handle'
+version = '1.0-SNAPSHOT'
+
+dependencyManagement {
+    imports {
+        // 引入自定义BOM
+        mavenBom 'com.handle:java-one-dependencies:1.0-SNAPSHOT'
+    }
+}
+
+dependencies {
+    // 不用写版本号
+    implementation 'org.projectlombok:lombok'
+}
+```
+
 ## Groovy
 
 - 官网：<https://groovy-lang.org/>
