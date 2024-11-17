@@ -10828,8 +10828,8 @@ order by variable_name;
 ```properties
 spring.datasource.type=com.zaxxer.hikari.HikariDataSource
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-# characterEncoding=UTF-8会自动映射为MySQL的utf8mb4
-spring.datasource.url=jdbc:mysql://localhost:3306/handle?useUnicode=true&characterEncoding=UTF-8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
+# UTF-8会自动映射为MySQL的utf8mb4
+spring.datasource.url=jdbc:mysql://localhost:3306/handle?useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8
 spring.datasource.username=root
 spring.datasource.password=mysql123
 ```
