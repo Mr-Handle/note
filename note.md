@@ -10893,28 +10893,34 @@ revoke select on hr.* from dbadmin;
 drop user dbadmin;
 ```
 
+#### 数据类型
+
+char: 定长，非常适合存储密码的MD5值
+
+varchar: 字符串列的最大长度比平均长度大很多，列的更新很少时使用
+
 #### 数据库操作
 
 ```sql
-# 创建数据库
+-- 创建数据库
 create database [if not exists] `database_name` character set utf8mb4 collate utf8mb4_unicode_ci;
 
-# 修改数据库
+-- 修改数据库
 alter database `database_name` [character set charset_name] [collate collation_name]
 
-# 删除数据库，同时删除该数据库相关的目录及其目录内容
+-- 删除数据库，同时删除该数据库相关的目录及其目录内容
 drop database [if exists] 数据库名
 
-# 显示可用的数据库列表
+-- 显示可用的数据库列表
 show databases [like 'han%'];
 
-# 查看当前（选择的）数据库
+-- 查看当前（选择的）数据库
 select database();
 
-# 显示创建数据库的sql语句
+-- 显示创建数据库的sql语句
 show create database 数据库名称;
 
-# 选择（打开）数据库
+-- 选择（打开）数据库
 use 数据库名称;
 ```
 
@@ -11209,52 +11215,6 @@ call finduser(2,@name,@password);
 
 select @name,@password;
 
-
-
-# 事务处理
-# 当 commit 或 rollback 语句执行后，事务会自动关闭（MySQL 将来的更改会隐含提交）。
-
-select * from account;
-# 开始事务
-# 事务处理用来管理INSERT、UPDATE和DELETE语句,不能回退CREATE或DROP操作
-start transaction;
-delete from account;
-select * from account;
-# rollback 命令用来回退（撤销）MySQL语句
-rollback;
-select * from account;
-
-# 使用COMMITaccount
-# 在事务处理块中，提交不会隐含地进行。为进行明确的提交，使用 COMMIT 语句
-select * from account;
-start transaction;
-delete from account where id=4294967295 ;
-select * from account;
-commit;
-select * from account;
-
-# 使用保留点
-# 每个保留点都取标识它的唯一名字，以便在回退时，MySQL知道要回退到何处
-# 保留点在事务处理完成（执行一条ROLLBACK或COMMIT）后自动释放
-# 也可以用RELEASESAVEPOINT明确地释放保留点
-savepoint point1;
-
-# 回退到保留点
-rollback to point1;
-
-# 释放保留点
-release savepoint point1 ;
-
-# 更改默认的提交行为
-# autocommit标志是针对每个连接而不是服务器的。
-# 设置autocommit为0（假）指示MySQL不自动提交更改
-set autocommit = 0;
-start transaction;
-select * from account;
-insert into account (name,password) values('raidon','kien');
-insert into account (name,password) values('nintendo','nn134');
-rollback;
-
 # 刷新表，清除缓存，同时防止备份时候有新数据写入
 flush tables with read lock;
 unlock tables;
@@ -11321,11 +11281,6 @@ select * from user;
          mysql -u root -p -P 8020 handle < d:/handle_backup.sql
        ```
 
-数据类型
-
-char: 定长，非常适合存储密码的MD5值
-varchar: 字符串列的最大长度比平均长度大很多，列的更新很少时使用。
-
 ```sql
 --登录，标识密码的p要小写
 mysql -u root -p
@@ -11358,57 +11313,80 @@ show tables;
 show columns from account;
 describe account;
 
-# 拼接字段
+-- 拼接字段
 select concat(id,'(',name,')') from account order by id;
 ```
 
 #### 其他操作
 
 ```sql
-# 显示数据库版本
+-- 显示数据库版本
 select version();
 
-# 显示当前时间
+-- 显示当前时间
 select now();
 
-# 显示数据库支持的字符集
+-- 显示数据库支持的字符集
 show charset;
 
-# 显示数据库支持的存储引擎
+-- 显示数据库支持的存储引擎
 show engines;
 
-# 查看 MySQL 当前默认的存储引擎
+-- 查看 MySQL 当前默认的存储引擎
 show variables like '%storage_engine%';
 
-# 查看数据库中某个表使用的存储引擎
+-- 查看数据库中某个表使用的存储引擎
 show table status from study where name='account';
 
-# 查看mysql默认隔离级别
+-- 查看mysql默认隔离级别
 select @@transaction_isolation;
 
-# 共享锁
+-- 共享锁
 select ... lock in share mode;
 
-# 排他锁
+-- 排他锁
 select ... for update;
-
-# 添加主键索引
-alter table `table_name` add primary key (`column`)
-
-# 添加唯一索引
-alter table `table_name` add unique (`column`)
-
-# 添加普通索引
-alter table `table_name` add index index_name (`column`)
-
-# 添加多列索引
-alter table `table_name` add index index_name ( `column1`, `column2`, `column3` )
-
-# 添加全文索引
-alter table `table_name` add fulltext (`column`)
 ```
 
 #### 索引
+
+##### 创建索引
+
+```sql
+-- 创建普通索引
+create index index_name on `table_name` (`column`);
+
+-- 创建唯一索引
+create unique index index_name on `table_name` (`column`);
+
+-- 创建组合索引
+create index idx_columnName1_columnName2 on `table_name` (columnName1, columnName2)
+```
+
+##### 添加索引
+
+```sql
+-- 添加主键索引
+alter table `table_name` add primary key (`column`)
+
+-- 添加唯一索引
+alter table `table_name` add unique (`column`)
+
+-- 添加普通索引
+alter table `table_name` add index index_name (`column`)
+
+-- 添加多列索引
+alter table `table_name` add index index_name ( `column1`, `column2`, `column3` )
+
+-- 添加全文索引
+alter table `table_name` add fulltext (`column`)
+```
+
+##### 删除索引
+
+```sql
+alter table `table_name` drop index index_name;
+```
 
 - 查询时关联列类型不一致会自动进行数据类型隐式转换，会造成列上的索引失效
 - 不同的字符集进行比较前需要进行转换会造成索引失效
@@ -11421,19 +11399,63 @@ alter table `table_name` add fulltext (`column`)
 - 查询字段的区分度
 
 ```sql
-# 越接近1，区分度越高
+-- 越接近1，区分度越高
 select count(distinct columnName) / count(*) as columnName_rate from tableName
-```
-
-- 建立组合索引
-
-```sql
-create index idx_columnName1_columnName2 on tableName(columnName1, columnName2)
 ```
 
 - 回表：通过辅助索引拿到主键后，再回到主键索引查询的过程，需要尽量减少回表次数，提高查询效率
 - 覆盖索引（包含了所有查询字段：where,select,order by,group by 包含的字段的索引）避免回表
 - 给有大量数据的表新建索引：新建一张表+建索引+导入旧表数据+废弃旧表
+
+#### 事务处理
+
+- 事务处理用来管理insert、update和delete语句，不能回退select、create或drop操作
+- MySQL默认是隐式提交
+- 当commit或rollback语句执行后，事务会自动关闭（MySQL变回隐式提交）
+
+```sql
+select * from account;
+
+-- 开始事务
+start transaction;
+delete from account;
+select * from account;
+
+-- rollback 命令用来回退（撤销）MySQL语句
+rollback;
+select * from account;
+
+-- 在事务处理块中，提交不会隐含地进行。为进行明确的提交，使用 COMMIT 语句
+select * from account;
+start transaction;
+delete from account where id=4294967295;
+select * from account;
+commit;
+select * from account;
+
+-- 使用保留点
+-- 每个保留点都取标识它的唯一名字，以便在回退时，MySQL知道要回退到何处
+-- rollback to 用于回滚到指定的保留点；如果没有设置保留点，则回退到start transaction语句处
+-- 保留点在事务处理完成（执行一条rollback或commit）后自动释放
+-- 也可以用RELEASESAVEPOINT明确地释放保留点
+savepoint point1;
+
+-- 回退到保留点
+rollback to point1;
+
+-- 释放保留点
+release savepoint point1;
+
+-- 更改默认的提交行为
+-- autocommit标志是针对每个连接而不是服务器的
+-- 设置autocommit为0（假）指示MySQL不自动提交更改
+set autocommit = 0;
+start transaction;
+select * from account;
+insert into account (name,password) values('raidon','kien');
+insert into account (name,password) values('nintendo','nn134');
+rollback;
+```
 
 #### 锁
 
@@ -11456,22 +11478,24 @@ update user set user_name = #{userName} where user_age=#{userAge}
 #### 删除重复数据
 
 ```sql
-# 查看重复数量1
+-- 查看重复数量1
 select columnName,count(1) from tableName group by columnName having count(1) > 1
-# 查看重复数量1
+-- 查看重复数量2
 select columnName,count(columnName) from tableName group by columnName having count(columnName) > 1
 
-# 查看重复数据
+-- 查看重复数据
 select * from tableName where columnName in (
-    select 重复字段 from tableName group by 重复字段 having count(1) > 1
+    select columnName from tableName group by columnName having count(1) > 1
 )
-# 重复数据全部删除
+
+-- 重复数据全部删除
 delete from tableName where columnName in (
     select t.columnName from (
         select columnName from tableName group by columnName having count(1) > 1
     ) t
 )
-# 重复数据保留一条，其它删了
+
+-- 重复数据保留一条，其它删了
 delete from tableName where id not in (
     select t.id from (
         select min(id) as id from tableName group by columnName
@@ -11639,10 +11663,10 @@ ldf 文档太大处理方法（先备份数据库）：
 ### Oracle
 
 ```sql
-# 修改字段名
+-- 修改字段名
 alter table student rename column password to pwd;
 
-# 修改字段数据类型
+-- 修改字段数据类型
 alter table student modify password varchar(16) not null;
 ```
 
