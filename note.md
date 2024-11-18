@@ -10939,6 +10939,96 @@ create table account (
 )auto_increment=1,character set = utf8mb4, collate = utf8mb4_unicode_ci, engine=InnoDB;
 ```
 
+##### 改表
+
+```sql
+-- 添加字段
+alter table account add age int(3);
+
+-- 修改字段，id自增到 int unsigned 最大值后不再允许插入
+alter table account change column id int unsigned auto_increment;
+
+-- 删除字段
+alter table account drop column age;
+
+-- 添加主键
+alter table account add primary key (id);
+
+-- 删除主键
+alter table account drop primary key;
+```
+
+##### 删表
+
+```sql
+# 如果表存在则删除
+drop table if exists payment;
+```
+
+##### insert
+
+```sql
+-- 插入一行
+insert into account (name, password)  values ('Jack', 'Jack123');
+-- 插入多行
+insert into account (name, password)  values ('Jack', 'Jack123'), ('Tom', 'Tom123');
+```
+
+##### 清空表数据
+
+```sql
+-- 删除指定数据
+delete from account where name='Tom';
+
+-- 清空表数据，产生binlog日志，可以回滚
+delete from account;
+-- 清空表数据，不产生日志，不能回滚，会把表的自增值重置和索引恢复到初始大小等
+truncate table account;
+```
+
+##### select
+
+```sql
+-- 分组过滤排序查询
+select name, count(*) as repeat_name
+from account
+where name is not null
+group by name
+having count(*) > 1;
+
+-- 子查询：将一个select的结果作为另一个sql语句的数据来源或判断条件
+-- 子查询要放在()内
+-- 子查询常用在from或where后边
+-- from后边的子查询相当于一张临时表，需要使用as起一个表名
+select t1.name 
+from (select name from account where age > 18) as t1
+where name in (
+     select name from account where gender = 1
+)
+
+-- join连接查询
+-- sql先根据on生成一张临时表，然后再根据where对临时表进行筛选
+select account.*,user.* 
+from account
+inner join user
+on account.name=user.name 
+
+-- 如果两张表的关联字段名相同，也可以使用using来代替on
+select account.*,user.* 
+from account
+inner join user
+using(name)
+
+-- union组合查询
+-- 所有查询的列数和列顺序必须相同
+-- 所有查询中涉及表的列的数据类型必须相同或兼容
+-- union结果集中的列名总是等于union中第一个select语句中的列名
+-- union去重，union all不去重
+select name from account
+union all
+select name from user
+```
+
 ```sql
 # 显示当前选择的数据库内可用表的列表
 show tables;
@@ -11091,15 +11181,6 @@ engine = innodb
 default character set = utf8mb4
 collate = utf8mb4_unicode_ci
 comment ='用户表';
-
-# 如果表存在则删除
-drop table if exists payment;
-
-# 修改字段
-# id自增到 int unsigned 最大值后不再允许插入
-alter table account change column id id int unsigned auto_increment;
-
-insert into account (name, password)  values ('gen', 'voterga');
 
 # 返回最后一个AUTO_INCREMENT值
 select last_insert_id();
