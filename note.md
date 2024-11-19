@@ -10907,17 +10907,8 @@ show grants for dbadmin;
 -- 整个服务器，使用GRANT ALL和REVOKE ALL；
 -- 整个数据库，使用ON database.*；
 -- 特定的表，使用ON database.table；
--- 特定的列；
--- 特定的存储过程。
--- 常用权限：
--- alter 使用ALTER TABLE
--- create 使用CREATE TABLE
--- delete 使用DELETE
--- drop 使用DROP TABLE
--- insert 使用INSERT
--- select 使用SELECT
--- update 使用UPDATE
-
+-- 特定的列
+-- 特定的存储过程
 -- GRANT要求你至少给出以下信息：要授予的权限；被授予访问权限的数据库或表；用户名。
 grant select,create,alter,insert,update,delete,drop on database_name.* to dbadmin;
 
