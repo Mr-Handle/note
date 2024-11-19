@@ -10783,6 +10783,23 @@ docker pull mysql:8.0.29
 docker run -p 3306:3306 --name mysql01 -e MYSQL_ROOT_PASSWORD=mysql123 -d mysql:8.0.29 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ```
 
+#### 登录
+
+标识密码的p要小写，指定端口号的P要大写
+
+```sql
+mysql -u root -p
+
+-- 指定ip和端口号登录
+mysql -u root -p -h 127.0.0.1 -P 3306
+
+-- 远程访问数据库
+-- 修改host字段的值为需要远程连接数据库的主机ip地址或者直接修改成%
+-- host的值为'%'表示所有主机可以通过该用户访问数据库
+update user set host='%' where user='dbadmin';
+flush privileges;
+```
+
 #### MySQL字符集
 
 - 层级：server（MySQL 实例级别）、database（库级别）、table（表级别）、column（字段级别），优先级从左往右依次增大
@@ -10793,6 +10810,9 @@ docker run -p 3306:3306 --name mysql01 -e MYSQL_ROOT_PASSWORD=mysql123 -d mysql:
 select default_character_set_name, default_collation_name
 from information_schema.schemata 
 where schema_name = 'db_name';
+
+-- 显示数据库支持的字符集
+show charset;
 ```
 
 ##### 连接字符集
@@ -10834,70 +10854,77 @@ spring.datasource.username=root
 spring.datasource.password=mysql123
 ```
 
-#### 用户和权限操作
-
-```sql
-# 显示当前用户
-select user();
-
-# mysql数据库有一个名为user的表，它包含所有用户账号
-use mysql;
-
-# user表的user列存储用户登录名
-select user from user;
-
-# 创建用户账号 
-# identified by指定的口令为纯文本，MySQL将在保存到user表之前对其进行加密
-create user dbadmin identified by 'dbadmin123!!';
-
-# 更改口令,新口令必须传递到Password()函数进行加密
-#set password for dbadmin = Password('dbadmin123');
-
-# 在不指定用户名时，SET PASSWORD更新当前登录用户的口令
-set password = Password('dbadmin123');
-
-
-# 为重命名一个用户账号
-rename user dbadmin to dbsadmin;
-
-# 查看赋予用户账号的权限
-# USAGE表示根本没有权限
-# 用户定义为user@host MySQL的权限用用户名和主机名结合定义。
-# 如果不指定主机名，则使用默认的主机名%（授予用户访问权限而不管主机名）。
-show grants for dbadmin;
-
-# 设置访问权限
-# GRANT和REVOKE可在几个层次上控制访问权限：
-# 整个服务器，使用GRANT ALL和REVOKE ALL；
-# 整个数据库，使用ON database.*；
-# 特定的表，使用ON database.table；
-# 特定的列；
-# 特定的存储过程。
-# 常用权限：
-# alter 使用ALTER TABLE
-# create 使用CREATE TABLE
-# delete 使用DELETE
-# drop 使用DROP TABLE
-# insert 使用INSERT
-# select 使用SELECT
-# update 使用UPDATE
-
-# GRANT要求你至少给出以下信息：要授予的权限；被授予访问权限的数据库或表；用户名。
-grant select,create,alter,insert,update,delete,drop on hr.* to dbadmin;
-
-# GRANT的反操作为REVOKE，用它来撤销特定的权限
-# 被撤销的访问权限必须存在，否则会出错
-revoke select on hr.* from dbadmin;
-
-# 删除用户账号和所有相关的账号权限
-drop user dbadmin;
-```
-
 #### 数据类型
 
 char: 定长，非常适合存储密码的MD5值
 
 varchar: 字符串列的最大长度比平均长度大很多，列的更新很少时使用
+
+#### MySQL用户操作
+
+```sql
+-- 创建用户账号并指定密码 
+-- identified by指定的口令为纯文本，MySQL将在保存到user表之前对其进行加密
+create user dbadmin identified by 'dbadmin123!!';
+
+-- 更改口令，新口令必须传递到Password()函数进行加密
+set password for dbadmin = Password('dbadmin123');
+
+-- 在不指定用户名时，set password更新当前登录用户的口令
+set password = Password('dbadmin123');
+
+-- 修改账户名1
+rename user old_username to new_username;
+
+-- 修改账户名2
+update user set user='new_username' where user='old_username';
+flush privileges;
+
+-- 删除用户账号和所有相关的账号权限
+drop user dbadmin;
+
+-- 显示当前用户
+select user();
+
+-- mysql数据库有一个名为user的表，它包含所有用户账号
+use mysql;
+
+-- user表的user列存储用户登录名
+select user from user;
+```
+
+#### 权限操作
+
+```sql
+-- 查看赋予用户账号的权限
+-- USAGE表示根本没有权限
+-- 用户定义为user@host MySQL的权限用用户名和主机名结合定义。
+-- 如果不指定主机名，则使用默认的主机名%（授予用户访问权限而不管主机名）。
+show grants for dbadmin;
+
+-- 设置访问权限
+-- GRANT和REVOKE可在几个层次上控制访问权限：
+-- 整个服务器，使用GRANT ALL和REVOKE ALL；
+-- 整个数据库，使用ON database.*；
+-- 特定的表，使用ON database.table；
+-- 特定的列；
+-- 特定的存储过程。
+-- 常用权限：
+-- alter 使用ALTER TABLE
+-- create 使用CREATE TABLE
+-- delete 使用DELETE
+-- drop 使用DROP TABLE
+-- insert 使用INSERT
+-- select 使用SELECT
+-- update 使用UPDATE
+
+-- GRANT要求你至少给出以下信息：要授予的权限；被授予访问权限的数据库或表；用户名。
+grant select,create,alter,insert,update,delete,drop on database_name.* to dbadmin;
+
+-- GRANT的反操作为REVOKE，用它来撤销特定的权限
+-- 被撤销的访问权限必须存在，否则会出错
+revoke select on database_name.* from dbadmin;
+```
 
 #### 数据库操作
 
@@ -11036,103 +11063,103 @@ select name from user
 ```
 
 ```sql
-# 显示当前选择的数据库内可用表的列表
+-- 显示当前选择的数据库内可用表的列表
 show tables;
 
-# 显示创建表的sql语句
+-- 显示创建表的sql语句
 show create table payment;
 
-# 显示表的字段信息
+-- 显示表的字段信息
 show columns from account;
 describe account;
 
-# 显示广泛的服务器状态信息
+-- 显示广泛的服务器状态信息
 show status;
 
-# 显示创建表的sql语句
+-- 显示创建表的sql语句
 show create table account;
 
-# 显示服务器错误消息
+-- 显示服务器错误消息
 show errors;
 
-# 显示服务器警告消息
+-- 显示服务器警告消息
 show warnings;
 
-# 模糊查询
+-- 模糊查询
 select * from account where name like "%" 'ku' "%";
 
-# 限制结果
-# 分页时一定要配合 order by 使用
-# limit 偏移量，返回行数 （limit只有一个参数时表示的是返回行数，此时偏移量默认为零）
+-- 限制结果
+-- 分页时一定要配合 order by 使用
+-- limit 偏移量，返回行数 （limit只有一个参数时表示的是返回行数，此时偏移量默认为零）
 select * from employee order by id asc limit 0, 20;
 
-# MySQL 5支持 limit 的另一种替代语法：limit size offset rowindex
+-- MySQL 5支持 limit 的另一种替代语法：limit size offset rowindex
 select * from employee order by id asc limit 20 offset 0;
 
-# 正则表达式
-# MySQL中的正则表达式匹配（自版本3.23.4后）大写和小写都匹配
-# 可添加 binary 关键字区分大小写
+-- 正则表达式
+-- MySQL中的正则表达式匹配（自版本3.23.4后）大写和小写都匹配
+-- 可添加 binary 关键字区分大小写
 
-# 检索列name包含文本'R'的所有行
+-- 检索列name包含文本'R'的所有行
 select * from account where name regexp binary 'R';
 
-# '.' 表示匹配任意一个字符
+-- '.' 表示匹配任意一个字符
 select * from account where password regexp '.13';
 
-# '|' 表示or匹配
+-- '|' 表示or匹配
 select * from account where id regexp '[1|2]';
 
-# '[]' 表示匹配几个字符之一，'-' 定义一个范围
+-- '[]' 表示匹配几个字符之一，'-' 定义一个范围
 select * from account where password regexp '[0-9]';
 
-# 为了匹配特殊字符，必须用'\\特殊字符'
+-- 为了匹配特殊字符，必须用'\\特殊字符'
 
-# 拼接字段,列值为id(name)
+-- 拼接字段,列值为id(name)
 select concat(id,'(',name,')') as aaa from account order by id;
 
-# 连接表
-# 内部联结（等值联结），inner join， on 为连接条件（同where）
+-- 连接表
+-- 内部联结（等值联结），inner join， on 为连接条件（同where）
 select account.*, employee.sex, employee.age from account inner join employee on account.id = employee.id;
 
-# 自联结
-# 自联结通常作为外部语句用来替代从相同表中检索数据时使用的子查询语句。
-# 应该试一下自联结和子查询两种方法，以确定哪一种的性能更好。
-# 子查询 select * from employee where sex = (select sex from employee where sex='1' limit 0, 1);
+-- 自联结
+-- 自联结通常作为外部语句用来替代从相同表中检索数据时使用的子查询语句。
+-- 应该试一下自联结和子查询两种方法，以确定哪一种的性能更好。
+-- 子查询 select * from employee where sex = (select sex from employee where sex='1' limit 0, 1);
 select e1.* from employee as e1, employee as e2 where e1.id = e2.id and e2.sex='1';
 
-# 自然联结，自然联结排除多次出现的列，使每个列只返回一次。
-# 一般是通过对某张表使用通配符（SELECT *），对所有其他表的列使用明确的子集来完成的。
-# 内部联结基本都是自然联结
+-- 自然联结，自然联结排除多次出现的列，使每个列只返回一次。
+-- 一般是通过对某张表使用通配符（SELECT *），对所有其他表的列使用明确的子集来完成的。
+-- 内部联结基本都是自然联结
 select account.*, employee.sex, employee.age from account,employee where account.id = employee.id;
 
-# 外部联结,包含了那些在相关表中没有关联行的行。
-# 在使用 outer join 时，必须使用 right 或 left 关键字指定包括其所有行的表
-# right 指出的是包括 outer join 右边的表所有行，left 指出的是包括 outer join 左边的表所有行。
+-- 外部联结,包含了那些在相关表中没有关联行的行。
+-- 在使用 outer join 时，必须使用 right 或 left 关键字指定包括其所有行的表
+-- right 指出的是包括 outer join 右边的表所有行，left 指出的是包括 outer join 左边的表所有行。
 select account.*, employee.sex, employee.age from account left outer join employee on account.id = employee.id;
 
-# group by 分组数据
-# 分组允许把数据分为多个逻辑组，以便能对每个组进行聚集计算。
-# group by 子句必须出现在 where 子句之后，order by 子句之前
+-- group by 分组数据
+-- 分组允许把数据分为多个逻辑组，以便能对每个组进行聚集计算。
+-- group by 子句必须出现在 where 子句之后，order by 子句之前
 select sex, count(*) as number from employee group by sex;
 
-# coalesce(a, b, ...)：如果a!=null则返回a，如果a==null则返回b，...，如果都为null则返回null
+-- coalesce(a, b, ...)：如果a!=null则返回a，如果a==null则返回b，...，如果都为null则返回null
 select coalesce(2, 'b') as someColumnName; 
 
-# with rollup 可以得到每个分组以及每个分组汇总后的值
+-- with rollup 可以得到每个分组以及每个分组汇总后的值
 select coalesce(sex, 'sum') as category, sex, count(*) from employee group by sex with rollup;
 
-# having 过滤分组，（用法与where类似，区别是 having 过滤分组，where 过滤行，where 在数据分组前进行过滤，having 在数据分组后进行过滤。）
+-- having 过滤分组，（用法与where类似，区别是 having 过滤分组，where 过滤行，where 在数据分组前进行过滤，having 在数据分组后进行过滤。）
 select sex, count(*) as number from employee group by sex having number >= 2;
 
-# coalesce，where，group by，with rollup，having，order by 一起使用
+-- coalesce，where，group by，with rollup，having，order by 一起使用
 select coalesce(sex, 'sum') as category, count(*) as number from employee where age>=18 group by sex  with rollup having number >= 3 order by sex asc;
 
-# 测试
+-- 测试
 select 3*2;
 select rtrim(' abc ') as rtrim;
 select ltrim(' abc ');
 select trim(' abc ');
-# 返回当前日期时间
+-- 返回当前日期时间
 select now();
 select upper('abc');
 select lower('ABC');
@@ -11144,38 +11171,23 @@ select month(curdate());
 select abs(-3);
 select pi();
 
-# 聚集函数(汇总数据)
-# COUNT(*)对表中行的数目进行计数，不管表列中包含的是空值（NULL）还是非空值
+-- 聚集函数(汇总数据)
+-- COUNT(*)对表中行的数目进行计数，不管表列中包含的是空值（NULL）还是非空值
 select count(*) from account;
 select sum(age) from employee;
 select distinct id from account;
 
-# 普通查询
+-- 普通查询
 select * from account;
 
-# DELETE语句从表中删除行，甚至是删除表中所有行
+-- DELETE语句从表中删除行，甚至是删除表中所有行
 delete from account;
 
-# TRUNCATE实际是删除原来的表并重新创建一个表，而不是逐行删除表中的数据
+-- TRUNCATE实际是删除原来的表并重新创建一个表，而不是逐行删除表中的数据
 truncate account;
 
-# 重命名表
+-- 重命名表
 rename table acc to account;
-
-# 如果使用的是mysql命令行实用进程,需要临时更改命令行实用进程的语句分隔符
-# 除\符号外，任何字符都可以用作语句分隔符
-delimiter //
-# 创建存储过程
-create procedure find()
-begin
-    select * from  employee;
-end //
-# 恢复默认的语句分隔符
-delimiter ;
-# 使用存储过程
-call find();
-# 删除存储过程
-drop procedure if exists find;
 
 create table if not exists `user` (
     id bigint not null auto_increment comment 'id',
@@ -11188,34 +11200,13 @@ default character set = utf8mb4
 collate = utf8mb4_unicode_ci
 comment ='用户表';
 
-# 返回最后一个AUTO_INCREMENT值
+-- 返回最后一个AUTO_INCREMENT值
 select last_insert_id();
 
 
 select * from account;
 
-
-delimiter //
-# 存储过程将保存结果的3个变量名,所有MySQL变量都必须以@开始
-# IN（传递给存储过程）、OUT（从存储过程传出
-create procedure finduser(
-    in userId int unsigned,
-    out userName  varchar(8),
-    out password varchar(16)
-)
-begin
-    select name into userName from account where id= userId; 
-    select account.password into password from account where id= userId; 
-end //
-delimiter ;
-
-drop procedure if exists finduser;
-
-call finduser(2,@name,@password);
-
-select @name,@password;
-
-# 刷新表，清除缓存，同时防止备份时候有新数据写入
+-- 刷新表，清除缓存，同时防止备份时候有新数据写入
 flush tables with read lock;
 unlock tables;
 
@@ -11223,80 +11214,51 @@ unlock tables;
 show global variables like 'port';
 
 
-# 远程访问数据库
-# 修改host字段的值为需要远程连接数据库的主机ip地址或者直接修改成%
-# host的值为'%'表示所有主机可以通过该用户访问数据库
+-- 远程访问数据库
+-- 修改host字段的值为需要远程连接数据库的主机ip地址或者直接修改成%
+-- host的值为'%'表示所有主机可以通过该用户访问数据库
 update user set host='%' where user='dbadmin';
 flush privileges;
 
 create table user(
  id int unsigned auto_increment primary key,
 
-    # gmt 表示格林威治时间，北京是GMT+8
-    # gmt_create表示主动式创建
+    -- gmt 表示格林威治时间，北京是GMT+8
+    -- gmt_create表示主动式创建
     gmt_create datetime not null,
     
-    # gmt_modified 过去分词表示被动式更新
+    -- gmt_modified 过去分词表示被动式更新
     gmt_modified datetime not null default now(),
     
     name varchar(16) not null,
     
-    # tinyint unsigned范围：0-255
-    # 括号中的数字，不表示存储长度（范围），表示的是显示宽度
-    # tinyint(1)  和 tinyint(3) 没什么区别，占用字节都是一位，
-    # 对存储的值123来说，tinyint(1) 只显示一位数字，tinyint(3) 显示三位数字
-    # tinyint(3) zerofill ，当插入的数据少于3位的时候，如存储值为1，则显示001
-    # tinyint() 显示长度设置后期版本会舍弃
+    -- tinyint unsigned范围：0-255
+    -- 括号中的数字，不表示存储长度（范围），表示的是显示宽度
+    -- tinyint(1)  和 tinyint(3) 没什么区别，占用字节都是一位，
+    -- 对存储的值123来说，tinyint(1) 只显示一位数字，tinyint(3) 显示三位数字
+    -- tinyint(3) zerofill ，当插入的数据少于3位的时候，如存储值为1，则显示001
+    -- tinyint() 显示长度设置后期版本会舍弃
     is_male tinyint unsigned  not null,
     age tinyint unsigned  not null,
     
-    # 强制小数类型为 decimal
-    # decimal(n, m)表示数值中共有n位数，其中整数n-m位，小数m位
-    # decimal(n, m) unsigned 无符号设置后期版本会舍弃
+    -- 强制小数类型为 decimal
+    -- decimal(n, m)表示数值中共有n位数，其中整数n-m位，小数m位
+    -- decimal(n, m) unsigned 无符号设置后期版本会舍弃
     height decimal(5, 2)  not null,
     weight decimal(5, 2)  not null,
 
-    # 余额
+    -- 余额
     balance decimal(12, 2)  not null
     
-    # auto_increment=1 设置自增初始值
+    -- auto_increment=1 设置自增初始值
 )auto_increment=1,CHARACTER SET = utf8mb4, COLLATE = utf8mb4_unicode_ci, ENGINE=MyISAM;
 
 select * from user;
 ```
 
-- 备份数据库：
-  
-  1. 逻辑备份：备份的是SQL语句，效率较低，用于中小型企业。
-
-     - 备份：备份到sql文档,表名为空则复制整个数据库
-
-       ```cmd
-       mysqldump -u root -p -P 8020 handle account employee spidata --single-transaction > d:/handle_backup.sql
-       ```
-
-     - 恢复：从sql文档恢复
-
-       ```cmd
-         mysql -u root -p -P 8020 handle < d:/handle_backup.sql
-       ```
+#### 其他操作
 
 ```sql
---登录，标识密码的p要小写
-mysql -u root -p
-
---指定ip和端口号登录，标识密码的p要小写，指定端口号的P要大写
-
-mysql -u root -p -h 127.0.0.1 -P 3306
-mysql -u dbadmin -p -h 127.0.0.1 -P 8020
-
-# 远程访问数据库
-
-# 修改host字段的值为需要远程连接数据库的主机ip地址或者直接修改成%
-# host的值为'%'表示所有主机可以通过该用户访问数据库
-update user set host='%' where user='dbadmin';
-flush privileges;
-
 -- 查看数据库端口
 show global variables like 'port';
 
@@ -11309,43 +11271,32 @@ use 数据库名;
 --显示数据库的表
 show tables;
 
---显示表的字段
+--显示表的字段1
 show columns from account;
+
+--显示表的字段1
 describe account;
 
 -- 拼接字段
 select concat(id,'(',name,')') from account order by id;
-```
 
-#### 其他操作
-
-```sql
 -- 显示数据库版本
 select version();
 
 -- 显示当前时间
 select now();
 
--- 显示数据库支持的字符集
-show charset;
-
 -- 显示数据库支持的存储引擎
 show engines;
 
--- 查看 MySQL 当前默认的存储引擎
+-- 查看MySQL当前默认的存储引擎
 show variables like '%storage_engine%';
 
 -- 查看数据库中某个表使用的存储引擎
-show table status from study where name='account';
+show table status from database_name where name='account';
 
 -- 查看mysql默认隔离级别
 select @@transaction_isolation;
-
--- 共享锁
-select ... lock in share mode;
-
--- 排他锁
-select ... for update;
 ```
 
 #### 索引
@@ -11464,15 +11415,25 @@ rollback;
 - 索引命中，加的是行锁
 
 ```sql
-# 假设id是主键
+-- 假设id是主键
 update user set user_name = #{userName} where id=#{id}
 ```
 
 - 索引没命中，加的是表锁
 
 ```sql
-# 假设user_age没有加索引
+-- 假设user_age没有加索引
 update user set user_name = #{userName} where user_age=#{userAge}
+```
+
+##### 共享锁和排它锁
+
+```sql
+-- 共享锁
+select ... lock in share mode;
+
+-- 排他锁
+select ... for update;
 ```
 
 #### 删除重复数据
@@ -11480,6 +11441,7 @@ update user set user_name = #{userName} where user_age=#{userAge}
 ```sql
 -- 查看重复数量1
 select columnName,count(1) from tableName group by columnName having count(1) > 1
+
 -- 查看重复数量2
 select columnName,count(columnName) from tableName group by columnName having count(columnName) > 1
 
@@ -11508,6 +11470,59 @@ delete from tableName where id not in (
 
 - where从句中禁止对列进行函数转换和计算，会导致索引失效
 - 没有重复值时用union all
+
+#### 存储过程
+
+```sql
+-- 如果使用的是mysql命令行实用进程，需要临时更改命令行实用进程的语句分隔符
+-- 除\符号外，任何字符都可以用作语句分隔符
+delimiter //
+
+-- 创建存储过程
+create procedure find()
+begin
+    select * from  employee;
+end //
+
+-- 恢复默认的语句分隔符
+delimiter ;
+
+-- 使用存储过程
+call find();
+
+-- 删除存储过程
+drop procedure if exists find;
+
+delimiter //
+-- 存储过程将保存结果的3个变量名，所有MySQL变量都必须以@开始
+-- IN（传递给存储过程）、OUT（从存储过程传出）
+create procedure finduser(in userId int unsigned, out userName  varchar(8), out password varchar(16))
+begin
+    select name into userName from account where id= userId; 
+    select account.password into password from account where id= userId; 
+end //
+delimiter ;
+
+drop procedure if exists finduser;
+
+call finduser(2, @name, @password);
+
+select @name,@password;
+```
+
+#### MySQL数据库备份
+
+##### 逻辑备份
+
+备份的是SQL语句，效率较低，用于中小型企业
+
+```sh
+# 备份到sql文档，表名为空则复制整个数据库
+mysqldump -u root -p -P 3306 handle account employee spidata --single-transaction > d:/handle_backup.sql
+
+# 从sql文档恢复
+mysql -u root -p -P 3306 handle < d:/handle_backup.sql
+```
 
 ### SQL Server
 
