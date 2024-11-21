@@ -2808,40 +2808,88 @@ native-image @target\tmp\native-image-xxxxxxx.args
 </dependencies>
 ```
 
+### Maven的profile
+
+Maven配置文件允许我们配置不同环境的构建设置，例如开发、测试和生产
+
+- 在pom.xml文件中定义配置文件
+
+```xml
+<profiles>
+    <profile>
+        <id>development</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <environment>dev</environment>
+        </properties>
+    </profile>
+    <profile>
+        <id>production</id>
+        <properties>
+            <environment>prod</environment>
+        </properties>
+    </profile>
+</profiles>
+```
+
+- 使用命令行参数激活构建设置
+
+```sh
+mvn clean install -P production
+```
+
 ### maven生命周期
 
+maven的声明周期有三类：clean、default、site，它们相互独立
+
+每类生命周期都包含了多个阶段，并且这些阶段是有序的，也就是说，后面的阶段依赖于前面的阶段。当执行某个阶段的时候，会先执行它前面的阶段
+
+```sh
+# 执行 Maven 生命周期的命令格式
+mvn 阶段 [阶段2...阶段n]
+mvn clean install
+```
+
 #### clean生命周期
+
+共包含3个阶段：
 
 - pre-clean
 - clean
 - post-clean
 
-```sh
-mvn clean
-```
-
 #### default生命周期（也成为构建生命周期）
 
-- validate，验证项目的正确性
-- compile
-- test
-- package
-- verify，对项目进行额外的检查
+default生命周期是在没有任何关联插件的情况下定义的，是Maven的主要生命周期，用于构建应用程序，共包含23个阶段，下面列出常见的几个阶段：
+
+- validate，验证项目是否正确，并且所有必要的信息可用于完成构建过程
+- compile，编译项目的源代码
+- test，使用合适的单元测试框架（Junit 就是其中之一）运行测试
+- package，获取已编译的代码并将其打包成可分发的格式，例如 JAR、WAR 或 EAR 文件
+- verify，运行任何检查以验证打的包是否有效并符合质量标准
 - install，将package安装到maven的本地仓库
-- deploy，将package部署到远程仓库
+- deploy，将package上传到远程仓库中
 
 #### site生命周期
 
+site 生命周期的目的是建立和发布项目站点，共包含 4 个阶段：
+
+- pre-site，执行一些需要在生成站点文档之前完成的工作
 - site，生成项目文档和站点信息
-- deploy-site，将生成的项目文档和站点信息发布到远程服务器
+- post-site，执行一些需要在生成站点文档之后完成的工作，并且为部署做准备
+- site-deploy，将生成的站点文档部署到特定的服务器上
 
 ### maven插件
 
 - Maven本质上是⼀个插件框架，它的核⼼并不执⾏任何具体的构建任务，所有这些任务都交给插件来完成
 
-- 每个任务对应了⼀个插件⽬标（goal）
+- 可以将Maven插件理解为一组任务的集合
 
-- 每个插件会有⼀个或者多个⽬标
+- 每个插件会有⼀个或者多个⽬标，每个任务对应了⼀个插件⽬标（goal）
+
+- 用户可以通过命令行直接运行指定插件的目标，也可以将插件目标挂载到构建生命周期，随着生命周期运行
 
 #### 调⽤Maven插件⽬标
 
