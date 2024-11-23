@@ -9166,34 +9166,29 @@ docker inspect 容器id
 docker exec -t 容器id [ls -l]
 ```
 
-- 复制容器内的文件到linux主机
+### docker的复制/加载
 
 ```sh
+# 复制容器内的文件到linux主机
 docker cp 容器id:容器内路径 主机路径
-```
 
-- 复制linux主机的文件到容器内
-
-```sh
+# 复制linux主机的文件到容器内
 docker cp 主机路径 容器id:容器内路径
-```
 
-- 容器备份为一个tar归档文件
-
-```sh
-docker export 容器id > 文件名.tar
-```
-
-- 从容器备份文件创建一个新的文件系统再导入为镜像
-
-```sh
-cat 文件名.tar | docker import - 镜像用户/镜像名:标签
-```
-
-- 提交容器副本使之成为一个新的镜像
-
-```sh
+# 提交容器副本使之成为一个新的镜像
 docker commit -m="描述信息" -a="作者" 容器id 要创建的目标镜像名:标签
+
+# 容器备份为一个tar归档文件
+docker export 容器id > 文件名.tar
+
+# 将镜像备份出来
+docker save my_tomcat:1.0 -o my-tomcat-1.0.tar
+
+# 从容器备份文件创建一个新的文件系统再导入为镜像
+cat 文件名.tar | docker import - 镜像用户/镜像名:标签
+
+# 将.tar格式的镜像加载到Docker中
+docker load -i my-tomcat-1.0.tar
 ```
 
 ### 搭建私服
@@ -9269,17 +9264,24 @@ docker pull 私服规范镜像名（私服地址:端口/镜像名:标签）
 
 docker挂载主机目录后加 `--privileged=true`，可以解决挂载目录没有权限的问题。该参数使得容器内的root拥有真正的root权限，否则，容器内的root只有普通用户权限
 
-- 创建卷
+在用 docker run 命令的时候，使用 --mount 标记来将一个或多个数据卷挂载到容器里
+
+还可以通过 --mount 标记将宿主机上的文件或目录挂载到容器中，这使得容器可以直接访问宿主机的文件系统
+
+Docker 挂载主机目录的默认权限是读写，用户也可以通过增加 readonly 指定为只读
 
 ```sh
 # 手动创建
 docker volume create 卷名
 
+# 自动创建，放在容器启动命令中
+-v ngconf:/etc/nginx
+
 # 删除卷
 docker volume rm 卷名1 卷名2
 
-# 自动创建，放在容器启动命令中
--v ngconf:/etc/nginx
+# 查看所有的数据卷
+docker volume ls
 
 # 查看卷信息
 docker volume inspect 卷名
