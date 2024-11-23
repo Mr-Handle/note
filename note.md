@@ -10,23 +10,23 @@
 - Java编译器自动引入java.lang。
 - 内存回收：调用`System.gc()`，一般不会手动调用此方法；
 - `方法的签名`（signature）: 要完整地描述一个方法，需要指出`方法名`以及`参数类型`
-  - 返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
+    - 返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
 - VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
 - DTO（Data Transfer Object）：数据传输对象，控制层与服务层之间的数据传输对象。
 - DO（Domain Object）：领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
 - PO（Persistent Object）：持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系
-  - 如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
+    - 如果持久层是关系型数据库，那么，数据表中的每个字段（或若干个）就对应PO的一个（或若干个）属性。
 - 不用public、protected、private修饰的字段和方法就是包作用域。位于同一个包的类，可以访问包作用域的字段和方法。
 
 ### JDK
 
 - `JRE` 是 Java 运行时环境
-  - 它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。
-  - 但是，它不能用于创建新程序。
+    - 它是运行已编译 Java 程序所需的所有内容的集合，包括 Java 虚拟机（JVM），Java 类库，java 命令和其他的一些基础构件。
+    - 但是，它不能用于创建新程序。
 - `JDK` 是 Java Development Kit 缩写，它是功能齐全的 Java SDK。
-  - 它拥有 JRE 所拥有的一切
-  - 还有编译器（javac）和工具（如 javadoc 和 jdb）。
-  - 它能够创建和编译程序。
+    - 它拥有 JRE 所拥有的一切
+    - 还有编译器（javac）和工具（如 javadoc 和 jdb）。
+    - 它能够创建和编译程序。
 
 #### 1.windows安装jdk
 
@@ -280,7 +280,7 @@ Assertions.assertFalse(a == b);
 - 从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称
 
 - 如果一个父类的方法本身不需要实现任何功能，仅仅是为了定义方法签名，目的是让子类去覆写它，那么，可以把父类的方法声明为抽象方法；
-  - 因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
+    - 因为这个抽象方法本身是无法执行的，所以，父类也无法被实例化，因而这个父类也必须申明为抽象类
 
 - 如果一个抽象类没有字段，所有方法全部都是抽象方法，就可以把该抽象类改写为接口
 
@@ -360,15 +360,15 @@ try (InputStream inputStream = Application.class.getClassLoader().getResourceAsS
 - RoundingMode.HALF_UP，四舍五入，在大量运算时，结果偏向大数，使得误差产生积累进而产生系统误差
 
 - RoundingMode.HALF_EVEN，四舍六入五成双，在大量运算时，它使舍入后的结果误差的均值趋于零
-  - 小于等于4时舍去（1.1->1，-1.1->-1）
-  - 大于等于6时进1（1.6->2，-1.6->-2）
-  - 等于5时
-    - 如果5后面还有数
-      - 并且为0，舍去（2.50->2，-2.50->-2）
-      - 并且不为0，进1（2.51->3，-2.51->-3）
-    - 如果5后面没有数
-      - 5前面为奇数，进1（5.5->6，-5.5->-6）
-      - 5前面为偶数，舍去（2.5->2，-2.5->-2）
+    - 小于等于4时舍去（1.1->1，-1.1->-1）
+    - 大于等于6时进1（1.6->2，-1.6->-2）
+    - 等于5时
+        - 如果5后面还有数
+            - 并且为0，舍去（2.50->2，-2.50->-2）
+            - 并且不为0，进1（2.51->3，-2.51->-3）
+        - 如果5后面没有数
+            - 5前面为奇数，进1（5.5->6，-5.5->-6）
+            - 5前面为偶数，舍去（2.5->2，-2.5->-2）
 
 - 除法计算要指定结果精度
 
@@ -2391,8 +2391,8 @@ contentPane.add(component);
 - 如果实体对象需要转为字节（通常是二进制字节流）的形式传输（数据存储/网络传输），就必须实现可序列化接口
 - 当实体类的所有属性都已经实现了可序列化接口时，实体类可以不实现序列化接口
 - serialVersionUID 起版本控制的作用。
-  - 反序列化时，会检查 serialVersionUID 是否和当前类的 serialVersionUID 一致
-  - 如果 serialVersionUID 不一致则会抛出 InvalidClassException 异常
+    - 反序列化时，会检查 serialVersionUID 是否和当前类的 serialVersionUID 一致
+    - 如果 serialVersionUID 不一致则会抛出 InvalidClassException 异常
 
 ```java
 public class ClassName implements Serializable {
@@ -2559,51 +2559,51 @@ public class Applistener implements ServletContextListener {
 ### jvm
 
 - 类加载器子系统
-  - 加载阶段
-    - 引导类加载器
-    - 扩展类加载器
-    - 系统类加载器
-  - 链接阶段
-    - 验证
-    - 准备
-    - 解析
-  - 初始化阶段
+    - 加载阶段
+        - 引导类加载器
+        - 扩展类加载器
+        - 系统类加载器
+    - 链接阶段
+        - 验证
+        - 准备
+        - 解析
+    - 初始化阶段
 - 运行时数据区
-  - 堆（1:2），线程共享，线程之间通过TLAB隔离
-    - 新生代（8:1:1），MinorGC
-      - Eden
-      - S0
-      - S1
-    - 老年代Tenured/Old generation，MajorGC
-  - 方法区
-    - 元空间(永久代)
-      - 类型信息
-      - 域信息
-      - 方法信息
-      - 运行时常量池
-        - string constants
-        - numberic constants
-        - class references
-        - field references
-        - method references
-        - name and type
-        - invoke dynamic
-  - 虚拟机栈，线程私有
-    - 栈帧
-      - 局部变量表
-      - 操作数栈
-      - 动态链接
-      - 方法返回地址
-      - 一些附加信息
-  - 本地方法栈，线程私有
-  - 程序计数器，线程私有
+    - 堆（1:2），线程共享，线程之间通过TLAB隔离
+        - 新生代（8:1:1），MinorGC
+            - Eden
+            - S0
+            - S1
+        - 老年代Tenured/Old generation，MajorGC
+    - 方法区
+        - 元空间(永久代)
+            - 类型信息
+            - 域信息
+            - 方法信息
+            - 运行时常量池
+                - string constants
+                - numberic constants
+                - class references
+                - field references
+                - method references
+                - name and type
+                - invoke dynamic
+    - 虚拟机栈，线程私有
+        - 栈帧
+            - 局部变量表
+            - 操作数栈
+            - 动态链接
+            - 方法返回地址
+            - 一些附加信息
+    - 本地方法栈，线程私有
+    - 程序计数器，线程私有
 - 执行引擎
-  - 解释器
-  - jit编译器
-    - 中间代码生成器
-    - 代码优化器
-    - 目标代码生成器
-  - 垃圾回收器
+    - 解释器
+    - jit编译器
+        - 中间代码生成器
+        - 代码优化器
+        - 目标代码生成器
+    - 垃圾回收器
 - 本地方法接口
 - 本地方法库
 
@@ -2775,10 +2775,10 @@ native-image @target\tmp\native-image-xxxxxxx.args
 ### Idea配置Maven
 
 - File->Settings->Build,Execution,Deployment->Build Tools->Maven
-  - Maven home path，指定Maven家目录
-  - User settings file，勾上Override，选择Maven的settings.xml配置文件路径
-  - Use settings from .mvn/maven.config，取消勾选
-  - 点击Runner子选项，勾上Skip Tests
+    - Maven home path，指定Maven家目录
+    - User settings file，勾上Override，选择Maven的settings.xml配置文件路径
+    - Use settings from .mvn/maven.config，取消勾选
+    - 点击Runner子选项，勾上Skip Tests
 
 ### scope
 
@@ -3261,8 +3261,8 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 - IntelliJ IDEA 2024.3 (Community Edition)还没支持Maven Daemon，通过Maven Helper插件来使用
 
 - 点击`File->Settings->Other Settings->Maven Helper`
-  - 勾上`Use a Terminal to run goals, with a custom mvn command`
-  - 并指定命令为`mvnd`，然后关闭再打开Idea，如果不行就直接指定命令的全路径为`MVND_HOME\bin\mvnd.cmd`
+    - 勾上`Use a Terminal to run goals, with a custom mvn command`
+    - 并指定命令为`mvnd`，然后关闭再打开Idea，如果不行就直接指定命令的全路径为`MVND_HOME\bin\mvnd.cmd`
 
 - 使用：右键项目名->Run Maven选择对应指令执行即可
 
@@ -3281,7 +3281,7 @@ mvn install:install -file -Dfile=d:\sqljdbc-4.1.5605.jar -Dpackaging=jar -Dgroup
 - 下载完整版（包含了文档和源码）
 
 - 修改maven下载源
-  - 在`GRADLE_HOME/init.d`目录下创建init.gradle文件，内容如下
+    - 在`GRADLE_HOME/init.d`目录下创建init.gradle文件，内容如下
 
 ```groovy
 allprojects {
@@ -3309,9 +3309,9 @@ allprojects {
 ```
 
 - 配置环境变量
-  - `GRADLE_HOME`
-  - `GRADLE_USER_HOME`，gradle的本地仓库路径和gradle wrapper的缓存路径，指定为maven的repository路径就行，但是下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
-  - `M2_HOME`，maven家目录，修改maven下载源的话才需要定义
+    - `GRADLE_HOME`
+    - `GRADLE_USER_HOME`，gradle的本地仓库路径和gradle wrapper的缓存路径，指定为maven的repository路径就行，但是下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
+    - `M2_HOME`，maven家目录，修改maven下载源的话才需要定义
 
 - 配置Path：`GRADLE_HOME\bin`
 
@@ -3326,26 +3326,26 @@ allprojects {
 - 如果要执行的是本地安装的gardle的指令，gradle/wrapper，gradlew、gradlew.bat，这三个玩意是用不到的，是可以删了的
 
 - project-root
-  - build，存放编译后的字节码，打成的包、测试报告等，类似maven的target目录
-  - gradle，封装包装器文件夹
-    - wrapper
-      - gradle-wrapper.jar
-      - gradle-wrapper.properties
-  - src
-    - main
-      - java
-      - resources
-      - webapp，war工厂才有这个目录
-        - WEB-INF
-          - web.xml
-        - index.jsp
-    - test
-      - java
-      - resources
-  - gradlew，包装器在非Windows系统的启动脚本
-  - gradlew.bat，包装器在Windows系统的启动脚本
-  - build.gradle，构建脚本，类似maven的pom.xml
-  - settings.gradle，配置文件，定义项目和子项目名称信息，一个项目只能有一个此文件（子项目是没有这个文件的）
+    - build，存放编译后的字节码，打成的包、测试报告等，类似maven的target目录
+    - gradle，封装包装器文件夹
+        - wrapper
+            - gradle-wrapper.jar
+            - gradle-wrapper.properties
+    - src
+        - main
+            - java
+            - resources
+            - webapp，war工厂才有这个目录
+                - WEB-INF
+                    - web.xml
+                - index.jsp
+        - test
+            - java
+            - resources
+    - gradlew，包装器在非Windows系统的启动脚本
+    - gradlew.bat，包装器在Windows系统的启动脚本
+    - build.gradle，构建脚本，类似maven的pom.xml
+    - settings.gradle，配置文件，定义项目和子项目名称信息，一个项目只能有一个此文件（子项目是没有这个文件的）
 
 ### Gradle依赖
 
@@ -3526,9 +3526,9 @@ apply plugin: "io.spring.dependency-management"
 #### 用户自定义插件
 
 - 创建buildSrc目录，它是Gradle默认的插件目录
-  - 新建gradle模块，模块名为buildSrc
-  - 只保留里面的build文件夹、src目录和build.gradle文件
-  - 项目根目录settings.gradle中对buildSrc的声明删了
+    - 新建gradle模块，模块名为buildSrc
+    - 只保留里面的build文件夹、src目录和build.gradle文件
+    - 项目根目录settings.gradle中对buildSrc的声明删了
 
 ```groovy
 // 实现接口
@@ -3665,10 +3665,10 @@ dependencies {
 - 当Groovy的源文件定义了类的时候，这个类实际上实现了GroovyObject
 
 - 当Groovy的源文件没有定义类的时候，这个源文件会被转换为扩展了Script的类
-  - 这个类将作为脚本使用
-  - 这个类使用源文件名作为类名
-  - 源文件的内容被打包进run方法
-  - 这个类会加入一个main方法使得可以外部执行该脚本
+    - 这个类将作为脚本使用
+    - 这个类使用源文件名作为类名
+    - 源文件的内容被打包进run方法
+    - 这个类会加入一个main方法使得可以外部执行该脚本
 
 - 在Groovy的源文件中可以混合类的定义和脚本定义，此时不能定义一个和文件同名的类
 
@@ -3683,20 +3683,20 @@ dependencies {
 ### Groovy属性
 
 - 属性赋值
-  - 对象.属性名=属性值
-  - 对象的setter方法
-  - 具名构造器
+    - 对象.属性名=属性值
+    - 对象的setter方法
+    - 具名构造器
 - 属性读取
-  - 对象.属性名
-  - 对象["属性名"]
-  - 对象的getter方法
+    - 对象.属性名
+    - 对象["属性名"]
+    - 对象的getter方法
 - 对类的属性的操作本质还是通过getter、setter方法完成的
 
 ### Groovy方法
 
 - 方法声明
-  - 参数类型、返回值类型可以省略
-  - return关键字可以省略，默认使用方法最后一句的返回值作为方法的返回值
+    - 参数类型、返回值类型可以省略
+    - return关键字可以省略，默认使用方法最后一句的返回值作为方法的返回值
 - 方法调用，在不导致二义性的时候，`()`可以省略
 
 ### Groovy字符串
@@ -3750,9 +3750,9 @@ public static void initStatic() {
 
 - 1.@BeforeAll
 - 2.循环以下步骤
-  - 2.1 @BeforeEach
-  - 2.2 @Test
-  - 2.3 @AfterEach
+    - 2.1 @BeforeEach
+    - 2.2 @Test
+    - 2.3 @AfterEach
 - 3.@AfterAll
 
 ### Mock
@@ -4646,7 +4646,7 @@ long total = page.getTotal();
 - @TableId，当实体类的属性名和表的主键名不一样时，添加此注解进行关联，并且可以指定插入数据时的id分配算法（默认雪花算法，可以在配置文件统一设置id分配算法）
 
 - @TableField，当实体类的属性名和表的列名不一样时，添加此注解进行关联
-  - exist，当表没有这个字段时，必须设置为false
+    - exist，当表没有这个字段时，必须设置为false
 
 ```java
 @TableName("account")
@@ -5056,15 +5056,15 @@ public class MainConfiguration {
 - 其required属性默认为true，这时如果匹配失败，则会报错；改为false，这时如果匹配失败，则注入的值为null，会造成其所注解的成员变量为null导致的空指针异常
 
 - 工作流程：根据类型查找Spring容器中的Bean
-  - 找不到类型匹配的Bean，报错
-  - 找到唯一类型匹配的Bean，注入
-  - 找到多个类型匹配的Bean
-  - 有@Qualifier注解，根据@Qualifier指定的名称作为Bean的id进行匹配
-    - 找到，注入
-    - 找不到，报错
-  - 无@Qualifier注解，根据@AutoWired所注解的成员变量名作为Bean的id进行匹配
-    - 找到，注入
-    - 找不到，报错
+    - 找不到类型匹配的Bean，报错
+    - 找到唯一类型匹配的Bean，注入
+    - 找到多个类型匹配的Bean
+    - 有@Qualifier注解，根据@Qualifier指定的名称作为Bean的id进行匹配
+        - 找到，注入
+        - 找不到，报错
+    - 无@Qualifier注解，根据@AutoWired所注解的成员变量名作为Bean的id进行匹配
+        - 找到，注入
+        - 找不到，报错
 
 ```java
 @Controller
@@ -5129,7 +5129,7 @@ public class ApplicationConfiguration {
 
 - 根据名称进行匹配
 - 如果没有指定name属性，先根据所注解的成员变量名查找Spring容器中的Bean
-  - 没有对应的Bean，会再根据类型进行查找
+    - 没有对应的Bean，会再根据类型进行查找
 
 ```java
 @Controller
@@ -5484,16 +5484,16 @@ public void test() {
 - 只有同时不考虑访问修饰符和返回类型，二者才可一起写成`*`
 
 - 包名可以使用通配符
-  - 单层模糊，一级写一个`*`：`*.handle.*.service.*`
-  - 多层模糊：`com..impl`，
-  - `..`不能在开头，错误写法：`..impl`；正确写法`*..impl`
+    - 单层模糊，一级写一个`*`：`*.handle.*.service.*`
+    - 多层模糊：`com..impl`，
+    - `..`不能在开头，错误写法：`..impl`；正确写法`*..impl`
 
 - 类名和方法名也可以使用*来实现通配：`*Impl`
 
 - 参数列表
-  - 具体参数，基本数据类型直接写类型名，引用类型写全限定类名，如：int，java.lang.String
-  - 模糊参数，参数列表还可以使用通配符表示任意类型，但是只匹配有参数的方法
-  - 任意参数：`..`，但是无参数还是建议用具体写法`()`
+    - 具体参数，基本数据类型直接写类型名，引用类型写全限定类名，如：int，java.lang.String
+    - 模糊参数，参数列表还可以使用通配符表示任意类型，但是只匹配有参数的方法
+    - 任意参数：`..`，但是无参数还是建议用具体写法`()`
 
 - 全通配写法：`* *..*.*(..)`，实际开发不会这么写
 
@@ -5660,10 +5660,10 @@ public class ApplicationConfiguration {}
 #### Spring 5/Spring 6切面执行顺序
 
 - 1.@Around环绕前
-  - 2.@Before
-    - 3.切入点
-    - 4.@AfterReturning/（异常时，执行@AfterThrowing）
-  - 5.@After
+    - 2.@Before
+        - 3.切入点
+        - 4.@AfterReturning/（异常时，执行@AfterThrowing）
+    - 5.@After
 - 6.@Around环绕后/（异常时，执行@Around方法的catch代码，然后执行@Around方法的finally代码）
 
 #### 切面优先级
@@ -5725,11 +5725,11 @@ public class AccountService {
 - isolation，事务隔离级别，根据使用场景设置，一般`Isolation.READ_COMMITTED`
 
 - propagation，事务的传播行为（事务之间调用，如何影响子事务，事务的传播行为是设置到子事务的。如当一个事务里面包含另一个事务时）。
-  - 增删改操作一般用默认的`Propagation.REQUIRED`，查询操作一般用`Propagation.SUPPORTS`
-  - `Propagation.SUPPORTS`，如果父方法存在事务，则加入，否则自己以非事务方式执行
-  - `Propagation.REQUIRED`，默认值，如果父方法有事务，加入；如果没有，就新建事务自己独立
-  - `Propagation.REQUIRES_NEW`，无论父方法是否有事务，都新建事务自己独立
-  - 在同一个类中，对注解@Transactional的方法调用，事务传播行为不会生效。因为Spring框架是使用代理模式实现事务机制的，但是同一个类中的方法调用不经过代理，而是通过对象方法的调用，不会被代理捕获，也就不产生事务传播行为的效果。
+    - 增删改操作一般用默认的`Propagation.REQUIRED`，查询操作一般用`Propagation.SUPPORTS`
+    - `Propagation.SUPPORTS`，如果父方法存在事务，则加入，否则自己以非事务方式执行
+    - `Propagation.REQUIRED`，默认值，如果父方法有事务，加入；如果没有，就新建事务自己独立
+    - `Propagation.REQUIRES_NEW`，无论父方法是否有事务，都新建事务自己独立
+    - 在同一个类中，对注解@Transactional的方法调用，事务传播行为不会生效。因为Spring框架是使用代理模式实现事务机制的，但是同一个类中的方法调用不经过代理，而是通过对象方法的调用，不会被代理捕获，也就不产生事务传播行为的效果。
 
 #### xml配置事务管理器
 
@@ -5833,10 +5833,10 @@ public class SpringMvcConfiguration {
 - 相当于添加了HandlerMapping、HandlerAdapter和json转换器
 
 - 最终走MvcNamespaceHandler中的AnnotationDrivenBeanDefinitionParser的parse方法
-  - 自动添加HandlerMapping
-  - 自动添加HandlerAdapter
-    - 在addRequestBodyAdvice方法中添加json处理器JsonViewRequestBodyAdvice
-    - 在addResponseBodyAdvice方法中添加json处理器JsonViewResponseBodyAdvice
+    - 自动添加HandlerMapping
+    - 自动添加HandlerAdapter
+        - 在addRequestBodyAdvice方法中添加json处理器JsonViewRequestBodyAdvice
+        - 在addResponseBodyAdvice方法中添加json处理器JsonViewResponseBodyAdvice
 
 ```java
 @EnableWebMvc
@@ -5866,8 +5866,8 @@ public class SpringMvcConfiguration implements WebMvcConfigurer{
 #### 初始化类
 
 - 初始化两个容器（所以至少两个配置类）
-  - root容器是父容器，放service、mapper、mybatis等组件
-  - web容器是子容器，放controller、web相关组件，web容器在FrameworkServlet中的createWebApplicationContext方法创建，通过setParent方法维护容器的父子关系
+    - root容器是父容器，放service、mapper、mybatis等组件
+    - web容器是子容器，放controller、web相关组件，web容器在FrameworkServlet中的createWebApplicationContext方法创建，通过setParent方法维护容器的父子关系
 - 每当web项目启动，就会自动调用WebApplicationInitializer接口的onStartup方法，因此可以在这个方法里面定义一些初始化工作，如初始化IOC容器、DispatcherServlet
 
 - AbstractAnnotationConfigDispatcherServletInitializer间接实现了WebApplicationInitializer
@@ -6286,8 +6286,8 @@ public class ApplicationController {
 #### 静态资源
 
 - MvcNamespaceHandler解析default-servlet-handler，由DefaultServletHandlerBeanDefinitionParser的parse方法处理
-  - 往IOC容器添加了DefaultServletHttpRequestHandler（可以把它当成另一个专门处理静态资源的HandlerMapping）
-    - handleRequest方法中，当没有找到handler时，对请求进行了转发，去找静态资源
+    - 往IOC容器添加了DefaultServletHttpRequestHandler（可以把它当成另一个专门处理静态资源的HandlerMapping）
+        - handleRequest方法中，当没有找到handler时，对请求进行了转发，去找静态资源
 
 ```java
 @EnableWebMvc
@@ -6353,16 +6353,16 @@ public class GlobalExceptionHandler {
 ### Spring MVC拦截器
 
 - DispatcherServlet的doDispatch方法内
-  - getHandler，获取handlerMapping
-  - getHandlerAdapter，获取handlerAdapter
-  - applyPreHandle，执行拦截器的preHandle
-    - 正序遍历拦截器集合，依次调用preHandle
-  - handle，调用handler
-  - applyPostHandle，执行拦截器的postHandle
-    - 倒序遍历拦截器集合，依次调用postHandle
-  - processDispatchResult
-    - triggerAfterCompletion，执行拦截器的afterCompletion
-      - 倒序遍历拦截器集合，依次调用afterCompletion
+    - getHandler，获取handlerMapping
+    - getHandlerAdapter，获取handlerAdapter
+    - applyPreHandle，执行拦截器的preHandle
+        - 正序遍历拦截器集合，依次调用preHandle
+    - handle，调用handler
+    - applyPostHandle，执行拦截器的postHandle
+        - 倒序遍历拦截器集合，依次调用postHandle
+    - processDispatchResult
+        - triggerAfterCompletion，执行拦截器的afterCompletion
+            - 倒序遍历拦截器集合，依次调用afterCompletion
 - 1.定义拦截器
 
 ```java
@@ -6829,8 +6829,8 @@ mybatis.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
 ### 打包
 
 - spring boot原文：
-  - The spring-boot-starter-parent POM includes <executions> configuration to bind the repackage goal.
-  - If you do not use the parent POM, you need to declare this configuration yourself.
+    - The spring-boot-starter-parent POM includes <executions> configuration to bind the repackage goal.
+    - If you do not use the parent POM, you need to declare this configuration yourself.
 
 - 依赖
 
@@ -6864,12 +6864,12 @@ java -jar [选项] [参数] <jar文件名>
 ```
 
 - 指定系统属性-D<属性名>=<属性值>，可以通过System.getProperty()在应用程序获取该属性值
-  - 指定服务器端口：`-Dserver.port=80`
-  - 指定要激活的配置文件：`-Dspring.profiles.active=<dev/test/prod>`
+    - 指定服务器端口：`-Dserver.port=80`
+    - 指定要激活的配置文件：`-Dspring.profiles.active=<dev/test/prod>`
 
 - 指定JVM参数`-X`
-  - 设置最大堆内存：`-Xmx1024m`
-  - 设置最小堆内存：`-Xms512m`
+    - 设置最大堆内存：`-Xmx1024m`
+    - 设置最小堆内存：`-Xms512m`
 
 ## Spring Security
 
@@ -8078,35 +8078,35 @@ github:<https://github.com/alibaba/Sentinel/>
 
 - Warm Up，预热，使得系统从空闲状态，经过预期时间后到达最大请求阈值，而不是流量突然增大
 
-  - 访问量阈值从阈值除以冷却因子（默认3）的结果值开始，经过预热时长逐渐提升到设定的阈值
+    - 访问量阈值从阈值除以冷却因子（默认3）的结果值开始，经过预热时长逐渐提升到设定的阈值
 
-  - 主要用于启动需要额外开销的场景，如建立数据库连接等
+    - 主要用于启动需要额外开销的场景，如建立数据库连接等
 
 - 排队等待，访问达到阈值时，过了间隔时间才允许通过下一个请求
 
-  - 主要用于处理间隔性突发的流量：系统某一时刻突然要处理大量请求，接下来的几秒却处于空闲状态的场景
+    - 主要用于处理间隔性突发的流量：系统某一时刻突然要处理大量请求，接下来的几秒却处于空闲状态的场景
 
-  - 匀速排队模式暂不支持QPS大于1000的场景
+    - 匀速排队模式暂不支持QPS大于1000的场景
 
 #### 熔断规则
 
 - 熔断策略
-  - 慢调用比例
-    - 请求的响应时间>最大RT(最大响应时间)，则统计为慢调用
-    - 当单位统计时长内请求数目大于设置的最小请求数，且慢调用比例大于阈值，则接下来的熔断时长内请求会被熔断
-    - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求响应时间小于设置的最大RT则结束熔断，否则再次被熔断
-  - 异常比例
-    - 当单位统计时长内请求数目大于设置的最小请求数，且异常比例大于阈值，则接下来的熔断时长内请求会被熔断
-    - 经过
-  - 异常数
-    - 当单位统计时长内请求数目大于设置的最小请求数，且异常数大于阈值，则接下来的熔断时长内请求会被熔断
-    - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求正常完成则结束熔断，否则再次被熔断
+    - 慢调用比例
+        - 请求的响应时间>最大RT(最大响应时间)，则统计为慢调用
+        - 当单位统计时长内请求数目大于设置的最小请求数，且慢调用比例大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求响应时间小于设置的最大RT则结束熔断，否则再次被熔断
+    - 异常比例
+        - 当单位统计时长内请求数目大于设置的最小请求数，且异常比例大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过
+    - 异常数
+        - 当单位统计时长内请求数目大于设置的最小请求数，且异常数大于阈值，则接下来的熔断时长内请求会被熔断
+        - 经过熔断时长后熔断器会进入半开状态，若接下来的一个请求正常完成则结束熔断，否则再次被熔断
 
 #### 热点规则
 
 - 对请求接口的入参进行监控限流
 - 参数例外项，当参数是某一个值时，它的阈值可以达到设置的限流阈值才限流
-  - 填写完后记得点击添加按钮
+    - 填写完后记得点击添加按钮
 
 #### 授权规则
 
@@ -8136,8 +8136,8 @@ public ResultVo<String> blackList() {
 ![授权规则](/images/授权规则.png)
 
 - 测试
-  - url：<http://localhost:8080/sentinel/blackList?serverName=test>
-  - 当请求参数serverName=test时，结果：Blocked by Sentinel (flow limiting)
+    - url：<http://localhost:8080/sentinel/blackList?serverName=test>
+    - 当请求参数serverName=test时，结果：Blocked by Sentinel (flow limiting)
 
 #### 规则持久化
 
@@ -8874,7 +8874,7 @@ quit
 ### 安装Zookeeper集群
 
 - 在dataDir定义的目录下创建一个myid文件
-  - 在文件中填写server编号（上下不要有空行，左右不要有空格）
+    - 在文件中填写server编号（上下不要有空行，左右不要有空格）
 - 修改配置
 
 ```conf
@@ -10139,15 +10139,15 @@ public class RabbitmqConfiguration implements RabbitTemplate.ConfirmCallback, Ra
 ###### 消息确认方式2
 
 - 备份交换机，针对目标交换机故障的情况
-  - 创建交换机，类型必须是fanout
-  - 创建队列，和备份交换机绑定
-  - 给目标交换机（Arguments）指定备份交换机
+    - 创建交换机，类型必须是fanout
+    - 创建队列，和备份交换机绑定
+    - 给目标交换机（Arguments）指定备份交换机
 
 ##### 服务器
 
 - 消息持久化
-  - 交换机持久化（默认）：durable true，autoDelete false
-  - 队列持久化（默认）：durable true，autoDelete false
+    - 交换机持久化（默认）：durable true，autoDelete false
+    - 队列持久化（默认）：durable true，autoDelete false
 
 ##### 消费端
 
@@ -10174,20 +10174,20 @@ rabbitTemplate.convertAndSend(EXCHANGE_DIRECT, ROUTING_KEY, "hello rabbitmq", me
 
 - 当一个消息无法被消费，它就变成了死信
 - 死信产生的原因有如下三种
-  - 消费者拒接消息（basicNack/basicReject），并且requeue=false
-  - 队列中消息数量达到限制（x-max-length），如果再来一条消息，根据先进先出原则，队列中最早的消息会变成死信
-  - 消息超时未被消费
+    - 消费者拒接消息（basicNack/basicReject），并且requeue=false
+    - 队列中消息数量达到限制（x-max-length），如果再来一条消息，根据先进先出原则，队列中最早的消息会变成死信
+    - 消息超时未被消费
 - 死信的处理方式
-  - 丢弃：不重要的消息直接丢弃，不做处理
-  - 入库：把死信写入数据库，日后处理
-  - 监听：将消息放到死信队列，专门设置消费端监听死信队列，做后续处理（通常采用）
-    - 创建队列时设置x-dead-letter-exchange、x-dead-letter-routing-key
+    - 丢弃：不重要的消息直接丢弃，不做处理
+    - 入库：把死信写入数据库，日后处理
+    - 监听：将消息放到死信队列，专门设置消费端监听死信队列，做后续处理（通常采用）
+        - 创建队列时设置x-dead-letter-exchange、x-dead-letter-routing-key
 
 #### 延迟队列
 
 - 实现方案
-  - 设置消息超时时间+死信队列
-  - 安装插件，延迟极限最多两天
+    - 设置消息超时时间+死信队列
+    - 安装插件，延迟极限最多两天
 
 ##### 安装延迟队列插件
 
@@ -10617,6 +10617,23 @@ docker pull postgres：16.4
 ```sh
 # 启动数据库
 docker run -p 5432:5432 --name postgres01 -e POSTGRES_PASSWORD=postgres123 -v /data/postgresql:/var/lib/postgresql/data -d postgres:16.4
+```
+
+- compose.yaml
+
+```yaml
+postgresql:
+    container_name: postgres01
+    image: postgres:16.4
+    ports:
+        - "5432:5432"
+    environment:
+        - POSTGRES_PASSWORD=postgres123
+    volumes:
+        - /handle/data/postgresql:/var/lib/postgresql/data
+    networks: 
+        - my-docker-net
+    restart: always
 ```
 
 - 1.控制台登录Postgresql
@@ -12765,28 +12782,28 @@ DNS1=114.114.114.114
 
 - 设置properties文件编码，General->Editors->Autosave
 - General->Editors->Text Editors
-  - 设置Tab键插入空格，勾上`Insert spaces for tabs`
-  - 显示行号，勾上`Show line numbers`
+    - 设置Tab键插入空格，勾上`Insert spaces for tabs`
+    - 显示行号，勾上`Show line numbers`
 
 - 自动刷新文件夹改动，General->Workspace,勾上`Refresh using native hooks or polling`
-  - 设置源文件编码，`Text file encoding`设置为UTF-8
-  - 设置换行符，`New text file line delimiter`设置为Unix
-  - 手动构建自动保存，Build，勾上`Save automatically before manual build`
+    - 设置源文件编码，`Text file encoding`设置为UTF-8
+    - 设置换行符，`New text file line delimiter`设置为Unix
+    - 手动构建自动保存，Build，勾上`Save automatically before manual build`
 
 ##### Java设置
 
 - 设置编译器语法版本，Java->Compiler，`Compiler compliance level`设置为自己的Java版本
 
 - 设置代码补全，Java->Editor->Content Assist，
-  - 取消只有按回车才触发代码补全提示，取消勾选`Disable insertion trigger except 'Enter'`
-  - 不使用静态导入，取消勾选`Use static imports`
-  - 设置代码补全触发器，`Auto activation triggers for Java`覆盖填入`.qwertyuiopasdfghjklzxcvbnm`
-  - 启动Java后缀模板提示，Advance，勾上`Java Postfix Template Proposals`
+    - 取消只有按回车才触发代码补全提示，取消勾选`Disable insertion trigger except 'Enter'`
+    - 不使用静态导入，取消勾选`Use static imports`
+    - 设置代码补全触发器，`Auto activation triggers for Java`覆盖填入`.qwertyuiopasdfghjklzxcvbnm`
+    - 启动Java后缀模板提示，Advance，勾上`Java Postfix Template Proposals`
 
 - 自定义模板，Java->Editor->Templates
-  - `.sout` 自动补全
+    - `.sout` 自动补全
 ![](images/code-template1.png)
-  - `fori` 自动补全
+    - `fori` 自动补全
 ![](images/code-template2.png)
 
 - 设置JRE，Java->Installed JREs，点`Add`添加自己的Java版本
@@ -12874,8 +12891,8 @@ java -jar lombok.jar
 - 以缩进的空格数来控制层级关系
 - 只要是左对齐的一列数据，都是同一层级
 - 字符串默认不用添加双/单引号
-  - 英文双引号不会转义字符串里面的特殊字符，
-  - 英文单引号会转义字符串里面的特殊字符，会把特殊字符转义成普通的字符
+    - 英文双引号不会转义字符串里面的特殊字符，
+    - 英文单引号会转义字符串里面的特殊字符，会把特殊字符转义成普通的字符
 
 ```yaml
 # first 换行 second
@@ -12902,12 +12919,12 @@ line: 'first \n second'
 #### html术语
 
 - 1.标签：一对`<>`  
-  - 单标签：`<tagName />`
-  - 双标签：`<tagName></tagName>`
-    - 开始标签：`<tagName>`
-    - 结束标签：`<tagName />`
+    - 单标签：`<tagName />`
+    - 双标签：`<tagName></tagName>`
+        - 开始标签：`<tagName>`
+        - 结束标签：`<tagName />`
 - 2.属性：对标签特征进行设置的一种方式，一般在开始标签中定义
-  - 当设置的属性值和属性名一样时，可以只写属性名
+    - 当设置的属性值和属性名一样时，可以只写属性名
 - 3.文本：双标签中的文字，单标签是没有文本的
 - 4.元素：可理解为一个定义好的标签就是一个元素（dom元素）
 
@@ -12918,8 +12935,8 @@ line: 'first \n second'
 - 2.根标签，`<html></html>`
 
 - 3.头部标签，`<head></head>`
-  - 告诉浏览器用指定字符集解码：`<meta charset="utf-8" />`
-  - 浏览器显示html文件的页面的标题：`<title></title>`
+    - 告诉浏览器用指定字符集解码：`<meta charset="utf-8" />`
+    - 浏览器显示html文件的页面的标题：`<title></title>`
 - 4.主体标签，`<body></body>`
 
 ```html
@@ -12989,17 +13006,17 @@ h1-h6共有6级，文本字体大小依次递减
 ##### 超链接
 
 - href，定义要跳转的目标资源的地址，可以是
-  - url
-  - 相对路径
-    - `./`，表示当前资源所在路径，可省略不写
-    - `../`，表示当前资源上一层路径
-    - 如果当前资源位置变了，路径要跟着变
-  - 绝对路径
-    - 以`/`开头，从固定位置（如<http://localhost:8080>)作为出发点去找目标资源
-    - 如果当前资源位置变了，路径不用跟着变
+    - url
+    - 相对路径
+        - `./`，表示当前资源所在路径，可省略不写
+        - `../`，表示当前资源上一层路径
+        - 如果当前资源位置变了，路径要跟着变
+    - 绝对路径
+        - 以`/`开头，从固定位置（如<http://localhost:8080>)作为出发点去找目标资源
+        - 如果当前资源位置变了，路径不用跟着变
 - target，定义目标资源的打开方式
-  - `_self`，在当前窗口打开目标资源
-  - `_blank`，在新窗口打开目标资源
+    - `_self`，在当前窗口打开目标资源
+    - `_blank`，在新窗口打开目标资源
 
 ```html
 <a href="https://www.baidu.com" target="_blank">百度一下</a>
@@ -13008,9 +13025,9 @@ h1-h6共有6级，文本字体大小依次递减
 ##### 图片
 
 - src，图片路径，可以是
-  - url
-  - 相对路径
-  - 绝对路径
+    - url
+    - 相对路径
+    - 绝对路径
 - title，鼠标悬停时提示的文字
 - alt，图片加载失败时提示的文字
 
@@ -13025,8 +13042,8 @@ h1-h6共有6级，文本字体大小依次递减
 - tfoot，表尾（如总计），可不写
 - tr，表格行
 - td，单元格
-  - rowspan，指定单元格占多少行，会把跟此单元格同一列的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
-  - colpan，指定单元格占多少列，会把跟此单元格同一行的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
+    - rowspan，指定单元格占多少行，会把跟此单元格同一列的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
+    - colpan，指定单元格占多少列，会把跟此单元格同一行的被占位置的单元格往右边挤，因此为了美观可以把被占位置的单元格删掉
 - th，自带加粗和居中效果的td
 - 如果表头、表体、表尾都不写，浏览器会将tr都放到tbody里面
 
@@ -13052,22 +13069,22 @@ h1-h6共有6级，文本字体大小依次递减
 - 实现让用户在界面上输入各种信息并提交的一种标签，是向服务端发送数据的主要方式之一
 
 - action，表单提交的地址，可以是
-  - url
-  - 相对路径
-  - 绝对路径
+    - url
+    - 相对路径
+    - 绝对路径
 - method，表单提交的方式
-  - get
-    - 表单数据会追加到url后面，以`?`作为参数开始的标识，`参数名=参数值`的形式，多个参数用`&`隔开
-    - 数据会直接暴露在地址栏上
-    - 地址栏长度有限制
-    - 地址栏只能是字符，不能提交文件
-    - 比post效率高
-  - post
-    - 表单数据默认不追加到url后面
-    - 表单数据不会暴露在地址栏上，单独打包通过请求体发送
-    - 提交数据量可以很大
-    - 请求体可以是字符或字节数据，可以提交文件
-    - 比get效率低
+    - get
+        - 表单数据会追加到url后面，以`?`作为参数开始的标识，`参数名=参数值`的形式，多个参数用`&`隔开
+        - 数据会直接暴露在地址栏上
+        - 地址栏长度有限制
+        - 地址栏只能是字符，不能提交文件
+        - 比post效率高
+    - post
+        - 表单数据默认不追加到url后面
+        - 表单数据不会暴露在地址栏上，单独打包通过请求体发送
+        - 提交数据量可以很大
+        - 请求体可以是字符或字节数据，可以提交文件
+        - 比get效率低
 
 ```html
 <form action="" method="">
@@ -13078,25 +13095,25 @@ h1-h6共有6级，文本字体大小依次递减
 ###### 表单项标签
 
 - input
-  - name，提交时的参数名
-  - value，提交时的参数值
-  - type，表单项类型
-    - text，普通文本框
-      - readonly，只读，表单提交时会携带，`readonly=readonly`
-      - disabled，不可用，表单提交时不携带，`disabled=disabled`
-    - password，密码框
-    - file，文件上传框
-    - reset，重置按钮
-    - submit，提交按钮
-    - radio，单选框
-      - 多个单选框定义同一个name属性值，来实现互斥效果
-      - 还要通过value属性手动指定选中后的参数值是什么
-      - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
-    - checkbox，复选框
-      - 多个复选框定义同一个name属性值
-      - 还要通过value属性手动指定选中后的参数值是什么
-      - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
-    - hidden，隐藏域，不显示在页面上，提交时会携带
+    - name，提交时的参数名
+    - value，提交时的参数值
+    - type，表单项类型
+        - text，普通文本框
+            - readonly，只读，表单提交时会携带，`readonly=readonly`
+            - disabled，不可用，表单提交时不携带，`disabled=disabled`
+        - password，密码框
+        - file，文件上传框
+        - reset，重置按钮
+        - submit，提交按钮
+        - radio，单选框
+            - 多个单选框定义同一个name属性值，来实现互斥效果
+            - 还要通过value属性手动指定选中后的参数值是什么
+            - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
+        - checkbox，复选框
+            - 多个复选框定义同一个name属性值
+            - 还要通过value属性手动指定选中后的参数值是什么
+            - 通过checked属性指定是否默认选中，写法：`checked="true"`或`checked="checked"`或`checked`
+        - hidden，隐藏域，不显示在页面上，提交时会携带
 
 ```html
 <form action="" method="">
@@ -13124,7 +13141,7 @@ h1-h6共有6级，文本字体大小依次递减
 ```
 
 - textarea，文本域（多行文本框）
-  - value就是textarea双标签中间的文本
+    - value就是textarea双标签中间的文本
 
 ```html
 <form action="" method="">
@@ -13134,9 +13151,9 @@ h1-h6共有6级，文本字体大小依次递减
 ```
 
 - select，下拉框
-  - option，选项
-    - value，当不指定option的value属性值时，option就是textarea双标签中间的文本
-    - selected，是否默认选中，写法：`selected="selected"`或`selected`
+    - option，选项
+        - value，当不指定option的value属性值时，option就是textarea双标签中间的文本
+        - selected，是否默认选中，写法：`selected="selected"`或`selected`
 
 ```html
 <form action="" method="">
@@ -13165,12 +13182,12 @@ h1-h6共有6级，文本字体大小依次递减
 #### CSS 语法
 
 - CSS 规则由两个主要部分构成：
-  - 1.`选择器`：通常是需要改变样式的`HTML元素`
-  - 2.`声明`（一条或多条）：
-    - 声明用`{}`括起来，
-    - 其中的每条声明由一个`属性`和一个`值`组成
-    - 属性和值用`:`分开，每条声明以`;`结束
-  - CSS注释以 `/*` 开始, 以 `*/` 结束。
+    - 1.`选择器`：通常是需要改变样式的`HTML元素`
+    - 2.`声明`（一条或多条）：
+        - 声明用`{}`括起来，
+        - 其中的每条声明由一个`属性`和一个`值`组成
+        - 属性和值用`:`分开，每条声明以`;`结束
+    - CSS注释以 `/*` 开始, 以 `*/` 结束。
 
 ```css
 p {
@@ -13232,9 +13249,9 @@ div, p {}
 #### 布局
 
 - 浮动，不会遮挡文字
-  - float
-    - left，向左浮动
-    - right，向右浮动
+    - float
+        - left，向左浮动
+        - right，向右浮动
 
 ```css
 .myClass {
@@ -13243,17 +13260,17 @@ div, p {}
 ```
 
 - 定位
-  - position
-    - static，默认
-    - absolute，绝对，参考的是浏览器边缘
-    - relative，相对，参考的是元素原本的位置，元素原本的位置也不会被其它元素占用
-    - fix，相对，参考的是浏览器窗口，有点像excel的冻结行功能
-  - left
-  - right
-  - top
-  - bottom
-  - left和right只需要设置一个就行
-  - top和bottom只需要设置一个就行
+    - position
+        - static，默认
+        - absolute，绝对，参考的是浏览器边缘
+        - relative，相对，参考的是元素原本的位置，元素原本的位置也不会被其它元素占用
+        - fix，相对，参考的是浏览器窗口，有点像excel的冻结行功能
+    - left
+    - right
+    - top
+    - bottom
+    - left和right只需要设置一个就行
+    - top和bottom只需要设置一个就行
 
 ```css
 .myClass {
@@ -13264,18 +13281,18 @@ div, p {}
 ```
 
 - 盒子模型
-  - width和height，定义容量（在最里面）
-  - border不占用容量（在容量外面）
-  - padding，内边距（上下左右），border往内距离容量边线的边距
-  - padding-left
-  - padding-right
-  - padding-rop
-  - padding-bottom
-  - margin，外边距（上下左右），border往外的边距
-  - margin-left
-  - margin-right
-  - margin-rop
-  - margin-bottom
+    - width和height，定义容量（在最里面）
+    - border不占用容量（在容量外面）
+    - padding，内边距（上下左右），border往内距离容量边线的边距
+    - padding-left
+    - padding-right
+    - padding-rop
+    - padding-bottom
+    - margin，外边距（上下左右），border往外的边距
+    - margin-left
+    - margin-right
+    - margin-rop
+    - margin-bottom
 
 ```css
 .myClass {
@@ -15838,10 +15855,10 @@ certutil -hashfile filename SHA512
 ## 踩坑记录
 
 - 服务器要避开使用用浏览器的非安全端口
-  - Edge/谷歌
-    - 6000
-    - 6665-6669
-    - 修改成可以使用：桌面快捷图标右键->属性->目标->最后后加上空格，然后加上`--explicitly-allowed-ports=6000,6665`
+    - Edge/谷歌
+        - 6000
+        - 6665-6669
+        - 修改成可以使用：桌面快捷图标右键->属性->目标->最后后加上空格，然后加上`--explicitly-allowed-ports=6000,6665`
 
 ## 常见问题及处理方法
 
