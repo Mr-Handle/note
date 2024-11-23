@@ -10533,6 +10533,22 @@ git reset --hard origin/dev
 git reset --hard commitId
 ```
 
+### 远程仓库
+
+```sh
+# 添加远程仓库
+git remote add origin remoteUrl
+
+# 远程仓库重命名
+git remote rename origin person
+
+# 移除远程仓库
+git remote rm origin
+
+# 将本地改动提交到远程仓库
+git push origin branchName
+```
+
 ### 分支操作
 
 ```sh
@@ -11018,7 +11034,7 @@ create table account (
 alter table account add age int(3);
 
 -- 修改字段，id自增到 int unsigned 最大值后不再允许插入
-alter table account change column id int unsigned auto_increment;
+alter table account change column id id int unsigned auto_increment;
 
 -- 删除字段
 alter table account drop column age;
@@ -11037,15 +11053,6 @@ alter table account drop primary key;
 drop table if exists payment;
 ```
 
-##### insert
-
-```sql
--- 插入一行
-insert into account (name, password)  values ('Jack', 'Jack123');
--- 插入多行
-insert into account (name, password)  values ('Jack', 'Jack123'), ('Tom', 'Tom123');
-```
-
 ##### 清空表数据
 
 ```sql
@@ -11058,9 +11065,34 @@ delete from account;
 truncate table account;
 ```
 
-##### select
+#### CRUD
+
+##### 插入
 
 ```sql
+-- 插入一行
+insert into account (name, password)  values ('Jack', 'Jack123');
+-- 插入多行
+insert into account (name, password)  values ('Jack', 'Jack123'), ('Tom', 'Tom123');
+
+-- 插入或替换，插入一条新记录，但如果记录已经存在，就先删除原记录，再插入新记录
+replace into students (id, class_id, name, gender, score) values (1, 1, '小明', 'f', 99);
+
+-- 插入或更新，插入一条新记录，但如果记录已经存在，就更新该记录，更新的字段由update指定
+insert into students (id, class_id, name, gender, score) values (1, 1, '小明', 'f', 99) on duplicate key update name='小明', gender='f', score=99;
+
+-- 插入或忽略，插入一条新记录，但如果记录已经存在，就啥事也不干直接忽略
+insert ignore into students (id, class_id, name, gender, score) values (1, 1, '小明', 'f', 99);
+```
+
+##### 查询
+
+```sql
+-- 强制使用指定索引，很多时候，数据库系统的查询优化器并不一定总是能使用最优索引。
+-- 如果我们知道如何选择索引，可以使用FORCE INDEX强制查询使用指定的索引
+-- 指定索引的前提是索引idx_class_id必须存在
+SELECT * FROM students FORCE INDEX (idx_class_id) WHERE class_id = 1 ORDER BY id DESC;
+
 -- 分组过滤排序查询
 select name, count(*) as repeat_name
 from account
@@ -11101,7 +11133,48 @@ union all
 select name from user
 ```
 
+#### 其他操作
+
 ```sql
+-- 查看数据库端口
+show global variables like 'port';
+
+--显示可用数据库列表
+show databases;
+
+--选择数据库
+use 数据库名;
+
+--显示数据库的表
+show tables;
+
+--显示表的字段1
+show columns from account;
+
+--显示表的字段1
+describe account;
+
+-- 拼接字段
+select concat(id,'(',name,')') from account order by id;
+
+-- 显示数据库版本
+select version();
+
+-- 显示当前时间
+select now();
+
+-- 显示数据库支持的存储引擎
+show engines;
+
+-- 查看MySQL当前默认的存储引擎
+show variables like '%storage_engine%';
+
+-- 查看数据库中某个表使用的存储引擎
+show table status from database_name where name='account';
+
+-- 查看mysql默认隔离级别
+select @@transaction_isolation;
+
 -- 显示当前选择的数据库内可用表的列表
 show tables;
 
@@ -11295,49 +11368,6 @@ create table user(
 select * from user;
 ```
 
-#### 其他操作
-
-```sql
--- 查看数据库端口
-show global variables like 'port';
-
---显示可用数据库列表
-show databases;
-
---选择数据库
-use 数据库名;
-
---显示数据库的表
-show tables;
-
---显示表的字段1
-show columns from account;
-
---显示表的字段1
-describe account;
-
--- 拼接字段
-select concat(id,'(',name,')') from account order by id;
-
--- 显示数据库版本
-select version();
-
--- 显示当前时间
-select now();
-
--- 显示数据库支持的存储引擎
-show engines;
-
--- 查看MySQL当前默认的存储引擎
-show variables like '%storage_engine%';
-
--- 查看数据库中某个表使用的存储引擎
-show table status from database_name where name='account';
-
--- 查看mysql默认隔离级别
-select @@transaction_isolation;
-```
-
 #### 索引
 
 ##### 创建索引
@@ -11397,7 +11427,17 @@ select count(distinct columnName) / count(*) as columnName_rate from tableName
 - 覆盖索引（包含了所有查询字段：where,select,order by,group by 包含的字段的索引）避免回表
 - 给有大量数据的表新建索引：新建一张表+建索引+导入旧表数据+废弃旧表
 
-#### 事务处理
+#### 事务
+
+##### 事务隔离级别
+
+读未提交、读已提交、可重复读、可序列化
+
+- 脏读：一个事务会读到另一个事务更新后但未提交的数据，如果另一个事务回滚，那么当前事务读到的数据就是脏数据，这就是脏读
+- 不可重复读：在一个事务内，多次读同一数据，在这个事务还没有结束时，如果另一个事务恰好修改了这个数据，那么，在第一个事务中，两次读取的数据就可能不一致
+- 幻读：在一个事务中，第一次查询某条记录，发现没有，但是，当试图更新这条不存在的记录时，竟然能成功，并且，再次读取同一条记录，它就神奇地出现了
+
+##### 事务处理
 
 - 事务处理用来管理insert、update和delete语句，不能回退select、create或drop操作
 - MySQL默认是隐式提交
