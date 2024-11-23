@@ -10649,7 +10649,7 @@ su - postgres
 psql [postgres]
 ```
 
-- 2.vscode安卓数据库插件后连接数据库
+- 2.vscode安装数据库插件后连接数据库
 
 nat网络，需要配置virtualbox端口映射，如5432:5432，则直接用127.0.0.1:5432连接
 
