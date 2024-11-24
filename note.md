@@ -6049,25 +6049,60 @@ public Map<String, Object> getHeaders(
 获取 cookie 值
 
 ```java
-// 1.获取cookie
-@PostMapping("/user/getCookies")
-public Map<String, Object> getCookies(
-    @CookieValue("id") id,
-    @CookieValue Cookie cookies) {
+// 1.设置cookie
+@PostMapping("/setCookies")
+public String setCookies(HttpServletResponse response) {
     Cookie cookie = new Cookie("userName", "handle");
+    // set to -1 will be treated as a session cookie by the browser
+    // expires in 7 days
+    cookie.setMaxAge(7 * 24 * 60 * 60); 
+    response.addCookie(cookie);
+    // 加密传输到server，https连接有效
+    cookie.setSecure(true);
+    // it is not accessible to the client scripts
+    // For example, you can not use the Document.cookie property to access HttpOnly cookies in JavaScript
+    // This is one way to secure a cookie from being changed by malicious code or cross-site scripting (XSS) attacks
+    cookie.setHttpOnly(true);
+    // The Path attribute specifies a URL path for which the cookie should be sent to the server. 
+    // By explicitly setting the Path directive, the cookie will be delivered to the specified URL and all of its subdirectories
+    // By default, if no path is specified, a cookie is only sent to the server for the URL that was used to set it in the browser.
+    // global cookie accessible every where for the current domain
+    cookie.setPath("/"); 
+    return "set cookie success";
+}
+
+// 2.获取cookie
+@PostMapping("/getCookies")
+public Map<String, Object> getCookies(
+    @CookieValue(value = "id", defaultValue = "426353") id,
+    @CookieValue Cookie cookie,
+    HttpServletRequest request) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+        return Arrays.stream(cookies)
+                .map(c -> c.getName() + "=" + c.getValue()).collect(Collectors.joining(", "));
+    }
+
     Map<String, Object> map = new HashMap<>();
     map.put("id", id);
+    map.put("cookie", cookie);
     map.put("cookies", cookies);
     return map;
 }
 
-
-// 2.设置cookie
-@PostMapping("/user/setCookies")
-public String setCookies(HttpServletResponse response) {
-    Cookie cookie = new Cookie("userName", "handle");
-     response.addCookie(cookie);
-     return "set cookie success";
+// 3.删除cookie
+@PostMapping("/deleteCookies")
+public String deleteCookies(HttpServletResponse response) {
+    // To delete a cookie, you need to create a new instance of the Cookie class with the same name 
+    // and the Max-Age directive to 0
+    // and add it again to the response
+    Cookie cookie = new Cookie("userName", null);
+    cookie.setMaxAge(0); 
+    response.addCookie(cookie);
+    cookie.setSecure(true);
+    cookie.setHttpOnly(true);
+    cookie.setPath("/"); 
+    return "delete cookie success";
 }
 ```
 
@@ -6872,6 +6907,30 @@ java -jar [选项] [参数] <jar文件名>
     - 设置最小堆内存：`-Xms512m`
 
 ## Spring Security
+
+认证 (Authentication)： 是验证用户的身份的凭据（例如用户名/用户ID和密码），通过这个凭据，系统得以知道用户是谁
+
+授权 (Authorization)： 发生在认证之后，授予了什么权限，有权限干什么
+
+### 身份验证方案
+
+#### Session-Cookie方案
+
+1. 用户成功登录系统后，服务器为用户创建一个Session并存储起来（Redis），然后返回给客户端具有SessionID的Cookie
+
+2. 当用户向后端发起请求的时候会把SessionID带上，后端对其和数据库（Redis）中的SessionID进行比对
+
+要确保客户端开启了Cookie，还要注意Session的过期时间
+
+如果客户端禁用了Cookie，可以对SessionID进行一次加密，然后通过放到请求参数或者请求体的方式传给后端
+
+- Cookie无法防止CSRF（Cross Site Request Forgery，跨站请求伪造）攻击，而Token可以
+    - 如果点击了非法链接，会拿到Cookie干坏事
+    - Token存放在浏览器的localStorage，非法链接拿不到这个Token
+
+- 无论Cookie还是Token都无法避免XSS（Cross Site Scripting，跨站脚本攻击，为了跟层叠样式表（Cascading Style Sheets，CSS）的缩写区别）攻击
+
+### Spring Session
 
 - 依赖
 
