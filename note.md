@@ -3553,7 +3553,7 @@ apply plugin: MyPlugin
 |gradle build|构建项目，默认会执行gradle classes、gradle test，以及打包|
 |gradle build -x test|跳过测试构建项目|
 
-### 使用Gradle
+### Gradle单项目
 
 #### 创建Gradle项目
 
@@ -3594,6 +3594,62 @@ version = '1.0-SNAPSHOT'
 // 依赖
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+```
+
+### Gradle聚合项目
+
+- 新建gradle项目，删掉src目录
+
+- build.gradle
+
+```groovy
+plugins {
+    id 'java'
+    //  This plugin provides useful defaults and Gradle tasks
+    id 'org.springframework.boot' version '3.2.0'
+}
+
+// 提供版本管理支持，填写依赖的时候可以省略版本号
+apply plugin: 'io.spring.dependency-management'
+
+subprojects {
+    apply {
+        // 父项目的build.gradle声明过的插件才能应用到子项目
+        plugin('java')
+        plugin('org.springframework.boot')
+        plugin('io.spring.dependency-management')
+    }
+
+    group = 'com.handle'
+    version = '1.0-SNAPSHOT'
+
+    // 子项目通用依赖都在这里声明
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+
+        // Junit依赖
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    test {
+        // Use JUnit Platform for unit tests.
+        useJUnitPlatform()
+    }
+}
+```
+
+- 子项目测试类写法
+
+```java
+// 需要指定主启动类，否则会报错
+@SpringBootTest(classes = Application.class)
+public class ApplicationTest {
+    @Test
+    public void test() {
+        System.out.println("test success!!!!!!");
+    }
 }
 ```
 
