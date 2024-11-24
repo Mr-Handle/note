@@ -3633,7 +3633,7 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
-    test {
+    tasks.named('test') {
         // Use JUnit Platform for unit tests.
         useJUnitPlatform()
     }
