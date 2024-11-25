@@ -10824,22 +10824,22 @@ psql -f pg.bak [-U] postgres
 #### 用户操作
 
 ```sql
-# 创建用户并设置密码
+-- 创建用户并设置密码
 create user 'username' with password 'password';
 
-# 修改用户密码
+-- 修改用户密码
 alter user 'username' with password 'password';
 
-# 指定数据库的所有权限赋予指定用户
+-- 指定数据库的所有权限赋予指定用户
 grant all privileges on database 'dbname' to 'username';
 
-# 赋予数据库的所有权限后，还要指定表的所有权限赋予指定用户，才可以读写表
+-- 赋予数据库的所有权限后，还要指定表的所有权限赋予指定用户，才可以读写表
 grant all privileges on all tables in schema 'schema' to 'username';
 
-# 移除指定用户对于指定数据库的所有权限
+-- 移除指定用户对于指定数据库的所有权限
 revoke all privileges on database 'dbname' from 'username';
 
-# 删除用户
+-- 删除用户
 drop user 'username;
 ```
 
@@ -10848,18 +10848,18 @@ drop user 'username;
 pg没有区分用户和角色的概念，唯一区别就是创建用户和创建角色
 
 ```sql
-# 默认不具有登录属性
+-- 默认不具有登录属性
 create role 'rolename';
 
 alter role 'rolename' with login;
 
-# 默认具有登录属性
+-- 默认具有登录属性
 create user 'username';
 
-# 查询角色信息
+-- 查询角色信息
 select * from pg_roles;
 
-# 查询用户信息
+-- 查询用户信息
 select * from pg_user;
 ```
 
@@ -11192,7 +11192,7 @@ alter table account drop primary key;
 ##### 删表
 
 ```sql
-# 如果表存在则删除
+-- 如果表存在则删除
 drop table if exists payment;
 ```
 
