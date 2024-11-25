@@ -3624,8 +3624,16 @@ subprojects {
     group = 'com.handle'
     version = '1.0-SNAPSHOT'
 
+    ext {
+        // 在此处指定依赖版本
+        cglibVersion = '3.3.0'
+    }
+
     // 子项目通用依赖都在这里声明
     dependencies {
+        // 使用指定的依赖版本
+        implementation "cglib:cglib:${cglibVersion}"
+
         compileOnly 'org.projectlombok:lombok'
 
         // Junit依赖
