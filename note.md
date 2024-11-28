@@ -4638,10 +4638,28 @@ long total = new PageInfo<>(users).getTotal();
 - 依赖，需要参考mybatis-spring-boot-starter的版本，避免版本冲突
 
 ```xml
+<!--父项目-->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-bom</artifactId>
+            <version>3.5.9</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+<!--子项目-->
+<!-- spring-boot场景启动器 -->
 <dependency>
     <groupId>com.baomidou</groupId>
     <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-    <version>3.5.5</version>
+</dependency>
+<!-- 插件依赖，配置插件需要用到 -->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-jsqlparser</artifactId>
 </dependency>
 ```
 
@@ -4650,6 +4668,26 @@ long total = new PageInfo<>(users).getTotal();
 ```conf
 # mybatis-plus配置
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.slf4j.Slf4jImpl
+```
+
+- 配置类
+
+```java
+@Configuration
+public class ApplicationConfiguration {
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        // 乐观锁插件，在更新的时候比较版本字段，并且做版本自增
+        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        // 防止全表删除和更新的拦截器
+        interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+        // 如果配置多个插件, 切记分页最后添加
+            // 如果有多数据源可以不配具体类型, 否则都建议配上具体的 DbType
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.POSTGRE_SQL));
+        return interceptor;
+    }
+}
 ```
 
 - service写法，service层提供了批量数据的操作
@@ -12396,6 +12434,9 @@ hsetnx k1 f1 v1
 # 向k1添加一个或多个元素
 sadd k1 v1 v2
 
+# 删除k1的v1元素
+srem k1 v1
+
 # 获取k1的所有元素
 smembers k1
 
@@ -12428,6 +12469,9 @@ srandmember k1 2
 
 # 随机获取并移除k1中的两个元素，可以用于不允许重复中奖的抽奖场景
 spop k1 2
+
+# 将set1中的v1元素移动到set2中
+smove set1 set2 v1
 ```
 
 #### `Sorted Set`操作命令
