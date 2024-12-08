@@ -3311,7 +3311,10 @@ allprojects {
 
 - 配置环境变量
     - `GRADLE_HOME`
-    - `GRADLE_USER_HOME`，gradle的本地仓库路径和gradle wrapper的缓存路径，指定为maven的repository路径就行，但是下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
+    - `GRADLE_USER_HOME`
+        - gradle的本地仓库路径和gradle wrapper的缓存路径、缓存的路径
+        - 下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
+        - 除了依赖目录还有别的目录，建议不要指定为maven的repository路径，避免目录混乱
     - `M2_HOME`，maven家目录，修改maven下载源的话才需要定义
 
 - 配置Path：`GRADLE_HOME\bin`
