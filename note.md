@@ -1125,11 +1125,21 @@ public class ApplicationTest {
 - 创建虚拟线程池
 
 ```java
-@Bean
-public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
-    SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
-    simpleAsyncTaskExecutor.setVirtualThreads(true);
-    return simpleAsyncTaskExecutor;
+@Slf4j
+@Setter
+@ConfigurationProperties("thread.pool.task.executor")
+@Configuration
+public class ThreadPoolConfiguration {
+    private int maxPoolSize;
+
+    @Bean
+    public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor() {
+        // 不能像ThreadPoolTaskExecutor那样自定义异常处理，只可以设置最大线程数
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setVirtualThreads(true);
+        simpleAsyncTaskExecutor.setConcurrencyLimit(maxPoolSize);
+        return simpleAsyncTaskExecutor;
+    }
 }
 
 @Resource
