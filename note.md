@@ -2779,6 +2779,7 @@ native-image @target\tmp\native-image-xxxxxxx.args
     - User settings file，勾上Override，选择Maven的settings.xml配置文件路径
     - Use settings from .mvn/maven.config，取消勾选
     - 点击Runner子选项，勾上Skip Tests
+    - Importing，Automatically download，都不要勾选，如果需要看源码可以逐个手动下载
 
 ### scope
 
@@ -3605,9 +3606,10 @@ dependencies {
 
 ```groovy
 plugins {
-    id 'java'
     //  This plugin provides useful defaults and Gradle tasks
-    id 'org.springframework.boot' version '3.2.0'
+    // 包含了io.spring.dependency-management，其作用是提供版本管理支持，填写依赖的时候可以省略版本号
+    // 在根项目中只声明不应用，在子项目再应用，这里起到的是插件版本统一管理的作用
+    id 'org.springframework.boot' version '3.2.4' apply false
 }
 
 // 提供版本管理支持，填写依赖的时候可以省略版本号
@@ -3615,7 +3617,7 @@ apply plugin: 'io.spring.dependency-management'
 
 subprojects {
     apply {
-        // 父项目的build.gradle声明过的插件才能应用到子项目
+        // 如果不是核心插件，父项目的build.gradle声明过的插件才能应用到子项目
         plugin('java')
         plugin('org.springframework.boot')
         plugin('io.spring.dependency-management')
