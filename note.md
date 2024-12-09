@@ -832,6 +832,30 @@ try {
 | complete(T t)                       | 完成异步执行，并返回future的结果                                                       |
 | completeExceptionally(Throwable ex) | 抛出future执行异常                                                              |
 
+```java
+// 需要定义exceptionally或whenComplete打印异常日志，不然如果不调用future.get()异常将会丢失
+// exceptionally和whenComplete定义其一就好了
+CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+    System.out.println(Thread.currentThread().getName() + " 线程执行了");
+    int a = 1 / 0;
+    return "success";
+}, executor).exceptionally((exception) -> {
+    // exceptionally方法会返回一个新的CompletableFuture，更建议用链式调用
+    log.error("error", exception);
+    // 更建议在exceptionally中打印异常日志
+    // 然后可以抛出异常或者指定一个return返回值
+    // 当抛出异常时，在whenComplete中，异常可以被拿到
+    // 当指定一个返回值时，在whenComplete中，异常将丢失
+    // throw new RuntimeException(exception);
+    return "executed error";
+}).whenComplete((result, exception) -> {
+    if (Objects.nonNull(exception)) {
+        log.error("error", exception);
+    }
+});
+// System.out.println(future.get());
+```
+
 #### ForkJoin
 
 ```java
