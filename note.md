@@ -1024,11 +1024,10 @@ public void test() {
 spring:
     threads:
         virtual:
-            # 对@Async主机的方法使用虚拟线程，自定义的ThreadPoolTaskExecutor是不会生效的
+            # 对@Async、@Scheduled注解的方法使用虚拟线程，自定义的ThreadPoolTaskExecutor是不会生效的
             enabled: true
     main:
         # This ensures that the JVM is kept alive, even if all threads are virtual threads
-        # 好像没什么卵用，调用System.exit(0)还是立马退出了（我虚拟线程还没执行完呢）
         keep-alive: true
 ```
 
