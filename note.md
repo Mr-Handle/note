@@ -471,6 +471,7 @@ System.out.println(Arrays.toString(array));
 
 ```java
 Integer[][] array = new Integer[][]{{1, 2, 3}, {4, 5, 6}};
+// [[1, 2, 3], [4, 5, 6]]
 System.out.println(Arrays.deepToString(array));
 ```
 
@@ -490,7 +491,7 @@ System.out.println(Arrays.toString(array));
 - 定义集合类型的变量时，应该尽可能地使用接口类型，而不要使用具体的实现类型。
 
 ```java
-List<Integer> list = ArrayList<Integer>;
+List<Integer> list = ArrayList<>();
 ```
 
 - 以集合作为参数的任何方法，参数应该尽可能地使用接口类型，而不要使用具体的实现类型。
@@ -1562,10 +1563,11 @@ public void  els2pdf(String els,String pdf) throws Throwable{
 ```java
 List<Integer> list = List.of(1, 2, 3);
 
-// 如果传入的数组不够大，那么List内部会创建一个新的刚好够大的数组，填充后返回；如果传入的数组比List元素还要多，那么填充完元素后，剩下的数组元素一律填充null
-Integer[] array = list.toArray(new Integer[list.size()]);
+// 如果传入的数组不够大，那么List内部会创建一个新的刚好够大的数组，填充后返回
+// 如果传入的数组大小比list大小还要大，那么填充完list的元素后，位于数组后面的没被填充到的元素一律填充null
+Integer[] array = list.toArray(new Integer[0]);
 
-// 更简洁的写法
+// 推荐更简洁的写法
 Integer[] array = list.toArray(Integer[]::new);
 ```
 
