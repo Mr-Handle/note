@@ -2160,6 +2160,12 @@ System.out.println(HexFormat.of().formatHex(result));
 
 #### BouncyCastle库
 
+- 依赖
+
+```groovy
+implementation 'org.bouncycastle:bcprov-jdk18on:1.79'
+```
+
 Java标准库提供了一系列常用的哈希算法，如果还不满足，BouncyCastle库提供了更多的哈希算法可供使用
 
 ```java
