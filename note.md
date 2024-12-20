@@ -2141,6 +2141,23 @@ public class BaseException extends RuntimeException {
 
 ### 加密
 
+#### 哈希算法
+
+- 用途
+    - 1.校验下载文件是否已被篡改
+    - 2.存储用户口令的哈希
+
+```java
+// 1.使用哈希算法SHA-512，创建一个MessageDigest实例
+MessageDigest md = MessageDigest.getInstance("SHA-512");
+// 2.（反复）调用update输入数据
+md.update("Hello World".getBytes(StandardCharsets.UTF_8));
+// 3.获取摘要
+byte[] result = md.digest();
+// 字符串长度128: 2c74fd17edafd80e8447b0d46741ee243b7eb74dd2149a0ab1b9246fb30382f27e853d8585719e0e67cbda0daa8f51671064615d645ae27acb15bfb1447f459b
+System.out.println(HexFormat.of().formatHex(result));
+```
+
 ```java
 package com.handle.demo.common;
 
