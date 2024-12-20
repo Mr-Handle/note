@@ -2158,6 +2158,23 @@ byte[] result = md.digest();
 System.out.println(HexFormat.of().formatHex(result));
 ```
 
+#### BouncyCastle库
+
+Java标准库提供了一系列常用的哈希算法，如果还不满足，BouncyCastle库提供了更多的哈希算法可供使用
+
+```java
+// 1.注册BouncyCastle
+Security.addProvider(new BouncyCastleProvider());
+// 2.使用哈希算法RipeMD160，创建一个MessageDigest实例
+MessageDigest md = MessageDigest.getInstance("RipeMD160");
+// 3.（反复）调用update输入数据
+md.update("Hello World".getBytes(StandardCharsets.UTF_8));
+// 4.获取摘要
+byte[] result = md.digest();
+// 字符串长度40: a830d7beb04eb7549ce990fb7dc962e499a27230
+System.out.println(HexFormat.of().formatHex(result));
+```
+
 ```java
 package com.handle.demo.common;
 
