@@ -142,16 +142,16 @@ System.out.println(Integer.toHexString(a));
 byte[] datas = {15, 15};
 // 00001111 00001111，（0x0f0f) 结果为f0f（byte数组首个元素高4位为0，被去掉了) 
 String hexString = new BigInteger(1, datas).toString(16);
+
+// 推荐
+// 0f0f
+String hexString2 = HexFormat.of().formatHex(datas);
 ```
 
 ##### 引入第三方库转换
 
-```xml
-<dependency>
-    <groupId>commons-codec</groupId>
-    <artifactId>commons-codec</artifactId>
-    <version>1.14</version>
-</dependency>
+```groovy
+implementation 'commons-codec:commons-codec:1.17.1'
 ```
 
 ```java
@@ -2181,141 +2181,27 @@ byte[] result = md.digest();
 System.out.println(HexFormat.of().formatHex(result));
 ```
 
+#### Hmac算法
+
+- 存储用户的哈希口令时，要加盐存储，让彩虹表失效
+
+- Hmac算法是一种基于密钥（相当于盐）的消息认证码算法，是一种更安全的消息摘要算法，可以用Hmac算法取代原有的自定义的加盐算法
+
+- Hmac算法总是和某种哈希算法配合起来用
+
+- Hmac本质上就是把密钥混入摘要的算法。验证此哈希时，除了原始的输入数据，还要提供密钥
+
+- 保证安全，通过Java标准库的KeyGenerator生成一个安全的随机的密钥
+
+- 工具类：[HmacUtils](/java/HmacUtils.java)
+
 ```java
-package com.handle.demo.common;
+// 生成密钥和哈希
+HmacUtils.EncryptionBO encryptionBO = HmacUtils.getEncryptionBO("hello world");
 
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.HmacAlgorithms;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-/**
- * HmacUtils
- *
- * @author handle
- * @date 2023-03-22 16:00:37
- */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class HmacUtils {
-    public static final String HMAC_MD5 = HmacAlgorithms.HMAC_MD5.getName();
-
-    /**
-     * 生成随机盐
-     * 
-     * @return
-     * @throws NoSuchAlgorithmException
-     */
-    public static byte[] getRandomSalt() throws NoSuchAlgorithmException {
-        return getRandomSalt(HMAC_MD5);
-    }
-
-    /**
-     * 生成随机盐
-     * 
-     * @param algorithm
-     * @return
-     * @throws NoSuchAlgorithmException
-     */
-    public static byte[] getRandomSalt(String algorithm) throws NoSuchAlgorithmException {
-        // 1.获取HmacMD5的KeyGenerator实例
-        KeyGenerator keyGenerator = KeyGenerator.getInstance(algorithm);
-
-        // 2.通过KeyGenerator创建SecretKey实例
-        SecretKey secretKey = keyGenerator.generateKey();
-
-        // 3.生成随机的key字节数组，得到salt
-        return secretKey.getEncoded();
-    }
-
-    /**
-     * 获取HmacMD5加盐哈希值
-     * 
-     * @param salt
-     * @param input
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws DecoderException
-     */
-    public static String getHmac(String salt, String input) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
-        return getHmac(salt, input, HMAC_MD5);
-    }
-
-    /**
-     * 获取加盐哈希值
-     * 
-     * @param salt
-     * @param input
-     * @param algorithm
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws DecoderException
-     */
-    public static String getHmac(String salt, String input, String algorithm) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
-        // 16进制salt字符串 转 byte[]
-        byte[] salts = Hex.decodeHex(salt);
-        return getHmac(salts, input, algorithm);
-    }
-
-    /**
-     * 获取HmacMD5加盐哈希值
-     * 
-     * @param salts
-     * @param input
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws DecoderException
-     */
-    public static String getHmac(byte[] salts, String input) throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
-        return getHmac(salts, input, HMAC_MD5);
-    }
-
-    /**
-     * 获取加盐哈希值
-     * 
-     * @param salts
-     * @param input
-     * @param algorithm
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeyException
-     * @throws DecoderException
-     */
-    public static String getHmac(byte[] salts, String input, String algorithm)
-            throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
-        // 恢复成SecretKey
-        SecretKey secretKey = new SecretKeySpec(salts, algorithm);
-
-        // 通过HmacMD5 获取Mac 实例
-        Mac mac = Mac.getInstance(algorithm);
-
-        // 用SecretKey 实例初始化Mac 实例
-        mac.init(secretKey);
-
-        // 对Mac实例反复调用update(byte[])输入数据
-        mac.update(input.getBytes(StandardCharsets.UTF_8));
-
-        // 调用Mac实例的doFinal()获取最终的哈希值
-        byte[] password = mac.doFinal();
-
-        // byte[] 转为16进制字符串
-        return Hex.encodeHexString(password);
-    }
-}
-
+// 核实输入是否正确
+boolean b = HmacUtils.verifyInput(encryptionBO.getSecretKey(), "hello world", encryptionBO.getHash());
+System.out.println(b);
 ```
 
 ### 日志
