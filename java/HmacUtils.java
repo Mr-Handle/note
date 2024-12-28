@@ -4,8 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 
 import javax.crypto.KeyGenerator;
@@ -15,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Objects;
 
 /**
@@ -36,7 +35,7 @@ public final class HmacUtils {
     public static EncryptionBO getEncryptionBO(String input) throws NoSuchAlgorithmException, InvalidKeyException {
         byte[] secretKey = generateSecretKey();
         EncryptionBO encryptionBO = new EncryptionBO();
-        encryptionBO.setSecretKey(Hex.encodeHexString(secretKey));
+        encryptionBO.setSecretKey(Base64.getEncoder().encodeToString(secretKey));
         encryptionBO.setHash(generateHash(secretKey, input));
         return encryptionBO;
     }
@@ -59,7 +58,7 @@ public final class HmacUtils {
      * 密码核实
      */
     public static boolean verifyInput(String secretKey, String input, String storeHash)
-            throws DecoderException, NoSuchAlgorithmException, InvalidKeyException {
+            throws NoSuchAlgorithmException, InvalidKeyException {
         String inputHash = generateHash(secretKey, input);
         return Objects.equals(inputHash, storeHash);
     }
@@ -68,8 +67,8 @@ public final class HmacUtils {
      * 用指定算法和密钥生成哈希值
      */
     private static String generateHash(String secretKey, String input)
-            throws NoSuchAlgorithmException, InvalidKeyException, DecoderException {
-        return generateHash(Hex.decodeHex(secretKey), input);
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        return generateHash(Base64.getDecoder().decode(secretKey), input);
     }
 
     /**
@@ -91,7 +90,7 @@ public final class HmacUtils {
         // 5.调用Mac实例的doFinal()获取最终的哈希值
         byte[] password = mac.doFinal();
 
-        // 6.byte[] 转为16进制字符串
-        return Hex.encodeHexString(password);
+        // 6.byte[] 转为Base64编码的字符串
+        return Base64.getEncoder().encodeToString(password);
     }
 }

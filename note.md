@@ -2141,6 +2141,56 @@ public class BaseException extends RuntimeException {
 
 ### 加密
 
+#### 编码算法
+
+##### URL编码
+
+- URL编码是浏览器发送数据给服务器时使用的编码，它通常附加在URL的参数部分
+
+- 如果字符是A~Z，a~z，0~9以及-、_、.、*，则保持不变；
+
+- 如果是其他字符，先转换为UTF-8编码，然后对每个字节以%XX表示
+
+```java
+String encoded = URLEncoder.encode("中文!", StandardCharsets.UTF_8);
+// %E4%B8%AD%E6%96%87%21
+System.out.println(encoded);
+
+String decoded = URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+// 中文!
+System.out.println(decoded);
+```
+
+##### Base64编码
+
+- URL编码是对字符进行编码，表示成%xx的形式，而Base64编码是对二进制数据(在Java中相当于byte[])进行编码，表示成文本格式
+
+```java
+byte[] input = new byte[] { -28, -72, -83 };
+
+String b64encoded = Base64.getEncoder().encodeToString(input);
+// 5Lit
+System.out.println(b64encoded);
+
+byte[] output = Base64.getDecoder().decode(b64encoded);
+// [-28, -72, -83]
+System.out.println(Arrays.toString(output));
+```
+
+- 因为标准的Base64编码会出现+、/和=，所以不适合把Base64编码后的字符串放到URL中。一种针对URL的Base64编码可以在URL中使用的Base64编码，它仅仅是把+变成-，/变成_
+
+```java
+byte[] input = new byte[] {1, 2, 127, 0};
+
+String b64encoded = Base64.getUrlEncoder().encodeToString(input);
+// AQJ_AA==
+System.out.println(b64encoded);
+
+byte[] output = Base64.getUrlDecoder().decode(b64encoded);
+// [1, 2, 127, 0]
+System.out.println(Arrays.toString(output));
+```
+
 #### 哈希算法
 
 - 用途
@@ -2203,6 +2253,28 @@ HmacUtils.EncryptionBO encryptionBO = HmacUtils.getEncryptionBO("hello world");
 boolean b = HmacUtils.verifyInput(encryptionBO.getSecretKey(), "hello world", encryptionBO.getHash());
 System.out.println(b);
 ```
+
+#### 对称加密算法
+
+- 对称加密算法就是传统的用一个密码进行加密和解密，例如压缩和解压缩，就是用对称加密算法
+
+- 对称加密算法的密钥长度是固定的
+
+- 密钥长度直接决定加密强度，而工作模式和填充模式可以看成是对称加密算法的参数和格式选择
+    - 工作模式决定了加密算法如何处理超过一个块（block）的数据
+        - ECB (Electronic Codebook)：电子密码本模式。每个块独立加密，简单但不安全，因为相同的明文块会产生相同的密文块。
+        - CBC (Cipher Block Chaining)：密文分组链接模式。每个块在加密前与前一个块的密文进行 XOR 运算。提高了安全性，但需要一个初始向量（IV）。
+        - CFB (Cipher Feedback)：密文反馈模式。将加密结果反馈到加密过程。支持加密小于一个块的消息。
+        - OFB (Output Feedback)：输出反馈模式。类似 CFB，但不会引入加密结果反馈，不容易出现传播错误。
+        - CTR (Counter)：计数器模式。将一个递增的计数器应用到加密过程。支持并行加密，非常高效。
+    - 填充模式决定了如何处理不满一个块的数据
+        - PKCS5Padding：常见的填充方式，将缺少的字节填充为相同的值，适用于块大小为 8 字节（64 位）的加密算法。例如，需要填充 3 个字节，则填充值为 0x03 0x03 0x03。
+        - PKCS7Padding：与 PKCS5Padding 类似，适用于任意块大小（如 16 字节块的 AES），AES 这样的块大小为 16 字节的加密算法，使用 PKCS7Padding 是一个很好的选择
+        - NoPadding：不填充数据，要求输入数据必须是块大小的整数倍。如果不满足则需要手动处理。
+
+#### 口令加密算法
+
+- 由于对称加密算法的密钥长度是固定的，如果想要设置为自定义长度（如6位或8位），则需要把用户输入的口令和一个安全随机的口令采用杂凑后计算出固定长度的真正密钥
 
 ### 日志
 
@@ -3844,6 +3916,14 @@ when(someService.someMethod(parameter...)).thenReturn(someValue);
     <version>${lombok.version}</version>
     <scope>provided</scope>
 </dependency>
+```
+
+- gradle依赖
+
+```groovy
+compileOnly 'org.projectlombok:lombok'
+// 加上这个注解告诉Gradle在编译过程中使用Lombok的注解处理器，不然编译会报错
+annotationProcessor 'org.projectlombok:lombok'
 ```
 
 - 常用注解
