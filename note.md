@@ -2276,6 +2276,27 @@ System.out.println(b);
 
 - 由于对称加密算法的密钥长度是固定的，如果想要设置为自定义长度（如6位或8位），则需要把用户输入的口令和一个安全随机的口令采用杂凑后计算出固定长度的真正密钥
 
+```java
+/**
+ * 口令加密算法测试
+ */
+@Test
+public void test2() throws GeneralSecurityException {
+    // 各自生成KeyPair:
+    KeyPair keyPair1 = DhUtil.generateKeyPair();
+    KeyPair keyPair2 = DhUtil.generateKeyPair();
+
+    // 双方交换各自的PublicKey生成自己的本地密钥
+    String secretKey1 = DhUtil.generateSecretKey(keyPair1.getPrivate(), Base64.getEncoder().encodeToString(keyPair2.getPublic().getEncoded()));
+    String secretKey2 = DhUtil.generateSecretKey(keyPair2.getPrivate(), Base64.getEncoder().encodeToString(keyPair1.getPublic().getEncoded()));
+
+    System.out.println("Secret key1: " + secretKey1);
+    System.out.println("Secret key2: " + secretKey2);
+    System.out.println(secretKey1.equals(secretKey2));
+    System.out.println(secretKey1.length());
+}
+```
+
 #### 密钥交换算法
 
 密钥交换算法即DH算法，本质就是双方各自生成自己的私钥和公钥，私钥仅对自己可见，然后交换公钥，并根据自己的私钥和对方的公钥，生成最终的密钥
