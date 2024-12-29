@@ -2276,6 +2276,38 @@ System.out.println(b);
 
 - 由于对称加密算法的密钥长度是固定的，如果想要设置为自定义长度（如6位或8位），则需要把用户输入的口令和一个安全随机的口令采用杂凑后计算出固定长度的真正密钥
 
+#### 非对称加密算法
+
+非对称加密就是加密和解密使用的不是相同的密钥：只有同一个公钥-私钥对才能正常加解密（可以用公钥加密-用私钥解密，或者用私钥加密-用公钥解密）
+
+非对称加密算法不能防止中间人攻击
+
+```java
+/**
+ * 非对称加密/解密
+ */
+@Test
+public void test() throws GeneralSecurityException {
+    String message = "Hello world!";
+    String encrypt = RsaUtil.encrypt(message);
+    System.out.println("encrypt: " + encrypt);
+    String decrypt = RsaUtil.decrypt(encrypt);
+    System.out.println("decrypt: " + decrypt);
+
+    String privateKey = RsaUtil.getPrivateKey();
+    PrivateKey privateKey1 = RsaUtil.restorePrivateKey(privateKey);
+    String s = Base64.getEncoder().encodeToString(privateKey1.getEncoded());
+    System.out.println("privateKey: " + s);
+    System.out.println(s.equals(privateKey));
+
+    String publicKey = RsaUtil.getPublicKey();
+    PublicKey publicKey1 = RsaUtil.restorePublicKey(publicKey);
+    String s1 = Base64.getEncoder().encodeToString(publicKey1.getEncoded());
+    System.out.println("publicKey: " + s1);
+    System.out.println(s1.equals(publicKey));
+}
+```
+
 #### 签名算法
 
 ```java
