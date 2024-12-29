@@ -2272,6 +2272,23 @@ System.out.println(b);
         - PKCS7Padding：与 PKCS5Padding 类似，适用于任意块大小（如 16 字节块的 AES），AES 这样的块大小为 16 字节的加密算法，使用 PKCS7Padding 是一个很好的选择
         - NoPadding：不填充数据，要求输入数据必须是块大小的整数倍。如果不满足则需要手动处理。
 
+```java
+/**
+ * 对称加密算法测试
+ */
+@Test
+public void test() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException,
+        BadPaddingException, InvalidKeyException {
+    String input = "hello, world!";
+    AesUtil.AesBo aesBO = AesUtil.getAesBO();
+    System.out.println(aesBO.getSecretKey().length());
+    String encrypt = AesUtil.encrypt(aesBO.getSecretKey(), aesBO.getIv(), input);
+    System.out.println("Encrypt: " + encrypt);
+    String decrypt = AesUtil.decrypt(aesBO.getSecretKey(), aesBO.getIv(), encrypt);
+    System.out.println("Decrypt: " + decrypt);
+}
+```
+
 #### 口令加密算法
 
 - 由于对称加密算法的密钥长度是固定的，如果想要设置为自定义长度（如6位或8位），则需要把用户输入的口令和一个安全随机的口令采用杂凑后计算出固定长度的真正密钥
