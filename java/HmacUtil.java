@@ -21,8 +21,8 @@ import java.util.Objects;
  * @date 2024-12-21
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class HmacUtils {
-    public static final String HMAC_SHA_512 = HmacAlgorithms.HMAC_SHA_512.getName();
+public final class HmacUtil {
+    private static final String HMAC_SHA_512 = HmacAlgorithms.HMAC_SHA_512.getName();
 
     @Getter
     @Setter
@@ -50,7 +50,7 @@ public final class HmacUtils {
         // 2.通过KeyGenerator创建SecretKey实例
         SecretKey secretKey = keyGenerator.generateKey();
 
-        // 3.生成随机的key字节数组，得到salt
+        // 3.生成随机的key字节数组，得到密钥
         return secretKey.getEncoded();
     }
 

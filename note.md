@@ -2276,6 +2276,22 @@ System.out.println(b);
 
 - 由于对称加密算法的密钥长度是固定的，如果想要设置为自定义长度（如6位或8位），则需要把用户输入的口令和一个安全随机的口令采用杂凑后计算出固定长度的真正密钥
 
+#### 签名算法
+
+```java
+/**
+ * 对消息的哈希进行签名和验证
+ */
+@Test
+public void test() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    String message = "Hello world!";
+    HmacUtil.EncryptionBO encryptionBO = HmacUtil.getEncryptionBO(message);
+    String hashMessage = encryptionBO.getHash();
+    String sign = SignatureUtil.sign(hashMessage);
+    System.out.println(SignatureUtil.isValidSignature(sign, hashMessage));
+}
+```
+
 ### 日志
 
 #### self4j
