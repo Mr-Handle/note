@@ -335,7 +335,20 @@ String hexAddress1 = Integer.toHexString(System.identityHashCode(object));
 String hexAddress2 = object.toString().substring(object.toString().indexOf("@") + 1);
 ```
 
-### 文件复制
+### 操作文件
+
+#### 读取文件
+
+- 读取resources目录下的文件
+
+```java
+// 通过class.getResourceAsStream，要加前缀/
+InputStream input = Xxx.class.getResourceAsStream("/fileName");
+// 通过classLoader.getResourceAsStream，不需要加前缀
+InputStream input = Xxx.class.getClassLoader().getResourceAsStream("fileName");
+```
+
+- 复制文件
 
 ```java
 try (InputStream inputStream = Application.class.getClassLoader().getResourceAsStream(fileName);
@@ -2390,6 +2403,73 @@ public void test() throws NoSuchAlgorithmException, InvalidKeyException, Signatu
     String hashMessage = encryptionBO.getHash();
     String sign = SignatureUtil.sign(hashMessage);
     System.out.println(SignatureUtil.isValidSignature(sign, hashMessage));
+}
+```
+
+#### 数字证书
+
+- 数字证书就是集合了多种密码学算法，用于实现数据加解密、身份认证、签名等多种功能的一种安全标准
+
+- 数字证书可以防止中间人攻击，因为它采用链式签名认证，即通过根证书（Root CA）去签名下一级证书，这样层层签名，直到最终的用户证书
+
+- 而Root CA证书内置于操作系统中，所以，任何经过CA认证的数字证书都可以对其本身进行校验，确保证书本身不是伪造的
+
+- 在Java程序中，数字证书存储在一种Java专用的key store文件中，JDK提供了一系列命令来创建和管理keystore
+
+- 创建一个keystore
+
+```sh
+# storepass 指定口令
+# genkeypair 生成公钥/私钥对
+# keyalg 指定加密算法
+# keysize 指定密钥长度/位数
+# sigalg 指定签名算法
+# validity 指定有效天数
+# alias 指定证书别名
+# keystore 指定keystore名称
+# dname 最重要的CN=www.sample.com指定了Common Name，如果证书用在HTTPS中，这个名称必须与域名完全一致
+# 此命令在当前目录创建一个my.keystore文件，并存储创建成功的一个私钥和一个证书到文件中
+# 有了keystore存储的数字证书，我们就可以进行加解密和签名
+keytool -storepass handle123 -genkeypair -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -validity 180 -alias mycert -keystore my.keystore -dname "CN=www.handle.com.cn, OU=handle, O=handle, L=BJ, ST=BJ, C=CN"
+```
+
+- 使用数字证书
+
+[CertificateUtil](/java/CertificateUtil.java)
+
+```java
+@Test
+public void test() throws GeneralSecurityException {
+    String password = "handle123";
+    String message = "hello world";
+    String certificateAlias = "mycert";
+    // 读取KeyStore
+    KeyStore keyStore = CertificateUtil.loadKeyStore(ApplicationTest.class, "/my.keystore", password);
+    // 读取私钥
+    PrivateKey privateKey = (PrivateKey) keyStore.getKey(certificateAlias, password.toCharArray());
+    // 读取证书
+    X509Certificate certificate = (X509Certificate) keyStore.getCertificate(certificateAlias);
+    // 读取公钥
+    PublicKey publicKey = certificate.getPublicKey();
+
+    System.out.println(publicKey.getAlgorithm());
+    System.out.println(privateKey.getAlgorithm());
+
+    // 加密
+    String encrypted = CertificateUtil.encrypt(publicKey, message);
+    System.out.println("encrypted: " + encrypted);
+
+    // 解密
+    String decrypted = CertificateUtil.decrypt(privateKey, encrypted);
+    System.out.println("decrypted: " + decrypted);
+
+    // 签名
+    String sign = CertificateUtil.sign(privateKey, certificate, message);
+    System.out.println("signature: " + sign);
+
+    // 验证签名
+    boolean verified = CertificateUtil.verify(certificate, message, sign);
+    System.out.println("verify: " + verified);
 }
 ```
 
