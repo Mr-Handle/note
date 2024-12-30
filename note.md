@@ -2903,6 +2903,27 @@ mvn -Pnative native:compile
 native-image @target\tmp\native-image-xxxxxxx.args
 ```
 
+#### 打包成exe
+
+- 1.build.gradle
+
+```groovy
+plugins {
+    // 打包插件
+    id "edu.sc.seis.launch4j" version "3.0.6"
+}
+
+launch4j {
+    // 唯一需要指定的是mainClassName
+    mainClassName = 'com.handle.package2exe.demo.Application'
+    icon = "${projectDir}/src/main/resources/logo.ico"
+}
+```
+
+- 2.执行createExe任务
+
+- 3.build/launch4j目录下就是打包生成的依赖和exe文件
+
 ## Maven
 
 ### 安装Maven
@@ -3900,7 +3921,7 @@ dependencies {
 ### IDEA配置
 
 - Settings->Build,Execution,Deployment->Gradle
-    - Gradle user home，设置为maven本地仓库的路径
+    - Gradle user home，指定一个路径作为gradle的本地仓，gradle和maven的结构不一样，不要设置为maven本地仓库的路径
     - Build and run using，设置为IntelliJ IDEA，IDEA会对纯Java项目做优化，启动更快，如果构建有问题再改回默认Gradle
     - Run test using，设置为IntelliJ IDEA，不然用默认Gradle的话初始化测试都要等好几秒了，浪费时间
     - Distribution，设置为Local installation，并选择本地安装的gradle家目录
