@@ -2983,27 +2983,6 @@ mvn -Pnative native:compile
 native-image @target\tmp\native-image-xxxxxxx.args
 ```
 
-#### 打包成exe
-
-- 1.build.gradle
-
-```groovy
-plugins {
-    // 打包插件
-    id "edu.sc.seis.launch4j" version "3.0.6"
-}
-
-launch4j {
-    // 唯一需要指定的是mainClassName
-    mainClassName = 'com.handle.package2exe.demo.Application'
-    icon = "${projectDir}/src/main/resources/logo.ico"
-}
-```
-
-- 2.执行createExe任务
-
-- 3.build/launch4j目录下就是打包生成的依赖和exe文件
-
 ## Maven
 
 ### 安装Maven
@@ -4008,6 +3987,103 @@ dependencies {
     - Gradle JVM，设置为本地安装的JDK即可
 
 ### 打包部署
+
+#### 非模块打包
+
+##### 生成最小的jre
+
+```groovy
+// 非模块打包，不能有module-info.java文件
+plugins {
+    id("org.beryx.runtime") version "1.13.1"
+}
+
+application {
+    mainClass = 'com.handle.package2exe.demo.Application'
+}
+runtime {
+    // --strip-debug：去掉所有模块中的调试信息，从而减小生成的JRE的大小
+    // --compress：压缩生成的JRE。2表示最高级别的压缩，但这也会增加构建时间
+    // --no-header-files：不包含头文件。减少不必要的文件，进一步减小JRE的大小
+    // --no-man-pages：不包含手册页。进一步减小JRE的大小
+    options = ['--strip-debug', '--compress', 'zip-6', '--no-header-files', '--no-man-pages']
+    // 依赖的模块，建议先创建module-info.java文件确认依赖哪些模块，然后再复制到这里来，最后删掉module-info.java文件
+    modules = ['javafx.controls']
+    // 指定生成的jre位置
+    distDir = file("${projectDir}/build/${project.name}/jre")
+}
+```
+
+##### 打包成exe
+
+- 1.build.gradle
+
+```groovy
+plugins {
+    // 打包插件
+    id "edu.sc.seis.launch4j" version "3.0.6"
+}
+
+launch4j {
+    // 唯一需要指定的是mainClassName
+    mainClassName = 'com.handle.package2exe.demo.Application'
+    icon = "${projectDir}/icon/logo.ico"
+    // 输出路径
+    outputDir = "${projectDir}/build/${project.name}"
+    // 生成的exe文件相同目录下，放置jre（文件夹），不配置Java运行环境也可以运行
+    bundledJrePath = "./jre"
+}
+```
+
+- 2.执行createExe任务
+
+- 3.build/launch4j目录下就是打包生成的依赖和exe文件
+
+##### jre和exe整合
+
+```groovy
+plugins {
+    // 生成exe文件和jar依赖文件夹
+    id("edu.sc.seis.launch4j") version "3.0.6"
+    // 非模块打包，不能有module-info.java文件
+    id("org.beryx.runtime") version "1.13.1"
+}
+
+application {
+    mainClass = 'com.handle.package2exe.demo.Application'
+}
+
+launch4j {
+    // 唯一需要指定的是mainClassName
+    mainClassName = 'com.handle.package2exe.demo.Application'
+    icon = "${projectDir}/src/main/resources/logo.ico"
+    // 输出路径
+    outputDir = "${projectDir}/build/${project.name}"
+    // 生成的exe文件相同目录下，放置jre（文件夹），不配置Java运行环境也可以运行
+    bundledJrePath = "./jre"
+}
+
+runtime {
+    options = ['--strip-debug', '--compress', 'zip-6', '--no-header-files', '--no-man-pages']
+    // 依赖的模块，建议先创建module-info.java文件确认依赖哪些模块，然后再复制到这里来，最后删掉module-info.java文件
+    modules = ['javafx.controls']
+    // 指定生成的jre位置，不知道为什么不生效，只能通过复制任务复制到输出目录了
+    distDir = file("${projectDir}/build/${project.name}/jre")
+}
+
+// 复制jre文件夹到输出目录
+tasks.register('copyJre', Copy) {
+    from "${projectDir}/build/jre"
+    into "${projectDir}/build/${project.name}/jre"
+    doLast {
+        def sourceDirectory = file("${projectDir}/build/jre")
+        sourceDirectory.deleteDir()
+    }
+}
+
+tasks.copyJre.dependsOn('jre')
+tasks.createExe.dependsOn('copyJre')
+```
 
 #### 模块打包
 
