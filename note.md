@@ -4056,7 +4056,7 @@ application {
 launch4j {
     // 唯一需要指定的是mainClassName
     mainClassName = 'com.handle.package2exe.demo.Application'
-    icon = "${projectDir}/src/main/resources/logo.ico"
+    icon = "${projectDir}/icon/logo.ico"
     // 输出路径
     outputDir = "${projectDir}/build/${project.name}"
     // 生成的exe文件相同目录下，放置jre（文件夹），不配置Java运行环境也可以运行
