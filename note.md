@@ -4007,6 +4007,57 @@ dependencies {
     - Distribution，设置为Local installation，并选择本地安装的gradle家目录
     - Gradle JVM，设置为本地安装的JDK即可
 
+### 打包部署
+
+#### 模块打包
+
+执行jlink任务，最终会在build/image/bin目录下生成项目名对应的文件和bat文件，双击该bat文件即可运行程序
+
+- 创建module-info.java文件
+
+```java
+// 模块的名称，它的命名规范与包一致
+module com.handle.package2exe.demo {
+    // 依赖的模块，按需导入
+    requires javafx.controls;
+    // 必须导出，否则运行报错
+    exports com.handle.package2exe.demo;
+}
+```
+
+- 配置buil.gradle文件
+
+```groovy
+plugins {
+    // 模块打包，需要有module-info.java文件
+    id("org.beryx.jlink") version "3.1.1"
+}
+
+application {
+    // 指定主类和主模块
+    mainClass = 'com.handle.package2exe.demo.Application'
+    mainModule = 'com.handle.package2exe.demo'
+}
+
+jlink {
+    // --strip-debug：去掉所有模块中的调试信息，从而减小生成的JRE的大小
+    // --compress：压缩生成的JRE。2表示最高级别的压缩，但这也会增加构建时间
+    // --no-header-files：不包含头文件。减少不必要的文件，进一步减小JRE的大小
+    // --no-man-pages：不包含手册页。进一步减小JRE的大小
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    mergedModule {
+        // 主模块以来的模块都填写
+        requires 'javafx.controls'
+    }
+    launcher {
+        // 会在build/image/bin目录下生成项目名对应的文件和bat文件
+        name = "${project.name}"
+        // 双击运行bat文件后控制台窗口自动关闭
+        noConsole = true
+    }
+}
+```
+
 ## Groovy
 
 - 官网：<https://groovy-lang.org/>
