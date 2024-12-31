@@ -139,6 +139,7 @@ System.out.println(Integer.toHexString(a));
 ##### 用Java自带方法转换
 
 ```java
+// byte[]转换为16进制字符串
 byte[] datas = {15, 15};
 // 00001111 00001111，（0x0f0f) 结果为f0f（byte数组首个元素高4位为0，被去掉了) 
 String hexString = new BigInteger(1, datas).toString(16);
@@ -146,6 +147,17 @@ String hexString = new BigInteger(1, datas).toString(16);
 // 推荐
 // 0f0f
 String hexString2 = HexFormat.of().formatHex(datas);
+
+// byte[]转换为16进制字符串
+String s = "hello world";
+String hex = HexFormat.of().formatHex(s.getBytes(StandardCharsets.UTF_8));
+// 68656c6c6f20776f726c64
+System.out.println(hex);
+
+// 16进制字符串转换为byte[]
+byte[] bytes = HexFormat.of().parseHex(hex);
+// hello world
+System.out.println(new String(bytes, StandardCharsets.UTF_8));
 ```
 
 ##### 引入第三方库转换
