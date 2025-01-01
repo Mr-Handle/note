@@ -1062,6 +1062,8 @@ ThreadPoolExecutor executorService =
 
 ##### 虚拟线程池
 
+虚拟线程属于非常轻量级的资源，因此，用时创建，用完就扔，可以不用池化虚拟线程
+
 ```java
 @Test
 public void test() {
