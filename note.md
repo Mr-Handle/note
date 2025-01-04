@@ -2878,19 +2878,19 @@ public class Applistener implements ServletContextListener {
 #### 系统变量和环境变量
 
 ```java
-// 获取系统变量（操作系统环境变量）
+// 获取（操作系统）环境变量
 System.getenv("JAVA_HOME");
 
-// 设置系统变量，这种方式设置的系统变量仅在当前命令行会话中有效。一旦关闭该会话或重新启动系统，系统变量将失效
+// 设置环境变量，这种方式设置的环境变量仅在当前命令行会话中有效。一旦关闭该会话或重新启动系统，环境变量将失效
 MY_VARIABLE=myValue java -jar myApp.jar
 
-// 获取（JVM）环境变量
+// 获取（JVM）系统变量
 System.getProperty("java.home");
 
-// 设置环境变量，这种方式设置的环境变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，环境变量将失效
+// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
 System.setProperty("myVariable", "myValue");
 
-// 设置环境变量，这种方式设置的环境变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，环境变量将失效
+// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
 java -DmyVariable=myValue -jar myApp.jar
 ```
 
