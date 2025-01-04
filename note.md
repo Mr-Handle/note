@@ -2892,6 +2892,9 @@ System.setProperty("myVariable", "myValue");
 
 // 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
 java -DmyVariable=myValue -jar myApp.jar
+
+// 指定文件名和路径编码。处理非 ASCII 字符文件名时很重要
+java -Dsun.jnu.encoding=UTF-8 myApp.jar
 ```
 
 #### jvm参数
