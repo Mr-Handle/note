@@ -28,13 +28,15 @@
     - 还有编译器（javac）和工具（如 javadoc 和 jdb）。
     - 它能够创建和编译程序。
 
-#### 1.windows安装jdk
+#### 安装JDK
+
+##### 1.windows安装jdk
 
 - 1.下载jdk压缩包xxx.zip，解压到指定目录（解压后bin文件夹所在目录为jdk根目录，假设为`D:\jdk\xxx`）
 - 2.新增环境变量`JAVA_HOME：D:\jdk\xxx`
 - 3.`Path`中添加：`%JAVA_HOME%\bin`
 
-#### 2.linux安装jdk
+##### 2.linux安装jdk
 
 - 1.下载jdk压缩包xxx.tar.gz，解压到指定目录
 
@@ -2872,6 +2874,25 @@ public class Applistener implements ServletContextListener {
     - 垃圾回收器
 - 本地方法接口
 - 本地方法库
+
+#### 系统变量和环境变量
+
+```java
+// 获取系统变量（操作系统环境变量）
+System.getenv("JAVA_HOME");
+
+// 设置系统变量，这种方式设置的系统变量仅在当前命令行会话中有效。一旦关闭该会话或重新启动系统，系统变量将失效
+MY_VARIABLE=myValue java -jar myApp.jar
+
+// 获取（JVM）环境变量
+System.getProperty("java.home");
+
+// 设置环境变量，这种方式设置的环境变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，环境变量将失效
+System.setProperty("myVariable", "myValue");
+
+// 设置环境变量，这种方式设置的环境变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，环境变量将失效
+java -DmyVariable=myValue -jar myApp.jar
+```
 
 #### jvm参数
 
