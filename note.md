@@ -660,14 +660,57 @@ Map safeMap = Collections.synchronizedMap(unsafeMap);
 
 #### 日期/时间
 
+##### Date/Calendar
+
+```java
+// 获取当前时间1
+Date date1 = new Date();
+SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+System.out.println(simpleDateFormat.format(date1));
+
+// 获取当前时间2
+Calendar calendar = Calendar.getInstance();
+Date date2 = calendar.getTime();
+System.out.println(simpleDateFormat.format(date2));
+```
+
+##### TimeZone
+
+```java
+// 列出系统支持的所有时区ID
+String[] availableIDs = TimeZone.getAvailableIDs();
+System.out.println(Arrays.toString(availableIDs));
+
+// 当前时区
+TimeZone timeZone = TimeZone.getDefault();
+System.out.println(timeZone);
+
+// GMT+08:00、Asia/Shanghai都是有效的时区ID
+TimeZone timeZone1 = TimeZone.getTimeZone("GMT+08:00");
+TimeZone timeZone2 = TimeZone.getTimeZone("Asia/Shanghai");
+```
 ##### Timestamp
 
 - 创建Timestamp
 
 ```java
 Timestamp timestamp = Timestamp.from(Instant.now());
+
+// 获取时间戳
+long timestamp1 = new Date().getTime();
+long timestamp2 = System.currentTimeMillis();
+long timestamp3 = Instant.now().toEpochMilli();
 ```
 
+##### Instant
+```java
+// 获取当前时刻
+Instant instant1 = Instant.now();
+Instant instant2 = new Date().toInstant();
+Instant instant3 = Calendar.getInstance().toInstant();
+Instant instant4 = OffsetDateTime.now().toInstant();
+Instant instant5 = ZonedDateTime.now().toInstant();
+```
 ##### OffsetDateTime
 
 - 某一时刻的值，具有不变性，用来做持久化和网络传输
@@ -703,6 +746,35 @@ ZonedDateTime zonedDateTime = OffsetDateTime.now().toZonedDateTime();
 zonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Shanghai"));
 ```
 
+##### 互转工具类
+
+```java
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DateTimeUtil {
+    public static long ZonedDateTimeToTimeStamp(ZonedDateTime zonedDateTime) {
+        return zonedDateTime.toEpochSecond() * 1000;
+    }
+
+    public static Date ZonedDateTimeToDate(ZonedDateTime zonedDateTime) {
+        long timestamp = ZonedDateTimeToTimeStamp(zonedDateTime);
+        return new Date(timestamp);
+    }
+
+    public static Calendar ZonedDateTimeToCalendar(ZonedDateTime zonedDateTime) {
+        long timestamp = ZonedDateTimeToTimeStamp(zonedDateTime);
+        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
+        calendar.setTimeZone(TimeZone.getTimeZone(zonedDateTime.getZone().getId()));
+        calendar.setTimeInMillis(timestamp);
+        return calendar;
+    }
+
+    public static ZonedDateTime CalendarToZonedDateTime(Calendar calendar) {
+        Instant instant = calendar.toInstant();
+        return instant.atZone(calendar.getTimeZone().toZoneId());
+    }
+}
+```
 ### 多线程
 
 #### CountDownLatch
