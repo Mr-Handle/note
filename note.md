@@ -751,8 +751,9 @@ zonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Shanghai"));
 ```java
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DateTimeUtil {
-    public static long ZonedDateTimeToTimeStamp(ZonedDateTime zonedDateTime) {
-        return zonedDateTime.toEpochSecond() * 1000;
+    public static long ZonedDateTimeToTimestamp(ZonedDateTime zonedDateTime) {
+        // zonedDateTime.toEpochSecond() * 1000会丢失毫秒值，不建议使用
+        return zonedDateTime.toInstant().toEpochMilli();
     }
 
     public static Date ZonedDateTimeToDate(ZonedDateTime zonedDateTime) {
