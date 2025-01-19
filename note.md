@@ -56,7 +56,7 @@ cp /etc/profile /etc/profile.bk
 # 2.编辑profile文件
 vi /etc/profile
 
-# 3.在profile文件末尾添加
+# 3.在profile文件（或~/.bashrc或~/.bash_profile 文件）末尾添加
 export JAVA_HOME=/usr/local/jdk/xxx
 export PATH=$PATH:${JAVA_HOME}/bin
 ```
@@ -90,6 +90,38 @@ class B {}
 public class A {}
 
 class B {}
+```
+
+### 构造方法
+
+- 调用构造方法的具体处理步骤：
+    - 1.如果构造方法的第一行调用了另一个构造方法，则基于所提供的参数执行后者
+    - 2.否则，
+        - a）所有字段初始化为默认值（0、false或null）
+        - b）按照在类声明中出现的顺序，执行字段初始化和初始化块
+    - 3.执行构造方法主体代码
+
+```java
+public class Employee {
+    // 1. 执行字段声明的初始化
+    private Long id = 1L;
+
+    {
+        // 2. 执行初始化块的初始化
+        id = 2L;
+    }
+
+    public Employee() {
+        // 3. 执行构造方法的初始化
+        id = 3L;
+    }
+}
+
+@Test
+public void test5() {
+    // 3
+    System.out.println(new Employee().getId());
+}
 ```
 
 ### 二进制知识
@@ -689,6 +721,7 @@ System.out.println(timeZone);
 TimeZone timeZone1 = TimeZone.getTimeZone("GMT+08:00");
 TimeZone timeZone2 = TimeZone.getTimeZone("Asia/Shanghai");
 ```
+
 ##### Timestamp
 
 - 创建Timestamp
@@ -703,6 +736,7 @@ long timestamp3 = Instant.now().toEpochMilli();
 ```
 
 ##### Instant
+
 ```java
 // 获取当前时刻
 Instant instant1 = Instant.now();
@@ -711,6 +745,7 @@ Instant instant3 = Calendar.getInstance().toInstant();
 Instant instant4 = OffsetDateTime.now().toInstant();
 Instant instant5 = ZonedDateTime.now().toInstant();
 ```
+
 ##### OffsetDateTime
 
 - 某一时刻的值，具有不变性，用来做持久化和网络传输
@@ -776,6 +811,7 @@ public final class DateTimeUtil {
     }
 }
 ```
+
 ### 多线程
 
 #### CountDownLatch
