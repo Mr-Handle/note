@@ -124,6 +124,33 @@ public void test5() {
 }
 ```
 
+### 类路径
+
+- 类路径是所有包含类文件的路径的集合
+
+- 类路径包括
+    - 根目录（某个自定义目录，里面包含了各种类文件）
+    - 当前目录（.）
+    - jar文件/目录（/home/user/archives/app.jar,/home/user/archives/'*'）
+
+#### 通过指定类路径运行Java程序
+
+如果我们要执行一个jar包的类文件，就可以把jar包放到类路径中，这样JVM会自动在xxx.jar文件里去搜索这个类文件
+
+- 通过指定类路径和主类运行某个路径下的类文件
+
+```sh
+# .表示当前路径，假设类文件路径为：./com/handle/HelloWorld.class
+java -classpath . com.handle.HelloWorld
+```
+
+- 通过指定类路径和主类运行jar包中的类文件
+
+```sh
+# ./HelloWorld.jar 表示当前目录下的HelloWorld.jar文件，里面包含com.handle.HelloWorld.class（主类）文件
+java -classpath ./HelloWorld.jar com.handle.HelloWorld
+```
+
 ### 二进制知识
 
 #### 原码、反码、补码
@@ -3080,25 +3107,6 @@ java -Dsun.jnu.encoding=UTF-8 myApp.jar
 
 # 字符串常量池大小
 -XX:StringTableSize
-```
-
-#### jdk命令行工具
-
-如果我们要执行一个jar包的class，就可以把jar包放到classpath中，这样JVM会自动在xxx.jar文件里去搜索某个类
-
-- 通过指定classpath和主类运行某个路径下的class文件
-
-```sh
-# .表示当前路径，假设class文件路径为：./com/handle/HelloWorld.class
-java -classpath . com.handle.HelloWorld
-```
-
-- 通过指定classpath和主类运行jar包中的class文件
-
-```sh
-# ./HelloWorld.jar 表示当前目录下的HelloWorld.jar文件，里面包含com.handle.HelloWorld.class文件
-# com.handle.HelloWorld表示入口类
-java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
 ### 部署
