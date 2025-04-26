@@ -1302,16 +1302,16 @@ public class ApplicationTest {
 
     @Test
     public void test() {
-        // 需要定义exceptionally或whenComplete打印异常日志，不然如果不调用future.get()异常还是会丢失
+        // CompletableFuture需要定义exceptionally或whenComplete打印异常日志，不然如果不调用future.get()异常还是会丢失
         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
             System.out.println(Thread.currentThread().getName() + " 线程执行了");
             int a = 1/0;
             return "hello ThreadPoolTaskExecutor";
         }, executor);
-        // future.exceptionally((exception) -> {
-        //     log.error("error", exception);
-        //     // 经测试如果不抛异常而是设置一个返回值，future.get()也会抛出异常
+        // future = future.exceptionally((exception) -> {
+        //     log.error("error", exception); 
         //     // throw new RuntimeException(exception);
+        // 经测试如果不抛异常而是设置一个返回值，future.get()不会抛出异常
         //     return "333";
         // });
         future.whenComplete((result, exception) -> {
