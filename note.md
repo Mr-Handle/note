@@ -151,6 +151,8 @@ java -classpath . com.handle.HelloWorld
 java -classpath ./HelloWorld.jar com.handle.HelloWorld
 ```
 
+![getResource输出](/images/类路径.png)
+
 ### 二进制知识
 
 #### 原码、反码、补码
@@ -2137,14 +2139,14 @@ Map<Boolean, Map<Dish.Type, List<Dish>>> vegetarianDishesByType =menu.stream().c
 
 // 二级分区
 Map<Boolean, Dish> mostCaloricPartitionedByVegetarian = menu.stream().collect(
-    partitioningBy(Dish::isVegetariancollectingAndThen(
+    partitioningBy(Dish::isVegetarian, collectingAndThen(
         maxBy(comparingInt(Dish::getCalories)),Optional::get))); 
 ```
 
 ### 正则表达式
 
-- 要注意正则表达式在Java代码中是一个字符串，`\&`对应的字符串是`"\\&"`
-- 精确匹配实际上用处不大，用`String.equals()`就可以做到。大多数情况下，我们想要的匹配规则更多的是模糊匹配
+- 字符串精确匹配实际上用处不大，用`String.equals()`就可以做到。大多数情况下，我们想要的匹配规则是模糊匹配
+- 要注意正则表达式在Java代码中是一个字符串，`A*`对应的字符串是`"A*"`
 - 使用括号把一个子规则括起来，如`learn\\s(java|php|go)`，匹配字符串`learn java`、`learn php`或`learn go`
 
 #### 特殊字符
@@ -2206,10 +2208,6 @@ Map<Boolean, Dish> mostCaloricPartitionedByVegetarian = menu.stream().collect(
 | [A-F0-9xy] | 指定范围的字符    | `A`，……，`F`，`0`，……，`9`，`x`，`y` |
 | [^A-F]     | 指定范围外的任意字符 | 非`A`~`F`                      |
 | AB\|CD\|EF | AB或CD或EF   | `AB`，`CD`，`EF`                |
-
-### 类路径
-
-![类路径](/images/类路径.png)
 
 ### 异常
 
@@ -2312,7 +2310,7 @@ public class BaseException extends RuntimeException {
 
 - URL编码是浏览器发送数据给服务器时使用的编码，它通常附加在URL的参数部分
 
-- 如果字符是A~Z，a~z，0~9以及-、_、.、*，则保持不变；
+- 如果字符是`A~Z`，`a~z`，`0~9`以及`-`、`_`、`.`、`*`，则保持不变；
 
 - 如果是其他字符，先转换为UTF-8编码，然后对每个字节以%XX表示
 
@@ -2328,7 +2326,9 @@ System.out.println(decoded);
 
 ##### Base64编码
 
-- URL编码是对字符进行编码，表示成%xx的形式，而Base64编码是对二进制数据(在Java中相当于byte[])进行编码，表示成文本格式
+- URL编码是对字符进行编码，表示成%XX的形式，而Base64编码是对二进制数据(在Java中相当于byte[])进行编码，表示成文本格式
+
+- 相较于二进制数据转成16进制得到的字符串，转成Base64编码得到的字符串的长度更短，占用更少的存储
 
 ```java
 byte[] input = new byte[] { -28, -72, -83 };
@@ -2342,7 +2342,7 @@ byte[] output = Base64.getDecoder().decode(b64encoded);
 System.out.println(Arrays.toString(output));
 ```
 
-- 因为标准的Base64编码会出现+、/和=，所以不适合把Base64编码后的字符串放到URL中。一种针对URL的Base64编码可以在URL中使用的Base64编码，它仅仅是把+变成-，/变成_
+- 因为标准的Base64编码会出现`+`、`/`和`=`，所以不适合把Base64编码后的字符串放到URL中。一种针对URL的Base64编码，是可以在URL中使用的Base64编码，它仅仅是把`+`变成`-`，`/`变成`_`
 
 ```java
 byte[] input = new byte[] {1, 2, 127, 0};
