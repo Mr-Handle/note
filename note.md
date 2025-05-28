@@ -1628,14 +1628,14 @@ try {
 - 获取列数
 
 ```java
-ResultSet resultSet=statement.executeQuery("select count(*) from user");
+ResultSet resultSet=statement.executeQuery("select id, name from user");
 int columnNumbers = resultSet.getMetaData().getColumnCount();
 ```
 
 - 获取行数
 
 ```java
-ResultSet resultSet=statement.executeQuery("select count(*) from user");
+ResultSet resultSet=statement.executeQuery("select id, name from user");
 int rowNumbers = resultSet.getInt(1);
 ```
 
