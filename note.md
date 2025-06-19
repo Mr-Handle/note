@@ -2945,7 +2945,7 @@ public class Applistener implements ServletContextListener {
 
 1) 下载tomcat压缩包.zip，解压到任意目录，不用配置环境变量
 2) 启动Tomcat：找到并运行tomcat根目录/bin/startup.bat，出现Server startup in...时表示启动成功，可以最小化Tomcat小黑窗但不要关闭，有且只能有一个Tomcat运行
-3) 编写.jsp文档mainWeb.jsp，保存到WebPage目录下，PS：在Tomcat开启的状态下也可以网目录中放.jsp文档
+3) 编写.jsp文档mainWeb.jsp，保存到WebPage目录下，PS：在Tomcat开启的状态下也可以往目录中放.jsp文档
 4) .jsp文档放到Tomcat 的JSP 默认目录：tomcat根目录/webapps/ROOT
 5) .jsp文档放到自定新的JSP的Web服务目录：打开tomcat根目录/conf/server.xml文档，在</Host>的前面加入
 
@@ -2954,6 +2954,7 @@ public class Applistener implements ServletContextListener {
 ```
 
 其中"/web"为虚拟目录，对应的为服务目录为"E:/Code/Java/workspace/LWeb/WebContent/WebPage"，可自行定义，修改server.xml后要重启Tomcat
+
 6) 访问：
     1. 默认目录访问：`http://localhost:8080`
     2. 自定目录访问：`http://localhost:8080/web/mainWeb.jsp`
@@ -3003,7 +3004,7 @@ public class Applistener implements ServletContextListener {
     - 程序计数器，线程私有
 - 执行引擎
     - 解释器
-    - jit编译器
+    - JIT编译器
         - 中间代码生成器
         - 代码优化器
         - 目标代码生成器
@@ -3250,7 +3251,7 @@ mvn clean install -P production
 
 ### maven生命周期
 
-maven的声明周期有三类：clean、default、site，它们相互独立
+maven的生命周期有三类：clean、default、site，它们相互独立
 
 每类生命周期都包含了多个阶段，并且这些阶段是有序的，也就是说，后面的阶段依赖于前面的阶段。当执行某个阶段的时候，会先执行它前面的阶段
 
@@ -3722,7 +3723,7 @@ allprojects {
         - gradle的本地仓库路径和gradle wrapper的缓存路径、缓存的路径
         - 下载的依赖会存放在`GRADLE_USER_HOME/caches/modules-2/files-2.1`目录下
         - 除了依赖目录还有别的目录，建议不要指定为maven的repository路径，避免目录混乱
-    - `M2_HOME`，maven家目录，修改maven下载源的话才需要定义
+    - `M2_HOME`，maven家目录，gradle默认会查找`~/.m2/repository`作为maven本地仓库路径，修改了maven本地仓库路径的话才需要定义
 
 - 配置Path：`GRADLE_HOME\bin`
 
@@ -3746,7 +3747,7 @@ allprojects {
         - main
             - java
             - resources
-            - webapp，war工厂才有这个目录
+            - webapp，war工程才有这个目录
                 - WEB-INF
                     - web.xml
                 - index.jsp
@@ -3861,7 +3862,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.4.0!!'
 
     // 或者这种写法
-    implementation('org.slf4j:slf4j-api:1.4.0!!') {
+    implementation('org.slf4j:slf4j-api:1.4.0') {
         version {
             strictly("1.4.0")
         }
@@ -4981,7 +4982,7 @@ jdbc.jdbcUrl=jdbc:postgresql://localhost:5432/handle?allowMultiQueries=true
 指的是SqlSession对象的缓存。当我们执行查询后，查询的结果会存入到SqlSession为我们提供的一块区域中。该区域是一个Map。当我们再次查询同样的数据，mybatis会先去SqlSession中查询是否有，有的话直接拿出来用。
 
 - 一级缓存默认是开启的
-- 当调用SqlSession的添加、修改、删除，提交，关闭等方法是，会清空一级缓存
+- 当调用SqlSession的添加、修改、删除，提交，关闭等方法时，会清空一级缓存
 - 也可以通过SqlSession的clearCache方法清空缓存。
 - 当SqlSession对象消失时，一级缓存也不存在了。
 
@@ -5500,7 +5501,7 @@ FastAutoGenerator.create("jdbc:postgresql://localhost:5432/databaseName", "usern
 - @Repository
 <br/>
 
-注：当注解的value属性不写时，默认为当前类类名首字母小写；
+注：当注解的value属性不写时，默认为所注解的类的类名首字母小写
 
 ##### 第三方类使用的注解
 
@@ -5589,7 +5590,7 @@ public class ApplicationConfiguration {
 
 - 注解所在类是父配置类
 
-- 其value属性指定类的都是子配置类，子配置类不用写@Configuration
+- 其value属性指定的类都是子配置类，子配置类不用写@Configuration
 
 ```java
 @Configuration
@@ -5638,7 +5639,11 @@ public class ApplicationTest {
 
 - @ComponentScan
 
-- 指定spring创建容器时要扫描的包，相当于在bean.xml配置了：<context:component-scan base-package="package1,package2,..." />
+- 指定spring创建容器时要扫描的包，相当于在bean.xml配置了：
+
+```xml
+<context:component-scan base-package="package1,package2,..." />
+```
 
 - 该注解指定的包中含有配置类，也会扫描这些配置类，这时不用写@Import(会被扫描的配置类名.class)
 
@@ -5723,9 +5728,7 @@ https://www.springframework.org/schema/beans/spring-beans.xsd">
 ```java
 @Configuration
 @ImportResource("classpath:spring.xml")
-public class MainConfiguration {
-
-}
+public class MainConfiguration {}
 ```
 
 #### DI注解
