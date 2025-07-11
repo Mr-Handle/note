@@ -6179,7 +6179,7 @@ public void test() {
 
 - 全通配写法：`* *..*.*(..)`，实际开发不会这么写
 
-- 实际开发中通常切入到业务层实现了下的所有方法：`* com.handle.application.service.impl.*.*(..)`
+- 实际开发中通常切入到业务层实现类下的所有方法：`* com.handle.application.service.impl.*.*(..)`
 
 #### 注解方式配置AOP
 
