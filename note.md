@@ -6892,7 +6892,7 @@ public String hello(HttpServletRequest request,
 
 - ServletContext获取
 
-ServletContext时最大的配置文件，全局最大共享域，核心api getRealPath
+ServletContext是最大的配置文件，全局最大共享域，核心api为getRealPath
 
 ```java
 // 1.DI获取
