@@ -5823,9 +5823,9 @@ public class XxxController {
 
 ##### @Value
 
-- 此注解所在的类必须是一个组件
-
 - @AutoWired、@Qualifier和@Resource都只能注入其他bean类型的数据，而@Value用来注入基本类型和String类型的数据
+
+- 此注解所在的类必须是一个组件
 
 - 作用在字段上，可以使用Spring的spel表达式，也可以用来注入配置文件中的属性值
 
@@ -5983,7 +5983,7 @@ public void test() {
     2）prototype：多例
     3）request：作用于web应用的请求范围
     4）session：作用于web应用的会话范围
-    5）global-session：作用于集群环境的会话范围（全局会话范围），当不是集群环境是，相当于session
+    5）global-session：作用于集群环境的会话范围（全局会话范围），当不是集群环境时，相当于session
 -->
 <bean id="accountService4" class="com.handle.learn.service.AccountServiceImpl" scope="singleton"></bean>
 ```
@@ -6000,7 +6000,7 @@ public void test() {
     2）多例对象
         出生：使用对象时spring框架才开始创建
         活着：对象只要是在使用过程中就一直活着
-        死亡：当对象长时间不用，且没有别的对象引用是，由java的垃圾回收器回收
+        死亡：当对象长时间不用，且没有别的对象引用时，由java的垃圾回收器回收
 -->
 <bean id="accountService5" class="com.handle.learn.service.AccountServiceImpl" scope="singleton" init-method="init" destroy-method="destroy"></bean>
 ```
