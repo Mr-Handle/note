@@ -3036,6 +3036,43 @@ java -Dsun.jnu.encoding=UTF-8 myApp.jar
 
 #### jvm参数
 
+- `-X`表示JVM的运行参数（非标准参数）
+
+##### 指定堆（新生代+老年代）大小
+
+- 默认情况下，堆的初始内存大小为电脑的内存大小/64，堆的最大内存大小为电脑的内存大小/4
+
+- 通常将堆的初始内存大小和堆的最大内存大小设置为相同的值，其目的是垃圾回收清理后不需要重新分隔机算堆区的大小，从而提高性能
+
+- 获取默认堆内存大小，并计算电脑内存大小
+
+```java
+// 获取初始的堆内存大小
+long initialHeapSize = Runtime.getRuntime().totalMemory();
+// 获取最大堆内存大小
+long maxHeapSize = Runtime.getRuntime().maxMemory();
+
+System.out.println("初始堆内存大小: " + initialHeapSize / (1024 * 1024) + " MB");
+System.out.println("最大堆内存大小: " + maxHeapSize / (1024 * 1024) + " MB");
+
+System.out.println("电脑内存大小: " + initialHeapSize * 64 / (1024 * 1024 * 1024)  + " GB");
+System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 1024)  + " GB");
+```
+
+```properties
+# 指定堆的初始/最小内存(单位：g、m、k)，下面两种写法都行
+# memory start
+-Xms4g
+
+-XX:InitialHeapSize=2g
+
+# 指定堆的最大内存(单位：g、m、k)，下面两种写法都行
+# memory max
+-Xmx8g
+
+-XX:MaxHeapSize=8g
+```
+
 ##### 指定新生代的大小
 
 ```properties
@@ -3100,14 +3137,14 @@ java -Dsun.jnu.encoding=UTF-8 myApp.jar
 # 对象晋升到老年代的年龄阈值
 -XX:MaxTenuringThreshold
 
-# 指定最小堆内存(单位：g、m、k)
--Xms4g
-
-# 指定最大堆内存(单位：g、m、k)
--Xmx8g
-
 # 字符串常量池大小
 -XX:StringTableSize
+
+# 设置栈内存大小
+-Xss1024K
+
+# 打印GC详情
+-XX:+PrintGCDetails
 ```
 
 ### 部署
