@@ -3084,7 +3084,8 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 -Xmn512m
 
 # 方法3，设置老年代/新生代内存的比值，在Xms=Xmx并且设置了Xmn的情况下，该参数不需要进行设置
--XX:NewRatio=4
+# 表示老年代占n，新生代占1，新生代占整个堆的1/(1+n)
+-XX:NewRatio=n
 
 # 表示eden/两个survivor
 -XX:SurvivorRatio=8
@@ -3145,6 +3146,16 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 
 # 打印GC详情
 -XX:+PrintGCDetails
+```
+
+#### 一些工具命令
+
+```sh
+# 查看java进程和进程id
+jps
+
+# 查看进程内存使用和垃圾收集信息
+jstat -gc 进程id
 ```
 
 ### 部署
