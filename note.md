@@ -2961,7 +2961,7 @@ public class Applistener implements ServletContextListener {
     必要时将localhost:8080替换成服务器的ip地址
 7) 关闭Tomcat：找到并运行tomcat根目录/bin/shutdown.bat
 
-### jvm
+### JVM
 
 - 类加载器子系统
     - 加载阶段
@@ -3012,28 +3012,6 @@ public class Applistener implements ServletContextListener {
 - 本地方法接口
 - 本地方法库
 
-#### 系统变量和环境变量
-
-```java
-// 获取（操作系统）环境变量
-System.getenv("JAVA_HOME");
-
-// 设置环境变量，这种方式设置的环境变量仅在当前命令行会话中有效。一旦关闭该会话或重新启动系统，环境变量将失效
-MY_VARIABLE=myValue java -jar myApp.jar
-
-// 获取（JVM）系统变量
-System.getProperty("java.home");
-
-// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
-System.setProperty("myVariable", "myValue");
-
-// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
-java -DmyVariable=myValue -jar myApp.jar
-
-// 指定文件名和路径编码。处理非 ASCII 字符文件名时很重要
-java -Dsun.jnu.encoding=UTF-8 myApp.jar
-```
-
 #### jvm参数
 
 - `-X`表示JVM的运行参数（非标准参数）
@@ -3080,15 +3058,18 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 -XX:NewSize=512m
 -XX:MaxNewSize=1024m
 
-# 方法2（NewSize，MaxNewSize设置为一致）
+# 方法2（NewSize，MaxNewSize设置为一致），这种方式很少用，通常都是指定堆大小和老年代/新生代的比例的方式
 -Xmn512m
 
-# 方法3，设置老年代/新生代内存的比值，在Xms=Xmx并且设置了Xmn的情况下，该参数不需要进行设置
-# 表示老年代占n，新生代占1，新生代占整个堆的1/(1+n)
+# 方法3，设置老年代/新生代内存的比例，在Xms=Xmx并且设置了Xmn的情况下，该参数不需要进行设置，如果设置了也是-Xmn指定的新生代大小生效
+# 表示老年代占n（默认是2），新生代占1，新生代占整个堆的1/(1+n)
 -XX:NewRatio=n
 
-# 表示eden/两个survivor
+# 表示eden/两个survivor的比例，默认8:1:1（但是如果不显式指定比例，就算加上-XX:-UseAdaptiveSizePolicy，默认的比例也是不生效的）
 -XX:SurvivorRatio=8
+
+# 关闭（关闭用减号，开启用加号）自适应的内存分配策略
+-XX:-UseAdaptiveSizePolicy
 ```
 
 ##### 指定元空间的大小
@@ -3156,6 +3137,31 @@ jps
 
 # 查看进程内存使用和垃圾收集信息
 jstat -gc 进程id
+
+# 查看进程老年代/新生代比例
+jinfo -flag NewRatio 进程id
+```
+
+#### 系统变量和环境变量
+
+```java
+// 获取（操作系统）环境变量
+System.getenv("JAVA_HOME");
+
+// 设置环境变量，这种方式设置的环境变量仅在当前命令行会话中有效。一旦关闭该会话或重新启动系统，环境变量将失效
+MY_VARIABLE=myValue java -jar myApp.jar
+
+// 获取（JVM）系统变量
+System.getProperty("java.home");
+
+// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
+System.setProperty("myVariable", "myValue");
+
+// 设置系统变量，这种方式设置的系统变量仅在当前Java进程的生命周期内有效。一旦Java程序停止并重新启动，系统变量将失效
+java -DmyVariable=myValue -jar myApp.jar
+
+// 指定文件名和路径编码。处理非 ASCII 字符文件名时很重要
+java -Dsun.jnu.encoding=UTF-8 myApp.jar
 ```
 
 ### 部署
