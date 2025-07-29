@@ -2943,23 +2943,22 @@ public class Applistener implements ServletContextListener {
 
 ### Tomcat
 
-1) 下载tomcat压缩包.zip，解压到任意目录，不用配置环境变量
-2) 启动Tomcat：找到并运行tomcat根目录/bin/startup.bat，出现Server startup in...时表示启动成功，可以最小化Tomcat小黑窗但不要关闭，有且只能有一个Tomcat运行
-3) 编写.jsp文档mainWeb.jsp，保存到WebPage目录下，PS：在Tomcat开启的状态下也可以往目录中放.jsp文档
-4) .jsp文档放到Tomcat 的JSP 默认目录：tomcat根目录/webapps/ROOT
-5) .jsp文档放到自定新的JSP的Web服务目录：打开tomcat根目录/conf/server.xml文档，在</Host>的前面加入
+- 1 下载tomcat压缩包.zip，解压到任意目录，不用配置环境变量
+- 2 启动Tomcat：找到并运行tomcat根目录/bin/startup.bat，出现Server startup in...时表示启动成功，可以最小化Tomcat小黑窗但不要关闭，有且只能有一个Tomcat运行
+- 3 编写.jsp文档mainWeb.jsp，保存到WebPage目录下，PS：在Tomcat开启的状态下也可以往目录中放.jsp文档
+- 4 .jsp文档放到Tomcat 的JSP 默认目录：tomcat根目录/webapps/ROOT
+- 5 .jsp文档放到自定新的JSP的Web服务目录：打开tomcat根目录/conf/server.xml文档，在</Host>的前面加入
 
 ```xml
+<!-- 其中"/web"为虚拟目录，对应的为服务目录为"E:/Code/Java/workspace/LWeb/WebContent/WebPage"，可自行定义，修改server.xml后要重启Tomcat -->
 <Context path="/web" docBase="E:/Code/Java/workspace/LWeb/WebContent/WebPage" debug="0" reloadable="true"></Context>
 ```
 
-其中"/web"为虚拟目录，对应的为服务目录为"E:/Code/Java/workspace/LWeb/WebContent/WebPage"，可自行定义，修改server.xml后要重启Tomcat
-
-6) 访问：
+- 6 访问：
     1. 默认目录访问：`http://localhost:8080`
     2. 自定目录访问：`http://localhost:8080/web/mainWeb.jsp`
     必要时将localhost:8080替换成服务器的ip地址
-7) 关闭Tomcat：找到并运行tomcat根目录/bin/shutdown.bat
+- 7 关闭Tomcat：找到并运行tomcat根目录/bin/shutdown.bat
 
 ### JVM
 
