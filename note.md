@@ -8,7 +8,6 @@
 - 方法名有final修饰，表示此方法是终结方法，不能被子类重写。
 - 可变长参数在一个方法中最多只能有一个，并且必须放在最后。
 - Java编译器自动引入java.lang。
-- 内存回收：调用`System.gc()`，一般不会手动调用此方法；
 - `方法的签名`（signature）: 要完整地描述一个方法，需要指出`方法名`以及`参数类型`
     - 返回类型不是方法签名的一部分。也就是说， 不能有两个名字相同、参数顺序和类型也相同，但是返回不同类型值的方法。
 - VO（View Object）：视图对象，前端和控制层之间的数据传输对象。
@@ -3071,6 +3070,13 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 -XX:-UseAdaptiveSizePolicy
 ```
 
+##### 指定对象晋升到老年代的年龄阈值
+
+```properties
+# 默认是15
+-XX:MaxTenuringThreshold=15
+```
+
 ##### 指定元空间的大小
 
 ```properties
@@ -3115,9 +3121,6 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 ##### 其它jvm设置
 
 ```properties
-# 对象晋升到老年代的年龄阈值
--XX:MaxTenuringThreshold
-
 # 字符串常量池大小
 -XX:StringTableSize
 
@@ -3128,7 +3131,23 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 -XX:+PrintGCDetails
 ```
 
-#### 一些工具命令
+#### 垃圾收集
+
+- JVM在进行垃圾收集时，并非每次都对新生代、老年代和方法区的内存进行收集，大多数时候收集的都是新生代的内存
+
+- 部分收集
+    - 新生代收集（Minor GC/Young GC）：新生代（Eden/S0、S1）的垃圾收集
+    - 老年代收集（Major GC/Old GC）：老年代的垃圾收集
+        - 除了并行收集器（如CMS GC）有只单独收集老年代的收集策略，老年代收集经常伴随至少一次的新生代收集
+        - 老年代收集后，如果内存还是不足，就报OOM了
+- 混合收集（Mixed GC）：整个新生代以及部分老年代的垃圾收集
+    - G1 GC就会混合收集
+- 整堆收集（Full GC）：整个Java堆和方法区的垃圾收集
+    - 手动调用`System.gc()`，系统会建议执行Full GC，但是不是必然执行
+
+#### 调优工具
+
+- JDK命令行
 
 ```sh
 # 查看java进程和进程id
@@ -3140,6 +3159,10 @@ jstat -gc 进程id
 # 查看进程老年代/新生代比例
 jinfo -flag NewRatio 进程id
 ```
+
+- visualvm
+
+- jconsole
 
 #### 系统变量和环境变量
 
