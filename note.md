@@ -3077,6 +3077,19 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 -XX:MaxTenuringThreshold=15
 ```
 
+##### 空间分配担保
+
+- 在Minor GC前，JVM会检查老年代最大可用的连续空间是否大于新生代所有对象的总空间
+    - 如果大于，进行一次Minor GC（安全）
+    - 如果小于，JVM则继续检查老年代最大可用的连续空间是否大于历次晋升到老年代的对象的平均大小
+        - 如果大于，进行一次Minor GC（有风险）
+        - 如果小于，进行一次Full GC
+
+```properties
+# 是否设置空间分配担保（jdk6 update24后这个参数不会再影响jvm的空间分配担保策略，相当于这个值无论设置与否都是true）
+-XX:HandlePromotionFailure
+```
+
 ##### 指定元空间的大小
 
 ```properties
@@ -3129,6 +3142,25 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 
 # 打印GC详情
 -XX:+PrintGCDetails
+
+# 打印GC简要信息1
+-XX:+PrintGC
+
+# 打印GC简要信息2
+-verbose:gc
+
+# 开启TLAB空间（TLAB在Eden空间中，每个线程有自己的TLAB空间）
+-XX:UseTLAB
+
+# 设置TLAB空间占Eden空间的百分比，默认TLAB仅占整个Eden空间的1%
+# 一旦对象在TLAB空间分配内存失败，JVM就会使用加锁机制，在Eden空间分配内存
+-XX:TLABWasteTargePercent
+
+# 查看所有参数的默认初始值
+-XX:+PrintFlagsInitial
+
+# 查看所有参数的最终值（可能存在修改，不再是初始值）
+-XX:+PrintFlagsFinal
 ```
 
 #### 垃圾收集
@@ -3150,14 +3182,14 @@ System.out.println("电脑内存大小: " + maxHeapSize * 4 / (1024 * 1024 * 102
 - JDK命令行
 
 ```sh
-# 查看java进程和进程id
+# 查看当前运行的java进程和进程id
 jps
 
 # 查看进程内存使用和垃圾收集信息
 jstat -gc 进程id
 
-# 查看进程老年代/新生代比例
-jinfo -flag NewRatio 进程id
+# 查看java进程某个参数的值（最终值）
+jinfo -flag 参数名（比如NewRatio） 进程id
 ```
 
 - visualvm
