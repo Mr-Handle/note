@@ -3884,6 +3884,15 @@ allprojects {
 
 - 测试：`gradle -v`
 
+### IDEA配置Gradle
+
+- Settings->Build,Execution,Deployment->Gradle
+    - Gradle user home，指定一个路径作为gradle的本地仓，gradle和maven的结构不一样，不要设置为maven本地仓库的路径
+    - Build and run using，设置为IntelliJ IDEA，IDEA会对纯Java项目做优化，启动更快，如果构建有问题再改回默认Gradle
+    - Run test using，设置为IntelliJ IDEA，不然用默认Gradle的话初始化测试都要等好几秒了，浪费时间
+    - Distribution，设置为Local installation，并选择本地安装的gradle家目录
+    - Gradle JVM，设置为本地安装的JDK即可
+
 ### Gradle项目目录结构
 
 - Gradle项目默认目录结构和Maven项目的一致，都是基于约定大于配置
@@ -4287,15 +4296,6 @@ dependencies {
     implementation 'org.projectlombok:lombok'
 }
 ```
-
-### IDEA配置
-
-- Settings->Build,Execution,Deployment->Gradle
-    - Gradle user home，指定一个路径作为gradle的本地仓，gradle和maven的结构不一样，不要设置为maven本地仓库的路径
-    - Build and run using，设置为IntelliJ IDEA，IDEA会对纯Java项目做优化，启动更快，如果构建有问题再改回默认Gradle
-    - Run test using，设置为IntelliJ IDEA，不然用默认Gradle的话初始化测试都要等好几秒了，浪费时间
-    - Distribution，设置为Local installation，并选择本地安装的gradle家目录
-    - Gradle JVM，设置为本地安装的JDK即可
 
 ### 打包部署
 
