@@ -4643,6 +4643,16 @@ JavaScript是一种运行在客户端（浏览器）的编程语言，实现人�
 var x = 2;
 ```
 
+### 严格模式
+
+用得比较少
+
+```js
+// 所有变量/函数必须先声明后使用
+// 普通函数严格模式下指向undefined
+"use strict"
+```
+
 ### 输入语法
 
 ```js
@@ -5583,7 +5593,9 @@ const fun = (...args) => {};
 
 在开发时，使用箭头函数前需要考虑函数中this的值
 
-事件回调函数使用箭头函数时，this指向全局对象window，因此DOM事件回调函数为了渐变，还是不太推荐使用箭头函数
+事件回调函数使用箭头函数时，this指向全局对象window，因此DOM事件回调函数为了简便，还是不太推荐使用箭头函数
+
+构造函数、基于原型的面向对象写法也不推荐采用箭头函数
 
 ```js
 const fun = () => {
@@ -6127,6 +6139,40 @@ setInterval(a, 1000);
 
 // 这里的匿名函数也是回调函数
 element.addEventListener("click", function () {});
+```
+
+###### 改变this
+
+js允许指定函数中this的指向
+
+```js
+function fun(x,...args) {};
+
+// 使用call方法调用函数
+const result = fun.call(this指向的对象，x, ...);
+
+// 使用apply方法调用函数
+const result = fun.apply(this指向的对象，[函数参数放在数组里面]);
+
+// 扩展求数组最大/小值写法
+const array = [1, 2, 3];
+const max = Math.max.apply(Math, array);
+const min = Math.min.apply(Math, array);
+
+// bind()方法也能改变this的指向，并且不会调用函数
+// 返回一个新函数
+let newFun1 = fun.bind(this指向的对象);
+let newFun2 = fun.bind(this指向的对象，x, ...);
+
+// 应用：按钮点击后就禁用，2秒后恢复
+const element = document.querySelector("button");
+element.addEventListener("click", function() {
+    this.disabled = true;
+    setTimeout(function() {
+        // 默认this指向window，通过bind改成指向element
+        this.disabled = false;
+    }.bind(this), 2000);
+});
 ```
 
 ##### 事件流
@@ -6897,6 +6943,209 @@ const pet = new Pet("dog", 3);
 console.log(pet.__proto__ === Pet.prototype);
 // true
 console.log(pet.__proto__.contructor === Pet);
+```
+
+#### 原型继承
+
+js通常借助原型对象实现继承特性
+
+```js
+// 父构造函数（父类）
+function Pet(name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+// 子构造函数（子类）
+function Dog() {};
+// 子类的原型= new 父类
+Dog.prototype = new Pet();
+Dog.prototype.constructor = Dog;
+```
+
+#### 原型链
+
+基于`prototype`（原型对象）的继承使得不同构造函数的`prototype`关联在一起，并且这种关联的关系是一种链状的结构，称为原型链
+
+```js
+function Pet(name, age) {};
+
+const pet = new Pet();
+// true
+console.log(pet.__proto__ === Pet.prototype);
+// true
+console.log(Pet.prototype.__proto__ === Object.prototype);
+// null
+console.log(Object.prototype.__proto__);
+
+// true
+console.log(pet instanceof Pet);
+// true
+console.log(pet instanceof Object);
+```
+
+- 原型链查找规则
+    - 当访问一个对象的属性/方法时，首先查找这个对象自身有没有该属性/方法
+    - 如果没有就找它的`__proto__`
+    - 如果还没有就找它的`__proto__`的`__proto__`
+    - 依此类推一直找到Object为止
+    - `__proto__`的意义在于为对象成员查找机制提供一个方向
+    - 可以是用instanceof运算符用于检测构造函数的prototype属性是否出现在某个对象的原型链上
+
+### 对象复制
+
+浅拷贝和深拷贝值针对引用类型
+
+- 浅拷贝：拷贝的是地址
+    - 拷贝对象：Object.assgin(目标对象，源对象)/展开运算符{...原对象}
+    - 拷贝数组：Array.protptype.concat()/[...原数组]
+- 深拷贝：拷贝的是对象
+    - 通过递归实现深拷贝
+    - lodash/cloneDeep
+    - JSON.stringify()
+
+```js
+const object = {name: "handle"};
+// 赋值方式，object/object2对象里面的name值发生改变会影响到对方
+const object2 = object;
+
+// 浅拷贝方式，object/object2对象里面基本类型属性值发生改变不会影响到对方
+// 但是如果对象里面有引用类型属性，就仅仅拷贝地址，该属性修改还是会影响对方
+const object3 = {...object};
+const object4 = {};
+Object.assign(object4, object);
+
+
+// 利用递归实现深拷贝方式，非完全版
+function deepCopy(oldObject, newObject) {
+    for(let property in oldObject) {
+        if (property instanceof Array) {
+            newObject[property] = [];
+            deeoCopy(oldObject[property], newObject[property]);
+        } else if (property instanceof Object) {
+            newObject[property] = {};
+            deeoCopy(oldObject[property], newObject[property]);
+        } else {
+            newObject[property] = oldObject[property];
+        }
+    }
+}
+const newObject = {};
+deepCopy(object, newObject);
+
+
+// 先引入<script src="/path/to/lodash.min.js"></script>
+const newObject = _.cloneDeep(object);
+
+const newObject = JSON.parse(JSON.stringify(object));
+```
+
+### 异常处理
+
+```js
+// 抛出异常
+function fun() {
+    if () {
+        throw new Error("详细错误信息");
+    }
+}
+
+// 捕获异常
+function fun() {
+    try {
+        // 这里写可能发生错误的代码
+    } catch (error) {
+        console.log(error.message);
+        // 重新抛出异常
+        throw new Error("详细错误信息");
+    } finally {
+        // 不管程序是否异常都会执行的代码
+    }
+}
+
+// 使用debugger，代码执行时自动在该地方断点，省得在浏览器打开开发工具再慢慢找代码位置然后设置断点
+// 调试完一点要记得删掉
+function fun() {
+    // 其它代码
+    debugger
+    // 其它代码
+}
+```
+
+### 防抖（debounce）
+
+单位时间内频繁触发事件，只执行最后一次
+
+使用场景：搜索框用户最后输入完成再发送请求、输入检测
+
+实现：手写防抖函数或使用lodash提供的防抖方法
+
+```js
+// 手写防抖
+function debounce(fun, time) {
+    let timer;
+    return function() {
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(function () {
+                // 调用函数
+                fun();
+        }, time);
+
+    } 
+}
+
+element.addEventListener("mousemove", debounce(function () {}, 500));
+
+// 使用lodash提供的debounce函数
+// 鼠标停止移动500毫秒后再执行函数
+element.addEventListener("mousemove", _.debounce(function () {}, 500));
+```
+
+### 节流（throttle）
+
+单位时间内频繁触发事件，只执行一次
+
+使用场景：鼠标移动、页面尺寸缩放、滚动条滚动等
+
+实现：手写节流函数或使用lodash提供的节流方法
+
+```js
+// 手写节流
+function throttle(fun, time) {
+    let timer = null;
+    return function() {
+        if (!timer) {
+            timer = setTimeout(function () {
+                // 调用函数
+                fun();
+                // 注意在setTimeout的回调函数中是无法删除定时器的，因为定时器还在运作
+                // 因而设置为null而不是调用clearTimeout
+                timer = null;
+        }, time);
+            
+        } 
+    } 
+}
+
+element.addEventListener("mousemove", throttle(function () {}, 500));
+
+// 使用lodash提供的throttle函数
+// 鼠标停止移动500毫秒后再执行函数
+element.addEventListener("mousemove", _.throttle(function () {}, 500));
+
+// 案例
+const video = document.querySelector("video");
+video.ontimeupdate = _.throttle(()=> {
+    // 把当前的播放进度保存到本地存储
+    localStorage.setItem("currentTime", video.currentTime);
+}, 2000);
+
+// 打开页面触发事件，从本地存储取出播放进度
+video.onloadeddata = () => {
+    video.currentTime = localStorage.getItem("currentTime") || 0;
+}
 ```
 
 ## JSP
