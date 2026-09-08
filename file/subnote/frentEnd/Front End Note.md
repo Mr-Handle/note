@@ -7666,6 +7666,10 @@ pnpm是高级版的npm，需要自行安装
 
 npm的绝大部分命令都可以改成pnpm执行
 
+pn是pnpm的别名
+
+pnxpnpx的别名
+
 - 安装
 
 ```sh
@@ -7680,6 +7684,20 @@ npm install -g pnpm
 # 测试
 pnpm --version
 ```
+
+|npm命令|pnpm等价命令|
+|:-|:-|
+|npm command|pnpm equivalent|
+|npm install|pnpm install|
+|npm i `<pkg>`|pnpm add `<pkg>`|
+|npm run `<cmd>`|pnpm `<cmd>`|
+|npx `<pkg>`|pnx `<pkg>`|
+
+#### 全局配置
+
+- 全局配置文件config.yaml位置
+    - 如果设置了`$XDG_CONFIG_HOME`环境变量，在`$XDG_CONFIG_HOME/pnpm/config.yaml`
+    - 默认在`~/.config/pnpm/config.yaml`
 
 ## vue
 
