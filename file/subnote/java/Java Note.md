@@ -4667,6 +4667,8 @@ java -XX:AOTCacheOutput=app.aot -Dspring.context.exit=onRefresh -jar app.jar
 # 运行
 # 生成aot文件的时候用的是什么垃圾收集器，这里就要用什么垃圾收集器运行
 # 直到java26才支持通用的非垃圾收集器特定格式的aot
+# 注意不要用jpackage，会使得aot无效
+# 运行的时候不要加--enable-native-access=ALL-UNNAMED，否则java26运行应用时，aot完全失效
 java -XX:AOTCache=app.aot -jar app.jar
 ```
 
@@ -4678,7 +4680,7 @@ java16开始，可以使用jpackage将项目打包成Linux的deb和rpm，windows
 # 将jar打包：生成一个目录，包含bin目录和lib目录
 # jpackage会根据当前jdk将全部模块导出生成一个jre，直接双击bin目录的二进制文件即可运行该应用程序
 # --type app-image：生成一个目录
-# --name -n：生成的目录名称
+# --name -n：生成的目录名称，也是bin目录的二进制文件的名称，建议命名为jar的名称
 # --input -i：要打包的文件所在的目录，该目录的所有文件都会打包进应用程序镜像
 # --main-class com.example.Main：如果jar包的 MANIFEST.MF 中已经指定了 Main-Class，这个参数可以省略（如springboot插件生成的fat jar）
 # --main-jar fat.jar：应用程序主jar（包含主类）的文件名
@@ -8200,6 +8202,12 @@ site 生命周期的目的是建立和发布项目站点，共包含 4 个阶段
 - post-site，执行一些需要在生成站点文档之后完成的工作，并且为部署做准备
 - site-deploy，将生成的站点文档部署到特定的服务器上
 
+#### 常用的maven变量
+
+- project.basedir，项目根目录
+- project.build.outputDirectory，classes目录
+- project.build.directory，target目录
+
 #### maven插件
 
 - Maven本质上是⼀个插件框架，它的核⼼并不执⾏任何具体的构建任务，所有这些任务都交给插件来完成
@@ -8232,6 +8240,276 @@ site 生命周期的目的是建立和发布项目站点，共包含 4 个阶段
 
 ```sh
 mvn spring-boot:repackage
+```
+
+##### 不打包，只生成包含所有的目录
+
+```xml
+<properties>
+    <package.name>app</package.name>
+</properties>
+
+<!-- 复制 classes 目录下的所有内容到指定目录 -->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-resources-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-resources</id>
+            <phase>package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <!-- 输出目录 -->
+                <outputDirectory>${project.basedir}/target/${package.name}</outputDirectory>
+                <resources>
+                    <resource>
+                        <!-- resources目录为编译后的 classes 目录 -->
+                        <directory>${project.build.outputDirectory}</directory>
+                        <includes>
+                            <include>**/*</include>
+                            <include>static/**</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+<!-- 复制依赖包到指定目录-->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-dependencies</id>
+            <!-- 绑定到 package 阶段 -->
+            <phase>package</phase>
+            <goals>
+                <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+                <!-- 指定依赖包的输出目录 -->
+                <outputDirectory>${project.basedir}/target/${package.name}/lib</outputDirectory>
+                <!-- 仅复制运行时需要的依赖，避免复制测试等无关依赖 -->
+                <includeScope>runtime</includeScope>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+##### 打包为可执行瘦jar+lib子目录放依赖jar（非springboot项目）
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <!-- 不知道为什么maven.compiler.release失效，必须在这里设置覆盖父项目的设置才行 -->
+        <release>26</release>
+        <!-- 跳过测试编译 -->
+        <skip>true</skip>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <!-- 跳过测试执行 -->
+        <skipTests>true</skipTests>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+        <excludes>
+            <!--static目录不打包进jar中-->
+            <exclude>static/**</exclude>
+        </excludes>
+        <archive>
+            <manifest>
+                <!--入口类-->
+                <mainClass>com.handle.pureWebview.Main</mainClass>
+                <!--MANIFEST.MF添加Class-Path属性-->
+                <addClasspath>true</addClasspath>
+                <!--依赖包都放在跟可执行jar同目录的lib子目录下，因此清单前缀写成lib/-->
+                <classpathPrefix>lib/</classpathPrefix>
+            </manifest>
+        </archive>
+        <outputDirectory>${package.directory}</outputDirectory>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+                <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+                <!--依赖包都复制到跟可执行jar同目录的lib子目录下 -->
+                <outputDirectory>${package.directory}/lib</outputDirectory>
+                <includeScope>runtime</includeScope>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+<!-- 复制 classes 目录下的指定内容到某个目录 -->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-resources-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-resources</id>
+            <phase>package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <!-- 输出目录 -->
+                <outputDirectory>${package.directory}</outputDirectory>
+                <resources>
+                    <resource>
+                        <!-- resources目录为编译后的 classes 目录 -->
+                        <directory>${project.build.outputDirectory}</directory>
+                        <includes>
+                            <include>static/**</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>generate-aot-file</id>
+            <phase>package</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <target>
+                    <!-- 生成aot文件，会运行程序，因此要先把静态文件复制过去-->
+                    <exec executable="java">
+                        <!--line按空格识别参数，注意参数值不能有空格-->
+                        <arg line="-XX:AOTCacheOutput=${package.directory}/${package.name}.aot -Dspring.context.exit=onRefresh"/>
+                        <arg line="-jar ${package.directory}/${package.name}.jar"/>
+                    </exec>
+                    <!-- 创建运行脚本文件，这种写法换行了导致命令也跟着换行，编辑器wrap也会导致命令换行！需要贴着编辑器左边写最好，不支持特殊字符 -->
+                    <!--<echo file="${package.directory}/start.sh" append="false">-->
+                    <!--    #!/usr/bin/env bash${line.separator}java -XX:AOTCache=${package.name}.aot &#45;&#45;enable-native-access=ALL-UNNAMED -jar-->
+                    <!--    ${package.name}.jar-->
+                    <!--</echo>-->
+                    <!--这种写法支持特殊字符，换行了导致命令也跟着换行，但是不会触发编辑器wrap，命令分多行的话也建议贴着编辑器最左边-->
+                    <echo file="${package.directory}/start.sh" append="false">
+                        <![CDATA[
+#!/usr/bin/env bash
+java -XX:AOTCache=${package.name}.aot -Dprism.order=sw -jar ${package.name}.jar
+                        ]]>
+                    </echo>
+                    <!-- 赋予运行脚本文件执行权限-->
+                    <chmod file="${package.directory}/start.sh" perm="755"/>
+                </target>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+##### 打包为可执行胖jar+解压+生成aot文件（springboot项目）
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <!-- 不知道为什么maven.compiler.release失效，必须在这里设置覆盖父项目的设置才行 -->
+        <release>26</release>
+        <!-- 跳过测试编译 -->
+        <skip>true</skip>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <!-- 跳过测试执行 -->
+        <skipTests>true</skipTests>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+        <excludes>
+            <!--static目录不打包进jar中-->
+            <exclude>static/**</exclude>
+        </excludes>
+    </configuration>
+</plugin>
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+</plugin>
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+<artifactId>maven-antrun-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>generate-aot-file</id>
+            <phase>package</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <target>
+                    <!-- 解压fat jar，必须先解压fat jar，否则解压到已存在的不为空的目录会解压失败 -->
+                    <exec executable="java">
+                        <!--line按空格识别参数，注意参数值不能有空格-->
+                        <arg line="-Djarmode=tools"/>
+                        <arg line="-jar ${project.build.directory}/${package.name}.jar"/>
+                        <arg line="extract --destination ${package.directory}"/>
+                    </exec>
+                    <!-- 复制静态文件 -->
+                    <exec executable="cp">
+                        <!--line按空格识别参数，注意参数值不能有空格-->
+                        <arg line="-r ${project.build.outputDirectory}/static ${package.directory}/static"/>
+                    </exec>
+                    <!-- 生成aot文件，会运行程序，因此要先把静态文件复制过去-->
+                    <exec executable="java">
+                        <!--line按空格识别参数，注意参数值不能有空格-->
+                        <arg line="-XX:AOTCacheOutput=${package.directory}/${package.name}.aot -Dspring.context.exit=onRefresh"/>
+                        <arg line="-jar ${package.directory}/${package.name}.jar"/>
+                    </exec>
+                    <!-- 创建运行脚本文件，这种写法换行了导致命令也跟着换行，编辑器wrap也会导致命令换行！需要贴着编辑器左边写最好，不支持特殊字符 -->
+                    <!--<echo file="${package.directory}/start.sh" append="false">-->
+                    <!--    #!/usr/bin/env bash${line.separator}java -XX:AOTCache=${package.name}.aot &#45;&#45;enable-native-access=ALL-UNNAMED -jar-->
+                    <!--    ${package.name}.jar-->
+                    <!--</echo>-->
+                    <!--这种写法支持特殊字符，换行了导致命令也跟着换行，但是不会触发编辑器wrap，命令分多行的话也建议贴着编辑器最左边-->
+                    <echo file="${package.directory}/start.sh" append="false">
+                        <![CDATA[
+#!/usr/bin/env bash
+java -XX:AOTCache=${package.name}.aot -Dprism.order=sw -jar ${package.name}.jar
+                        ]]>
+                    </echo>
+                    <!-- 赋予运行脚本文件执行权限-->
+                    <chmod file="${package.directory}/start.sh" perm="755"/>
+                </target>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
 ```
 
 #### 创建Maven继承/聚合工程
@@ -8343,7 +8621,7 @@ mvn clean package -Dmaven.test.skip=true
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${maven.surefire.plugin.version}</version>
             <configuration>
-                <skip>true</skip>
+                <skipTests>true</skipTests>
             </configuration>
         </plugin>
     </plugins>
@@ -9476,6 +9754,56 @@ public class AccountPo {}
 ```java
 // 同步读，headRowNumber(0)：标题行和数据行都读到列表中
 List<Map<Integer, String>> listMap = EasyExcel.read(inputStream).sheet().headRowNumber(0).doReadSync();
+```
+
+## 获取应用家目录
+
+- 使用springboot工具
+
+```java
+ApplicationHome home = new ApplicationHome(this.getClass());
+```
+
+- 自己实现
+
+```java
+/**
+ * 获取应用家目录：可执行jar包所在目录，或maven项目的target/classes目录
+ *
+ * @param clazz 通常为主程序入口类
+ * @return 获取应用家目录
+ */
+private static <T> String getApplicationHome(Class<T> clazz) {
+    // 获取带文件协议前缀的规范类路径
+    String classPath = clazz.getResource("").toExternalForm();
+    String osName = System.getProperty("os.name").toLowerCase();
+    if (osName.contains("linux")) {
+        if (classPath.startsWith("jar")) {
+            // jar包的类路径
+            // jar:file:/path/to/file.jar!/path/to/clazz/
+            String jarPath = classPath.substring(classPath.indexOf("/"), classPath.indexOf("!"));
+            return jarPath.substring(0, jarPath.lastIndexOf("/"));
+        } else {
+            // 非jar包的类路径（maven项目）
+            // file:/path/to/projectName/target/classes/path/to/clazz/
+            return classPath.substring(classPath.indexOf("/"), classPath.indexOf("classes") + "classes".length());
+        }
+    } else if (osName.contains("win")) {
+        if (classPath.contains("!")) {
+            // jar包的类路径
+            // jar:file:/C:/xxx/xxx.jar!/path/to/clazz/
+            String jarPath = classPath.substring(classPath.indexOf("/") + 1, classPath.indexOf("!"));
+            return jarPath.substring(0, jarPath.lastIndexOf("/"));
+        } else {
+            // 非jar包的类路径（maven项目）
+            // file:/C:/xxx/target/classes/path/to/clazz/
+            // file:/C:/xxx/target/test-classes/path/to/clazz/
+            return classPath.substring(classPath.indexOf("/") + 1, classPath.indexOf("classes") + "classes".length());
+        }
+    } else {
+        throw new RuntimeException("不支持的系统类型：" + osName + " 目前只支持windows和linux的应用家目录获取");
+    }
+}
 ```
 
 ## Mybatis
@@ -22611,6 +22939,7 @@ public class AppConfig {
     }
 }
 ```
+
 ##### [Reactive]RedisTemplate
 
 [Reactive]RedisTemplate提供高级别的交互（各种数据类型，并且自动做序列化/反序列化）
@@ -22655,6 +22984,7 @@ public class Example {
     }
 }
 ```
+
 ##### StringRedisTemplate
 
 StringRedisTemplate专门处理字符串操作

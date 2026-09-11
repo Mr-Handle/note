@@ -918,6 +918,11 @@ neu build --embed-resources
 - 在`neutralinojs.config.json`文件中定义扩展
 
 ```json
+"nativeAllowList": [
+    "app.*",
+    // 记得加上
+    "extensions.*"
+],
 "extensions": [
     {
         // id：标识扩展的唯一键
